@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Pemilik - Dazeon Admin</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+    <script>
+      tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] } } } }
+    </script>
+    <style>
+        /* Sembunyikan scrollbar default */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { scrollbar-width: none; }
+        /* Animasi sederhana untuk kartu statistik */
+        .stat-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <div class="flex h-screen bg-gray-100">
+
+        <div class="hidden md:flex md:flex-col md:w-64 bg-gray-900 text-gray-300">
+            <div class="flex items-center justify-center h-20 border-b border-gray-700">
+                <span class="text-2xl font-black text-white uppercase tracking-wider">DAZEON ADMIN</span>
+            </div>
+
+            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
+                <a href="boss_dashboard.html" class="flex items-center px-4 py-3 rounded-lg bg-gray-700 text-white font-semibold"> <i class="fas fa-chart-pie w-6 text-lg"></i>
+                    <span class="ml-4">Ringkasan Bisnis</span>
+                </a>
+                <a href="reports.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                    <i class="fas fa-chart-line w-6 text-lg"></i>
+                    <span class="ml-4">Laporan Detail</span>
+                </a>
+                <a href="manage_users.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                    <i class="fas fa-users-cog w-6 text-lg"></i>
+                    <span class="ml-4">Kelola Staf</span> </a>
+                <a href="manage_products.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                    <i class="fas fa-tshirt w-6 text-lg"></i>
+                    <span class="ml-4">Produk</span>
+                </a>
+                <a href="boss_manage_orders.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                    <i class="fas fa-receipt w-6 text-lg"></i>
+                    <span class="ml-4">Pesanan</span>
+                </a>
+                <a href="../login.html" class="flex items-center px-4 py-3 rounded-lg text-red-400 hover:bg-red-600 hover:text-white transition-colors duration-200 mt-auto">
+                    <i class="fas fa-sign-out-alt w-6 text-lg"></i>
+                    <span class="ml-4">Logout</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="flex-1 flex flex-col overflow-hidden">
+
+            <header class="flex justify-between items-center h-20 px-6 bg-white border-b border-gray-200 shadow-sm">
+                <h1 class="text-2xl font-semibold text-gray-800">Ringkasan Bisnis</h1>
+                 <span class="text-gray-700 hidden sm:block">Halo, <strong id="user-name">Bos</strong>!</span>
+            </header>
+
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+                <div class="container mx-auto">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+
+                        <div class="stat-card bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-6 rounded-xl shadow-lg">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="text-lg font-semibold uppercase tracking-wider">Pendapatan</h3>
+                                    <p class="text-xs opacity-80">(Bulan Ini)</p>
+                                </div>
+                                <i class="fas fa-coins text-4xl opacity-50"></i>
+                            </div>
+                            <div class="text-4xl font-bold">
+                                Rp 15.7 Jt <span class="text-lg font-normal opacity-80">↑15%</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card bg-gradient-to-br from-sky-500 to-sky-600 text-white p-6 rounded-xl shadow-lg">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="text-lg font-semibold uppercase tracking-wider">Profit Margin</h3>
+                                    <p class="text-xs opacity-80">(Estimasi)</p>
+                                </div>
+                                <i class="fas fa-percentage text-4xl opacity-50"></i>
+                            </div>
+                            <div class="text-4xl font-bold">
+                                35% <span class="text-lg font-normal opacity-80">↓2%</span>
+                            </div>
+                        </div>
+
+                        <div class="stat-card bg-gradient-to-br from-amber-500 to-amber-600 text-white p-6 rounded-xl shadow-lg">
+                             <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="text-lg font-semibold uppercase tracking-wider">Pesanan</h3>
+                                    <p class="text-xs opacity-80">(Bulan Ini)</p>
+                                </div>
+                                <i class="fas fa-receipt text-4xl opacity-50"></i>
+                            </div>
+                            <div class="text-4xl font-bold">
+                                125 <span class="text-lg font-normal opacity-80">↑8%</span>
+                            </div>
+                        </div>
+
+                         <div class="stat-card bg-gradient-to-br from-violet-500 to-violet-600 text-white p-6 rounded-xl shadow-lg">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="text-lg font-semibold uppercase tracking-wider">Pelanggan Baru</h3>
+                                    <p class="text-xs opacity-80">(Bulan Ini)</p>
+                                </div>
+                                <i class="fas fa-user-plus text-4xl opacity-50"></i>
+                            </div>
+                            <div class="text-4xl font-bold">
+                                32 <span class="text-lg font-normal opacity-80">↑5%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                         <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold text-gray-800">Performa Penjualan (6 Bulan Terakhir)</h3>
+                            <select class="text-sm border border-gray-300 rounded px-2 py-1">
+                                <option>Pendapatan</option>
+                                <option>Jumlah Pesanan</option>
+                            </select>
+                         </div>
+                         <div class="h-80 bg-gradient-to-t from-gray-100 to-gray-200 flex items-center justify-center text-gray-500 rounded-md">
+                             [Placeholder Grafik Garis / Batang (Chart.js)]
+                         </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                             <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-3">Produk Terlaris Bulan Ini</h3>
+                             <ul class="divide-y divide-gray-100 max-h-80 overflow-y-auto no-scrollbar">
+                                 <li class="py-3 flex items-center justify-between">
+                                     <div class="flex items-center min-w-0">
+                                         <img src="https://via.placeholder.com/40x40/f0f0f0/888888.png?text=YK" class="w-10 h-10 rounded-md mr-3 flex-shrink-0">
+                                         <span class="font-medium text-gray-900 text-sm truncate">YUKEN - Regular Fit</span>
+                                     </div>
+                                     <span class="text-gray-600 font-semibold text-sm ml-2">50x</span>
+                                 </li>
+                                 <li class="py-3 flex items-center justify-between">
+                                     <div class="flex items-center min-w-0">
+                                         <img src="https://via.placeholder.com/40x40/f0f0f0/888888.png?text=SK" class="w-10 h-10 rounded-md mr-3 flex-shrink-0">
+                                         <span class="font-medium text-gray-900 text-sm truncate">SASAKI - Oversize</span>
+                                     </div>
+                                     <span class="text-gray-600 font-semibold text-sm ml-2">35x</span>
+                                 </li>
+                                 </ul>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                             <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-3">Pesanan Bernilai Tinggi</h3>
+                             <ul class="divide-y divide-gray-100 max-h-80 overflow-y-auto no-scrollbar">
+                                 <li class="py-3">
+                                     <div class="flex justify-between items-center text-sm">
+                                         <span class="font-medium text-indigo-600 hover:underline">DZ-003</span>
+                                         <span class="font-bold text-gray-900">Rp 297.000</span>
+                                     </div>
+                                     <p class="text-xs text-gray-500 mt-1">Citra Lestari - 22 Okt 2025</p>
+                                 </li>
+                                  <li class="py-3">
+                                     <div class="flex justify-between items-center text-sm">
+                                         <span class="font-medium text-indigo-600 hover:underline">DZ-005</span>
+                                         <span class="font-bold text-gray-900">Rp 250.000</span>
+                                     </div>
+                                     <p class="text-xs text-gray-500 mt-1">Bambang S. - 24 Okt 2025</p>
+                                 </li>
+                                 </ul>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                             <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-3">Ringkasan Pengguna</h3>
+                             <div class="space-y-4">
+                                 <div class="flex justify-between items-center">
+                                     <span class="text-sm text-gray-600">Total Pengguna Aktif:</span>
+                                     <span class="font-bold text-lg text-gray-900">150</span>
+                                 </div>
+                                  <div class="flex justify-between items-center">
+                                     <span class="text-sm text-gray-600">Pelanggan Baru (Bulan Ini):</span>
+                                     <span class="font-bold text-lg text-green-600">32</span>
+                                 </div>
+                                  <div class="flex justify-between items-center">
+                                     <span class="text-sm text-gray-600">Total Admin/Karyawan:</span>
+                                     <span class="font-bold text-lg text-gray-900">3</span>
+                                 </div>
+                                 <div class="pt-4">
+                                     <a href="manage_users.html" class="block w-full text-center bg-gray-200 text-gray-800 font-semibold py-2 rounded-lg text-sm hover:bg-gray-300">
+                                         Kelola Pengguna
+                                     </a>
+                                 </div>
+                             </div>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Staf & Pengguna - Dazeon Admin</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <script>
+      tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] } } } }
+    </script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { scrollbar-width: none; }
+        .pill { padding: 0.25rem 0.75rem; display: inline-flex; font-size: 0.75rem; line-height: 1.25rem; font-weight: 600; border-radius: 9999px; }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <div class="flex h-screen bg-gray-100">
+
+        <div class="hidden md:flex md:flex-col md:w-64 bg-gray-900 text-gray-300">
+            <div class="flex items-center justify-center h-20 border-b border-gray-700">
+                <span class="text-2xl font-black text-white uppercase tracking-wider">DAZEON ADMIN</span>
+            </div>
+            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
+                <a href="boss_dashboard.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                    <i class="fas fa-chart-pie w-6 text-lg"></i><span class="ml-4">Ringkasan Bisnis</span>
+                </a>
+                <a href="reports.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                    <i class="fas fa-chart-line w-6 text-lg"></i><span class="ml-4">Laporan Detail</span>
+                </a>
+                <a href="manage_users.html" class="flex items-center px-4 py-3 rounded-lg bg-gray-700 text-white font-semibold"> <i class="fas fa-users-cog w-6 text-lg"></i><span class="ml-4">Kelola Staf</span>
+                </a>
+                <a href="manage_products.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                    <i class="fas fa-tshirt w-6 text-lg"></i><span class="ml-4">Produk</span>
+                </a>
+                <a href="boss_manage_orders.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                    <i class="fas fa-receipt w-6 text-lg"></i><span class="ml-4">Pesanan</span>
+                </a>
+                 <a href="../login.html" class="flex items-center px-4 py-3 rounded-lg text-red-400 hover:bg-red-600 hover:text-white transition-colors duration-200 mt-auto">
+                    <i class="fas fa-sign-out-alt w-6 text-lg"></i><span class="ml-4">Logout</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <header class="flex justify-between items-center h-20 px-6 bg-white border-b border-gray-200 shadow-sm">
+                <h1 class="text-2xl font-semibold text-gray-800">Kelola Staf & Pengguna</h1>
+                 <span class="text-gray-700 hidden sm:block">Halo, <strong id="user-name">Bos</strong>!</span> </header>
+
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+                <div class="container mx-auto">
+
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-6 space-y-4 sm:space-y-0">
+                        <a href="add_user.html" class="w-full sm:w-auto bg-gray-900 text-white font-semibold px-6 py-2.5 rounded-lg text-sm hover:bg-gray-700 transition-colors duration-200 inline-flex items-center justify-center">
+                            <i class="fas fa-user-plus mr-2"></i> Tambah Staf Baru (Admin/Karyawan)
+                        </a>
+                        <div class="w-full sm:w-auto flex space-x-4">
+                            <input type="text" placeholder="Cari pengguna..." class="w-full sm:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm">
+                            <select class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm">
+                                <option>Semua Peran</option>
+                                <option>Admin</option>
+                                <option>Karyawan</option>
+                                <option>Pembeli</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full min-w-[768px] divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Peran</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Daftar</th>
+                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 text-sm font-medium">1</td>
+                                        <td class="px-6 py-4 text-sm font-medium text-gray-900">Pemilik Toko (Anda)</td>
+                                        <td class="px-6 py-4 text-sm text-gray-700">bos@dazeon.com</td>
+                                        <td class="px-6 py-4"><span class="pill bg-yellow-100 text-yellow-800 font-bold">Bos</span></td>
+                                        <td class="px-6 py-4 text-sm text-gray-500">19 Okt 2025</td>
+                                        <td class="px-6 py-4 text-right text-sm font-medium space-x-3">
+                                            <a href="edit_user.html?id=1" class="text-indigo-600 hover:text-indigo-900" title="Edit Profil Anda"><i class="fas fa-edit"></i></a>
+                                            <span class="text-gray-400 cursor-not-allowed" title="Tidak bisa dihapus"><i class="fas fa-trash-alt"></i></span>
+                                        </td>
+                                    </tr>
+
+                                     <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 text-sm font-medium">2</td>
+                                        <td class="px-6 py-4 text-sm font-medium text-gray-900">Admin Dazeon</td>
+                                        <td class="px-6 py-4 text-sm text-gray-700">admin@dazeon.com</td>
+                                        <td class="px-6 py-4"><span class="pill bg-red-100 text-red-800">Admin</span></td>
+                                        <td class="px-6 py-4 text-sm text-gray-500">20 Okt 2025</td>
+                                        <td class="px-6 py-4 text-right text-sm font-medium space-x-3">
+                                            <a href="edit_user.html?id=2" class="text-indigo-600 hover:text-indigo-900" title="Edit Admin"><i class="fas fa-edit"></i></a>
+                                            <button onclick="deleteUser(2, 'Admin Dazeon')" class="text-red-600 hover:text-red-900" title="Hapus Admin"><i class="fas fa-trash-alt"></i></button>
+                                        </td>
+                                    </tr>
+
+                                    
+                                    </tbody>
+                            </table>
+                        </div>
+                        <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center text-sm">
+                            <div>Menampilkan <span class="font-semibold">1</span> - <span class="font-semibold">10</span> dari <span class="font-semibold">35</span> pengguna</div>
+                            <div class="flex space-x-1">
+                                <button class="px-3 py-1 border border-gray-300 rounded-md text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50" disabled>&laquo; Prev</button>
+                                <button class="px-3 py-1 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50">Next &raquo;</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        function deleteUser(userId, userName) {
+            if (confirm(`Anda yakin ingin menghapus pengguna "${userName}" (ID: ${userId})? Tindakan ini tidak dapat dibatalkan.`)) {
+                console.log(`Menghapus pengguna ID: ${userId}...`);
+                alert('Pengguna berhasil dihapus (simulasi).');
+                // Nanti tambahkan logika Supabase & hapus baris dari DOM
+            }
+        }
+        
+        // CSS Utility untuk pill peran (jika belum ada di style global)
+        const style = document.createElement('style');
+        style.textContent = `
+            .pill {
+                padding: 0.25rem 0.75rem; /* py-1 px-3 */
+                display: inline-flex;
+                font-size: 0.75rem; /* text-xs */
+                line-height: 1.25rem; /* leading-5 */
+                font-weight: 600; /* font-semibold */
+                border-radius: 9999px; /* rounded-full */
+            }
+        `;
+        document.head.append(style);
+    </script>
+</body>
+</html>

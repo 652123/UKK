@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masuk - Dazeon Store</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> 
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Poppins', 'sans-serif'],
+            },
+          }
+        }
+      }
+    </script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <div class="flex min-h-screen items-center justify-center px-4">
+        
+        <div class="w-full max-w-md">
+            
+            <div class="text-center mb-8">
+                <a href="index.html" class="text-4xl font-black text-gray-900 uppercase tracking-wider">
+                    DAZEON
+                </a>
+            </div>
+
+            <div class="bg-white w-full p-8 sm:p-10 rounded-2xl shadow-2xl">
+                
+                <h1 class="text-3xl font-bold text-gray-900 text-center">
+                    Selamat Datang Kembali
+                </h1>
+                <p class="text-center text-gray-500 mt-2 mb-8">
+                    Masuk untuk melanjutkan belanja.
+                </p>
+
+                <form id="login-form" class="space-y-6">
+                    
+                    <div id="error-message" class="hidden p-4 rounded-lg bg-red-50 text-red-700">
+                        </div>
+                    
+                    <div>
+                        <label for="email" class="block text-sm font-semibold text-gray-700">
+                            Alamat Email
+                        </label>
+                        <div class="mt-2">
+                            <input 
+                                id="email" 
+                                name="email" 
+                                type="email" 
+                                autocomplete="email" 
+                                required 
+                                placeholder="kamu@contoh.com"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-900
+                                       focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                            >
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between">
+                            <label for="password" class="block text-sm font-semibold text-gray-700">
+                                Password
+                            </label>
+                            <div class="text-sm">
+                                <a href="#" class="font-semibold text-gray-600 hover:text-gray-900">
+                                    Lupa password?
+                                </a>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <input 
+                                id="password" 
+                                name="password" 
+                                type="password" 
+                                autocomplete="current-password" 
+                                required 
+                                placeholder="••••••••"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-900
+                                       focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                            >
+                        </div>
+                    </div>
+
+                    <div>
+                        <button 
+                            id="login-button" type="submit" 
+                            class="w-full flex justify-center bg-gray-900 text-white 
+                                   font-bold text-lg px-4 py-3 rounded-lg shadow-lg 
+                                   hover:bg-gray-700 transition-colors duration-300
+                                   focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2"
+                        >
+                            Masuk
+                        </button>
+                    </div>
+                </form>
+
+                <p class="text-center text-sm text-gray-500 mt-8">
+                    Belum punya akun?
+                    <a href="register.html" class="font-semibold text-gray-800 hover:text-gray-900 underline">
+                        Daftar di sini
+                    </a>
+                </p>
+
+            </div>
+        </div>
+    </div>
+    
+
+    <script>
+    /*
+ * ========================================
+ * KONEKTOR SUPABASE - LOGIN (AUTH.JS)
+ * 100% JavaScript, Tanpa PHP
+ * ========================================
+ */
+
+// 1. Inisialisasi Klien Supabase
+//    (Ganti dengan URL & Anon Key proyek Supabase kamu)
+const SUPABASE_URL = 'https://vatlrekidlsxtvxoaegn.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhdGxyZWtpZGxzeHR2eG9hZWduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEyODc3NTIsImV4cCI6MjA3Njg2Mzc1Mn0.4ZrBuQDO-dspKY72lquNuGn5BisUChJwBxtKPD0aKE0';
+
+//    Pastikan library Supabase sudah dimuat dari CDN di HTML
+//    Jika window.supabase tidak ditemukan, beri error
+if (!window.supabase) {
+    console.error('Error: Supabase client library not found. Make sure you included the CDN script in your HTML.');
+    // Tampilkan pesan error ke pengguna (opsional)
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'p-4 rounded-lg bg-red-100 text-red-800 fixed top-5 right-5 z-50';
+    errorDiv.innerText = 'Koneksi ke server gagal. Harap refresh halaman.';
+    document.body.appendChild(errorDiv);
+}
+
+//    Buat "konektor" Supabase
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+
+// 2. Tangkap Elemen Form dari HTML
+//    Pastikan ID elemen di HTML sesuai
+const loginForm = document.getElementById('login-form');
+const loginButton = document.getElementById('login-button'); // Sekarang PASTI ketemu
+const errorMessageDiv = document.getElementById('error-message'); // Sekarang PASTI ketemu
+
+
+// 3. Tambahkan "Event Listener" ke Form Login
+//    Fungsi ini akan berjalan saat tombol "Masuk" di-klik
+if (loginForm) {
+    loginForm.addEventListener('submit', async function(event) {
+        // Hentikan form agar tidak me-reload halaman
+        event.preventDefault();
+
+        // Ambil data dari input form
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        // Tampilkan status loading di tombol & sembunyikan error lama
+        if (loginButton) {
+            loginButton.disabled = true;
+            loginButton.innerText = 'Memproses...';
+        }
+        if (errorMessageDiv) {
+            errorMessageDiv.classList.add('hidden');
+            errorMessageDiv.innerText = '';
+        }
+
+        try {
+            // 4. INTI KONEKTOR LOGIN: Kirim data ke Supabase
+            console.log('Mengirim data login ke Supabase...');
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
+
+            if (error) {
+                // Jika Supabase mengembalikan error (misal: password salah)
+                console.error('Login Gagal:', error.message);
+                if (errorMessageDiv) {
+                    errorMessageDiv.innerText = 'Email atau password salah. Silakan coba lagi.';
+                    errorMessageDiv.classList.remove('hidden');
+                }
+                // Kembalikan tombol ke kondisi normal
+                if (loginButton) {
+                    loginButton.disabled = false;
+                    loginButton.innerText = 'Masuk';
+                }
+                return; // Hentikan proses
+            }
+
+            // 5. JIKA LOGIN BERHASIL: Cek Peran Pengguna
+            console.log('Login Berhasil! User ID:', data.user.id);
+
+            // Tanya ke Supabase: Apa peran user ini di tabel 'profiles'?
+            let { data: profile, error: profileError } = await supabase
+                .from('profiles')       // Dari tabel profiles...
+                .select('role')         // Ambil kolom 'role'-nya saja...
+                .eq('id', data.user.id) // ...yang 'id'-nya = id user yg login
+                .single();              // Ambil satu baris saja
+
+            if (profileError || !profile) {
+                // Jika error saat baca profil atau profil tidak ditemukan
+                throw new Error(profileError?.message || 'Profil pengguna tidak ditemukan.');
+            }
+
+            // 6. PENGALIHAN (REDIRECT) BERDASARKAN PERAN
+            console.log('Peran terdeteksi:', profile.role);
+            if (profile.role === 'bos') {
+                // 'admin' di DB = BOS
+                console.log('Mengalihkan ke Boss Dashboard...');
+                window.location.href = 'bos/bos_dashboard.html'; // 👈 Ke Dashboard Bos
+
+            } else if (profile.role === 'admin') {
+                // 'karyawan' di DB = ADMIN/KARYAWAN
+                console.log('Mengalihkan ke Admin Dashboard...');
+                window.location.href = 'admin/dashboard.html'; // 👈 Ke Dashboard Karyawan
+
+            } else {
+                // 'pembeli' di DB = PELANGGAN
+                console.log('Mengalihkan ke Halaman Utama...');
+                window.location.href = 'index.html'; // Ganti path jika perlu
+            }
+
+        } catch (e) {
+            // Tangani error tak terduga (misal: koneksi gagal)
+            console.error('Terjadi error tak terduga:', e.message);
+            if (errorMessageDiv) {
+                errorMessageDiv.innerText = 'Terjadi kesalahan pada sistem. Silakan coba lagi nanti.';
+                errorMessageDiv.classList.remove('hidden');
+            }
+            // Kembalikan tombol ke kondisi normal
+            if (loginButton) {
+                loginButton.disabled = false;
+                loginButton.innerText = 'Masuk';
+            }
+        }
+    });
+} else {
+    console.warn('Form login dengan ID "login-form" tidak ditemukan.');
+}
+
+console.log('Auth script loaded.'); // Pesan konfirmasi bahwa script jalan </script>
+
+
+</body>
+</html>

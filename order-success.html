@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesanan Berhasil - Dazeon Store</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+    <script>
+      tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] } } } }
+    </script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 flex justify-center items-center">
+            <a href="index.html" class="text-3xl font-black text-gray-900 uppercase tracking-wider">DAZEON</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-16 text-center">
+        
+        <div class="bg-white p-8 sm:p-12 rounded-lg shadow-lg">
+            
+            <div class="w-24 h-24 bg-green-100 text-green-600 flex items-center justify-center rounded-full mx-auto animate-bounce">
+                <i class="fas fa-check text-5xl"></i>
+            </div>
+
+            <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mt-8">
+                Pesanan Berhasil!
+            </h1>
+            <p class="text-lg text-gray-600 mt-4 max-w-lg mx-auto">
+                Terima kasih telah berbelanja. Pesanan Anda telah kami terima dan akan segera diproses.
+            </p>
+
+            <div class="text-left bg-gray-50 rounded-lg p-6 mt-10 border border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">Detail Pesanan</h2>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Nomor Pesanan:</span>
+                        <span id="order-id" class="font-bold text-gray-900">Memuat...</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Total Pembayaran:</span>
+                        <span id="total-payment" class="font-bold text-gray-900">Memuat...</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Metode Pembayaran:</span>
+                        <span class="font-medium text-gray-900">Transfer Bank</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-left mt-6">
+                <h3 class="text-lg font-semibold text-gray-800">Instruksi Pembayaran</h3>
+                <p class="text-gray-600 mt-2">
+                    Silakan lakukan pembayaran ke rekening berikut:
+                </p>
+                <div class="bg-gray-800 text-white rounded-lg p-4 mt-3 text-center">
+                    <p class="text-sm text-gray-300">Bank Central Asia (BCA)</p>
+                    <p class="text-2xl font-bold tracking-widest my-1">123 456 7890</p>
+                    <p class="text-sm text-gray-300">a/n Dazeon Store</p>
+                </div>
+                <p class="text-sm text-gray-600 mt-4">
+                    Konfirmasi pembayaran akan kami cek secara otomatis. Pesanan akan dibatalkan jika pembayaran tidak dilakukan dalam 1x24 jam.
+                </p>
+            </div>
+
+            <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+                <a href="index.html" class="w-full sm:w-auto px-8 py-3 bg-gray-900 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 transition-colors">
+                    Kembali ke Beranda
+                </a>
+                <a href="my-orders.html" class="w-full sm:w-auto px-8 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition-colors">
+                    Lihat Pesanan Saya
+                </a>
+            </div>
+            
+        </div>
+    </main>
+    
+    <script>
+        /*
+         * ===============================================
+         * KONEKTOR SUPABASE - HALAMAN SUKSES (ORDER-SUCCESS.JS)
+         * ===============================================
+         */
+
+        // 1. Inisialisasi Supabase
+        const SUPABASE_URL = 'https://URL_PROYEK_KAMU.supabase.co'; // 👈 GANTI INI
+        const SUPABASE_KEY = 'KEY_ANON_KAMU_YANG_PUBLIK'; // 👈 GANTI INI
+
+        if (!window.supabase) console.error('Supabase lib not found');
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // 2. Tangkap Elemen
+        const orderIdElem = document.getElementById('order-id');
+        const totalPaymentElem = document.getElementById('total-payment');
+
+        // 3. Fungsi untuk Ambil Detail Pesanan
+        async function loadOrderDetails() {
+            // Ambil ID pesanan dari URL (yang dikirim oleh checkout.js)
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('id');
+
+            if (!orderId) {
+                console.error('Order ID tidak ditemukan di URL');
+                if(orderIdElem) orderIdElem.innerText = 'Error';
+                if(totalPaymentElem) totalPaymentElem.innerText = 'Error';
+                return;
+            }
+
+            // Cek user login
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                // Seharusnya user masih login, tapi jika tidak, arahkan ke login
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                // Ambil data dari tabel 'orders'
+                let { data: order, error } = await supabase
+                    .from('orders')
+                    .select('id, total_amount') // Ambil total
+                    .eq('id', orderId)
+                    .eq('user_id', session.user.id) // Pastikan ini pesanan dia
+                    .single();
+
+                if (error) throw error;
+
+                if (order) {
+                    // Tampilkan data ke HTML
+                    if(orderIdElem) orderIdElem.innerText = `DZ-${String(order.id).padStart(4, '0')}`;
+                    if(totalPaymentElem) totalPaymentElem.innerText = `Rp${order.total_amount.toLocaleString('id-ID')}`;
+                } else {
+                    throw new Error('Pesanan tidak ditemukan.');
+                }
+
+            } catch (error) {
+                console.error('Gagal memuat detail pesanan:', error.message);
+                if(orderIdElem) orderIdElem.innerText = 'Error';
+                if(totalPaymentElem) totalPaymentElem.innerText = 'Error';
+            }
+        }
+
+        // 4. Jalankan Fungsi Saat Halaman Dimuat
+        document.addEventListener('DOMContentLoaded', loadOrderDetails);
+    </script>
+
+</body>
+</html>
