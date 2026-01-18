@@ -50,9 +50,9 @@
                         <span id="cart-count" class="absolute -top-2 -right-3 bg-red-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">0</span>
                     </a>
                     
-                    <a href="login.html" class="hidden sm:block bg-gray-900 text-white font-semibold px-6 py-2.5 rounded-lg text-sm hover:bg-gray-700 transition-colors duration-200">
-                        Masuk
-                    </a>
+                   <button onclick="openAuthModal('login')" class="hidden sm:block bg-gray-900 text-white font-semibold px-6 py-2.5 rounded-lg text-sm hover:bg-gray-700 transition-colors duration-200">
+    Masuk / Daftar
+</button>   
                     
                     <button class="md:hidden text-gray-600 hover:text-gray-900" aria-label="Buka Menu">
                         <i class="fas fa-bars text-2xl"></i>
@@ -129,7 +129,7 @@
                     </div>
 
                     <div class="bg-white shadow-lg rounded-xl overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
-                        <a href="#" class="block">
+                        <a href="product-detail.html" class="block">
                             <div class="relative">
                                 <img src=".//foto/foto1.png" alt="SAD BUT TRYING" class="w-full h-72 object-cover transition-transform duration-500 group-hover:scale-110">
                                 <button onclick="addToCart('SAD BUT TRYING', 79000)" class="absolute bottom-4 left-1/2 -translate-x-1/2 w-11/12 bg-black bg-opacity-70 text-white font-semibold py-3 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-opacity-100">
@@ -145,7 +145,7 @@
                     </div>
 
                     <div class="bg-white shadow-lg rounded-xl overflow-hidden group transition-all duration-300 hover:shadow-2xl hover:-translate-y-2">
-                        <a href="#" class="block">
+                        <a href="product-detail.html" class="block">
                             <div class="relative">
                                 <img src=".//foto/foto5.png" alt="LOST IN WHAT WE HAD" class="w-full h-72 object-cover transition-transform duration-500 group-hover:scale-110">
                                 <button onclick="addToCart('LOST IN WHAT WE HAD', 99000)" class="absolute bottom-4 left-1/2 -translate-x-1/2 w-11/12 bg-black bg-opacity-70 text-white font-semibold py-3 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-opacity-100">
@@ -161,12 +161,7 @@
                     </div>
                 </div>
                 
-                <div class="text-center mt-16">
-                    <a href="#" class="inline-block bg-gray-100 text-gray-800 font-bold text-lg px-10 py-4 rounded-lg shadow-md border border-gray-300
-                                      hover:bg-gray-200 transition-colors duration-200">
-                        Lihat Lebih Banyak
-                    </a>
-                </div>
+               
             </div>
         </section>
 
@@ -208,45 +203,9 @@
             </div>
         </section>
 
-        <section class="py-20">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-                <h2 class="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-16">
-                    Apa Kata Pelanggan Kami?
-                </h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="bg-gray-50 p-8 rounded-xl shadow-lg">
-                        <div class="flex items-center mb-5">
-                            <img src="https://via.placeholder.com/100/DDDDDD/888888.png?text=Rina" alt="Rina Wijaya" class="w-16 h-16 rounded-full object-cover mr-5">
-                            <div>
-                                <h4 class="text-xl font-bold text-gray-900">Rina Wijaya</h4>
-                                <div class="text-yellow-400 mt-1">
-                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <p class="text-gray-600 italic leading-relaxed">
-                            "Bahan kaosnya sangat nyaman dipakai, desainnya simple tapi keren. Pengiriman juga cepat, pokoknya recommended banget!"
-                        </p>
-                    </div>
-                    <div class="bg-gray-50 p-8 rounded-xl shadow-lg">
-                        <div class="flex items-center mb-5">
-                            <img src="https://via.placeholder.com/100/DDDDDD/888888.png?text=Andi" alt="Andi Pratama" class="w-16 h-16 rounded-full object-cover mr-5">
-                            <div>
-                                <h4 class="text-xl font-bold text-gray-900">Andi Pratama</h4>
-                                <div class="text-yellow-400 mt-1">
-                                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <p class="text-gray-600 italic leading-relaxed">
-                            "Suka banget sama koleksi oversize-nya, pas banget ukurannya. Yang glow in the dark juga unik, bakal beli lagi pasti."
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </section>
+        
 
+<script src="main.js"></script>
         <section class="py-20 bg-gray-900 text-white">
             <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
                 <h2 class="text-3xl md:text-4xl font-bold mb-6">Tunggu Apa Lagi?</h2>
@@ -316,6 +275,232 @@
         </div>
     </footer>
 
+    <div id="auth-modal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    
+    <div class="fixed inset-0 bg-gray-900 bg-opacity-75 backdrop-blur-sm transition-opacity" onclick="closeAuthModal()"></div>
+
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+            
+            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-md border border-gray-100">
+                
+                <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-900 transition-colors z-20">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+
+                <div class="flex border-b border-gray-100">
+                    <button id="tab-login" onclick="switchTab('login')" class="w-1/2 py-4 text-center font-bold text-gray-900 border-b-2 border-gray-900 transition-all">
+                        Masuk
+                    </button>
+                    <button id="tab-register" onclick="switchTab('register')" class="w-1/2 py-4 text-center font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent transition-all">
+                        Daftar Baru
+                    </button>
+                </div>
+
+                <div id="modal-message" class="hidden mx-6 mt-4 p-3 rounded-lg text-sm text-center"></div>
+
+                <div class="p-6 sm:p-8">
+                    
+                    <form id="form-login" class="space-y-5 block">
+                        <div class="text-center mb-6">
+                            <h3 class="text-2xl font-black text-gray-900 uppercase tracking-wider">DAZEON</h3>
+                            <p class="text-xs text-gray-500 mt-1">Welcome back, good looking!</p>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Email</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fas fa-envelope"></i></span>
+                                <input type="email" id="login-email" required class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-all text-sm" placeholder="nama@email.com">
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block text-xs font-bold text-gray-700 uppercase">Password</label>
+                                <a href="#" class="text-xs text-gray-500 hover:text-gray-900">Lupa?</a>
+                            </div>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fas fa-lock"></i></span>
+                                <input type="password" id="login-password" required class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-all text-sm" placeholder="••••••••">
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btn-login-submit" class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-lg hover:bg-black transform hover:scale-[1.02] transition-all shadow-lg text-sm">
+                            MASUK SEKARANG
+                        </button>
+                    </form>
+
+                    <form id="form-register" class="space-y-5 hidden">
+                        <div class="text-center mb-6">
+                            <h3 class="text-2xl font-black text-gray-900 uppercase tracking-wider">GABUNG</h3>
+                            <p class="text-xs text-gray-500 mt-1">Buat akun dan mulai belanja.</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Nama Lengkap</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fas fa-user"></i></span>
+                                <input type="text" id="reg-name" required class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-all text-sm" placeholder="Nama Anda">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Email</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fas fa-envelope"></i></span>
+                                <input type="email" id="reg-email" required class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-all text-sm" placeholder="nama@email.com">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Password</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fas fa-lock"></i></span>
+                                <input type="password" id="reg-password" required class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-all text-sm" placeholder="Min. 6 karakter">
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btn-reg-submit" class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-lg hover:bg-black transform hover:scale-[1.02] transition-all shadow-lg text-sm">
+                            DAFTAR AKUN
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. LOGIKA BUKA/TUTUP MODAL & GANTI TAB
+    function openAuthModal(tab = 'login') {
+        const modal = document.getElementById('auth-modal');
+        modal.classList.remove('hidden');
+        switchTab(tab);
+    }
+
+    function closeAuthModal() {
+        document.getElementById('auth-modal').classList.add('hidden');
+        document.getElementById('modal-message').classList.add('hidden');
+    }
+
+    function switchTab(tab) {
+        const formLogin = document.getElementById('form-login');
+        const formReg = document.getElementById('form-register');
+        const tabLogin = document.getElementById('tab-login');
+        const tabReg = document.getElementById('tab-register');
+        const msg = document.getElementById('modal-message');
+
+        msg.classList.add('hidden'); // Sembunyikan pesan error lama
+
+        if (tab === 'login') {
+            formLogin.classList.remove('hidden');
+            formReg.classList.add('hidden');
+            
+            // Style Tab Aktif
+            tabLogin.classList.add('text-gray-900', 'border-gray-900', 'font-bold');
+            tabLogin.classList.remove('text-gray-500', 'border-transparent', 'font-medium');
+            
+            tabReg.classList.remove('text-gray-900', 'border-gray-900', 'font-bold');
+            tabReg.classList.add('text-gray-500', 'border-transparent', 'font-medium');
+        } else {
+            formLogin.classList.add('hidden');
+            formReg.classList.remove('hidden');
+
+            // Style Tab Aktif
+            tabReg.classList.add('text-gray-900', 'border-gray-900', 'font-bold');
+            tabReg.classList.remove('text-gray-500', 'border-transparent', 'font-medium');
+
+            tabLogin.classList.remove('text-gray-900', 'border-gray-900', 'font-bold');
+            tabLogin.classList.add('text-gray-500', 'border-transparent', 'font-medium');
+        }
+    }
+
+    // Fungsi Helper Pesan
+    function showModalMessage(type, text) {
+        const msg = document.getElementById('modal-message');
+        msg.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
+        
+        if (type === 'error') {
+            msg.classList.add('bg-red-100', 'text-red-700');
+        } else {
+            msg.classList.add('bg-green-100', 'text-green-700');
+        }
+        msg.innerHTML = text;
+    }
+
+    // 2. INTEGRASI SUPABASE (Menggunakan instance dari main.js atau create baru)
+    document.addEventListener('DOMContentLoaded', () => {
+        // Pastikan supabase ada
+        const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+        
+        if (!sb) return console.error("Supabase client not initialized");
+
+        // --- PROSES LOGIN ---
+        document.getElementById('form-login').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-login-submit');
+            const originalText = btn.innerText;
+            btn.disabled = true; btn.innerText = "MEMPROSES...";
+
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                // Login Auth
+                const { data, error } = await sb.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+
+                // Cek Role
+                const { data: profile } = await sb.from('profiles').select('role').eq('id', data.user.id).single();
+                
+                showModalMessage('success', 'Login berhasil! Mengalihkan...');
+                
+                setTimeout(() => {
+                    const role = profile ? profile.role : 'pembeli';
+                    if (role === 'bos') window.location.href = 'bos/boss_dashboard.html';
+                    else if (role === 'admin') window.location.href = 'admin/dashboard.html';
+                    else location.reload(); // Refresh halaman untuk user biasa
+                }, 1000);
+
+            } catch (err) {
+                showModalMessage('error', 'Login gagal: ' + err.message);
+                btn.disabled = false; btn.innerText = originalText;
+            }
+        });
+
+        // --- PROSES REGISTER ---
+        document.getElementById('form-register').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-reg-submit');
+            const originalText = btn.innerText;
+            btn.disabled = true; btn.innerText = "MENDAFTAR...";
+
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+
+            try {
+                const { error } = await sb.auth.signUp({
+                    email, password,
+                    options: { data: { name } }
+                });
+                if (error) throw error;
+
+                showModalMessage('success', 'Berhasil! Silakan Login.');
+                document.getElementById('form-register').reset();
+                setTimeout(() => switchTab('login'), 1500);
+
+            } catch (err) {
+                showModalMessage('error', err.message);
+            } finally {
+                btn.disabled = false; btn.innerText = originalText;
+            }
+        });
+    });
+</script>
+
 
     <script>
         // Inisialisasi total item di keranjang (hanya untuk demo)
@@ -349,6 +534,19 @@
 
         
     </script>
+
+    <div class="border-t border-gray-700 mt-10 pt-8 text-center">
+        <p class="text-sm text-gray-500">
+            &copy; 2025 Dazeon Store. All Rights Reserved.
+        </p>
+    </div>
+    <div id="auth-modal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+       </div>
+
+    <script src="main.js"></script>
+
+</body>
+</html>
 
 
 </body>
