@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Pesanan - Dazeon Store</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: { brand: '#171717' }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-gray-50 font-sans text-gray-800">
+
+    <!-- NAVBAR will be injected here -->
+    <div id="navbar-container"></div>
+    <script src="js/components/navbar.js"></script>
+
+    <main class="container mx-auto max-w-5xl px-4 py-8 min-h-screen">
+
+        <!-- Breadcrumb -->
+        <div class="mb-8 flex items-center gap-2 text-sm text-gray-400">
+            <a href="my-orders.html" class="hover:text-black transition flex items-center gap-1">
+                <i class="fas fa-arrow-left"></i> Riwayat Pesanan
+            </a>
+            <span>/</span>
+            <span class="font-semibold text-gray-900">Detail Invoice</span>
+        </div>
+
+        <div id="loading" class="text-center py-20">
+            <i class="fas fa-circle-notch fa-spin text-3xl text-gray-300"></i>
+            <p class="mt-4 text-gray-400 text-sm tracking-wide">MEMUAT DATA...</p>
+        </div>
+
+        <div id="order-content" class="hidden animate-fade-in-up">
+
+            <!-- HEADER SECTION -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div>
+                    <h1 class="text-3xl font-black text-gray-900 tracking-tight">INVOICE <span
+                            class="text-gray-400">#</span><span id="order-id-header">...</span></h1>
+                    <p class="text-gray-500 mt-1" id="order-date">...</p>
+                </div>
+                <div class="text-right">
+                    <div id="status-badge-lg"
+                        class="inline-flex items-center px-5 py-2 rounded-full border border-gray-200 bg-white font-bold shadow-sm">
+                        ...
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                <!-- MAIN LEFT COLUMN -->
+                <div class="lg:col-span-2 space-y-8">
+
+                    <!-- TIMELINE TRACKER -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">Status Pengiriman
+                        </h3>
+                        <div class="relative flex items-center justify-between w-full">
+                            <div class="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-gray-100 -z-0">
+                            </div>
+
+                            <!-- Steps -->
+                            <div class="relative z-10 flex flex-col items-center step-item" id="step-pending">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs text-white font-bold transition-all border-4 border-white shadow-sm ring-1 ring-gray-100 step-circle">
+                                    <i class="fas fa-file-invoice"></i>
+                                </div>
+                                <span
+                                    class="mt-2 text-[10px] font-bold uppercase text-gray-400 step-label">Pending</span>
+                            </div>
+
+                            <div class="relative z-10 flex flex-col items-center step-item" id="step-process">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs text-white font-bold transition-all border-4 border-white shadow-sm ring-1 ring-gray-100 step-circle">
+                                    <i class="fas fa-box"></i>
+                                </div>
+                                <span
+                                    class="mt-2 text-[10px] font-bold uppercase text-gray-400 step-label">Diproses</span>
+                            </div>
+
+                            <div class="relative z-10 flex flex-col items-center step-item" id="step-ship">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs text-white font-bold transition-all border-4 border-white shadow-sm ring-1 ring-gray-100 step-circle">
+                                    <i class="fas fa-truck"></i>
+                                </div>
+                                <span
+                                    class="mt-2 text-[10px] font-bold uppercase text-gray-400 step-label">Dikirim</span>
+                            </div>
+
+                            <div class="relative z-10 flex flex-col items-center step-item" id="step-done">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs text-white font-bold transition-all border-4 border-white shadow-sm ring-1 ring-gray-100 step-circle">
+                                    <i class="fas fa-check"></i>
+                                </div>
+                                <span
+                                    class="mt-2 text-[10px] font-bold uppercase text-gray-400 step-label">Selesai</span>
+                            </div>
+                        </div>
+
+                        <!-- Resi Info Block -->
+                        <div id="resi-block"
+                            class="hidden mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4 flex justify-between items-center">
+                            <div>
+                                <p class="text-xs text-gray-500 uppercase font-bold">Resi Pengiriman</p>
+                                <p class="text-lg font-mono font-bold text-gray-900 mt-1 tracking-wide"
+                                    id="resi-number">JP123456789</p>
+                                <p class="text-xs text-gray-400 font-medium" id="courier-name">JNE Express</p>
+                            </div>
+                            <button onclick="copyResi()" class="text-gray-400 hover:text-black transition"
+                                title="Salin Resi">
+                                <i class="far fa-copy text-xl"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- PRODUCTS -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Detail Produk</h3>
+                            <span class="text-xs font-bold text-gray-400" id="total-items-count">0 Barang</span>
+                        </div>
+                        <div class="divide-y divide-gray-50" id="order-items">
+                            <!-- Items injected -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- RIGHT COLUMN: SUMMARY -->
+                <div class="lg:col-span-1 space-y-8">
+
+                    <!-- Customer Info -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Informasi Pengiriman
+                        </h3>
+
+                        <div class="flex items-start gap-4 mb-4">
+                            <div class="mt-1 text-gray-400"><i class="fas fa-map-marker-alt"></i></div>
+                            <div>
+                                <p class="font-bold text-sm text-gray-900" id="customer-name">...</p>
+                                <p class="text-sm text-gray-500 leading-relaxed mt-1" id="shipping-address">...</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start gap-4">
+                            <div class="mt-1 text-gray-400"><i class="fas fa-phone"></i></div>
+                            <div>
+                                <p class="text-sm text-gray-500 font-medium" id="customer-contact">...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Summary -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Rincian Pembayaran
+                        </h3>
+
+                        <div class="space-y-3 pb-4 border-b border-gray-100">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Subtotal Produk</span>
+                                <span class="font-medium text-gray-900" id="subtotal-display">Rp0</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500">Biaya Pengiriman & Layanan</span>
+                                <span class="font-medium text-gray-900" id="shipping-cost-display">Rp0</span>
+                            </div>
+                        </div>
+
+                        <div class="pt-4">
+                            <div class="flex justify-between items-end">
+                                <span class="text-sm font-bold text-gray-900">Total Pembayaran</span>
+                                <span class="text-2xl font-black text-gray-900" id="total-display">Rp0</span>
+                            </div>
+                            <p class="text-xs text-right text-gray-400 mt-1">Termasuk PPN jika berlaku</p>
+                        </div>
+
+                        <div id="pay-button-container" class="mt-6 hidden">
+                            <button
+                                class="w-full bg-black text-white py-3 rounded-xl font-bold hover:opacity-90 transition shadow-lg">
+                                Bayar Sekarang <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <a href="https://wa.me/6281234567890" target="_blank"
+                            class="text-sm text-gray-400 hover:text-gray-900 transition flex justify-center items-center gap-2">
+                            <i class="fab fa-whatsapp"></i> Butuh bantuan? Hubungi Admin
+                        </a>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div id="error-state"
+            class="hidden text-center py-20 bg-white rounded-2xl shadow-sm mt-8 border border-gray-100 md:w-1/2 mx-auto">
+            <div class="text-red-100 text-6xl mb-4"><i class="fas fa-exclamation-triangle"></i></div>
+            <h3 class="text-xl font-bold text-gray-900">Pesanan Tidak Ditemukan</h3>
+            <p class="text-gray-500 mb-6 px-8" id="error-msg">Mohon periksa kembali link atau pastikan Anda login dengan
+                akun yang benar.</p>
+            <a href="my-orders.html"
+                class="text-sm font-bold text-black border-b-2 border-black pb-1 hover:text-gray-600 hover:border-gray-600 transition">Kembali
+                ke Pesanan</a>
+        </div>
+
+    </main>
+
+    <script src="auth_check.js"></script>
+    <script src="main.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const client = window.db;
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('id');
+
+            const loading = document.getElementById('loading');
+            const content = document.getElementById('order-content');
+            const errorState = document.getElementById('error-state');
+
+            if (!client || !orderId) { showError('Link tidak valid.'); return; }
+
+            // 1. Auth Check 
+            const { data: { session } } = await client.auth.getSession();
+            if (!session) { window.location.href = 'index.html?login=true'; return; }
+
+            try {
+                // 2. Fetch Order
+                const { data: order, error } = await client
+                    .from('orders')
+                    .select(`*, order_details (*, products (name, image_url))`)
+                    .eq('id', orderId)
+                    .eq('user_id', session.user.id)
+                    .single();
+
+                if (error || !order) throw new Error('Pesanan tidak ditemukan.');
+
+                renderOrder(order);
+                loading.classList.add('hidden');
+                content.classList.remove('hidden');
+
+            } catch (err) {
+                console.error(err);
+                showError(err.message);
+            }
+
+            function showError(msg) {
+                loading.classList.add('hidden');
+                errorState.classList.remove('hidden');
+                document.getElementById('error-msg').innerText = msg;
+            }
+
+            function renderOrder(order) {
+                // Header ID & Date
+                document.getElementById('order-id-header').innerText = String(order.id).slice(0, 8).toUpperCase();
+                document.getElementById('order-date').innerText = new Date(order.created_at).toLocaleDateString('id-ID', {
+                    day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+                }).replace(' at ', ', ');
+
+                // Subtotal Calculation & Items
+                const itemsContainer = document.getElementById('order-items');
+                itemsContainer.innerHTML = '';
+                let subtotal = 0;
+                let itemCount = 0;
+
+                order.order_details.forEach(detail => {
+                    const p = detail.products;
+                    const price = detail.price_at_purchase;
+                    const qty = detail.quantity;
+                    const totalLine = price * qty;
+
+                    subtotal += totalLine;
+                    itemCount += qty;
+
+                    let img = 'data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 80 80\"%3E%3Crect fill=\"%23f3f4f6\" width=\"80\" height=\"80\"/%3E%3Ctext x=\"50%25\" y=\"50%25\" fill=\"%239ca3af\" font-size=\"10\" text-anchor=\"middle\" dy=\".3em\"%3EIMG%3C/text%3E%3C/svg%3E';
+                    if (p?.image_url) {
+                        img = p.image_url.startsWith('http') ? p.image_url :
+                            client.storage.from('product-images').getPublicUrl(p.image_url).data.publicUrl;
+                    }
+
+                    itemsContainer.innerHTML += `
+                        <div class="p-6 flex gap-4 md:gap-6 hover:bg-gray-50 transition-colors">
+                            <div class="w-20 h-20 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                                <img src="${img}" class="w-full h-full object-cover">
+                            </div>
+                            <div class="flex-1 flex flex-col md:flex-row justify-between">
+                                <div>
+                                    <h4 class="font-bold text-gray-900 text-lg mb-1">${p ? p.name : 'Produk Dihapus'}</h4>
+                                    <p class="text-sm text-gray-500 font-medium">Qty: ${qty} x Rp${price.toLocaleString('id-ID')}</p>
+                                </div>
+                                <div class="mt-2 md:mt-0 text-left md:text-right">
+                                    <p class="font-bold text-gray-900 text-lg">Rp${totalLine.toLocaleString('id-ID')}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('total-items-count').innerText = `${itemCount} Barang`;
+
+                // Calculate "Shipping & Services" (Total Amount - Subtotal)
+                // If total_amount is somehow less than subtotal (discount?), handle gracefully
+                let finalTotal = order.total_amount || 0;
+                let shippingCost = finalTotal - subtotal;
+                if (shippingCost < 0) shippingCost = 0;
+                if (shippingCost === 0 && finalTotal === 0) shippingCost = 0; // Edge case empty
+
+                document.getElementById('subtotal-display').innerText = `Rp${subtotal.toLocaleString('id-ID')}`;
+                document.getElementById('shipping-cost-display').innerText = shippingCost > 0 ? `Rp${shippingCost.toLocaleString('id-ID')}` : 'Gratis';
+                document.getElementById('total-display').innerText = `Rp${finalTotal.toLocaleString('id-ID')}`;
+
+                // Customer Info
+                let shipAddr = order.shipping_address;
+                let custName = 'Pembeli';
+                let custPhone = '-';
+
+                try {
+                    const addrObj = typeof shipAddr === 'string' ? JSON.parse(shipAddr) : shipAddr;
+                    custName = addrObj.name || addrObj.penerima || custName;
+                    custPhone = addrObj.phone || addrObj.telepon || '-';
+                    // Reconstruct readable address
+                    const parts = [addrObj.address, addrObj.city, addrObj.province, addrObj.postal_code].filter(Boolean);
+                    if (parts.length > 0) shipAddr = parts.join(', ');
+                } catch (e) {
+                    // It's just a string or null
+                }
+
+                document.getElementById('customer-name').innerText = order.customer_name || custName;
+                document.getElementById('shipping-address').innerText = shipAddr || '-';
+                document.getElementById('customer-contact').innerText = custPhone;
+
+                // STATUS LOGIC & TIMELINE
+                updateTimeline(order.status);
+
+                // Resi
+                if ((order.status === 'dikirim' || order.status === 'selesai') && order.resi_number) {
+                    document.getElementById('resi-block').classList.remove('hidden');
+                    document.getElementById('resi-number').innerText = order.resi_number;
+                    if (order.courier) document.getElementById('courier-name').innerText = order.courier;
+                }
+
+                // Show Pay/Cancel Buttons if Pending
+                if (order.status === 'menunggu_pembayaran') {
+                    document.getElementById('pay-button-container').classList.remove('hidden');
+                }
+            }
+
+            function updateTimeline(status) {
+                // Steps mapping
+                const steps = {
+                    'menunggu_pembayaran': 0,
+                    'diproses': 1, // Pending done -> Process active
+                    'dikirim': 2,
+                    'selesai': 3,
+                    'dibatalkan': -1
+                };
+
+                let currentStep = steps[status] ?? 0;
+                if (status === 'diproses') currentStep = 1;
+
+                // Reset all
+                const circles = document.querySelectorAll('.step-circle');
+                const labels = document.querySelectorAll('.step-label');
+
+                // Helper to set active color
+                const setActive = (idx, isCompleted) => {
+                    const circle = circles[idx];
+                    const label = labels[idx];
+
+                    circle.classList.remove('bg-gray-200', 'text-white', 'bg-black', 'bg-green-500');
+                    label.classList.remove('text-gray-400', 'text-black', 'text-green-600');
+
+                    if (isCompleted) {
+                        circle.classList.add('bg-black', 'text-white', 'border-black');
+                        label.classList.add('text-black');
+                    } else {
+                        // Current active but not passed
+                        circle.classList.add('bg-black', 'text-white');
+                        label.classList.add('text-black');
+                    }
+                };
+
+                if (status === 'dibatalkan') {
+                    // Handle cancelled
+                    document.getElementById('status-badge-lg').innerHTML = `<span class="text-red-600 font-bold uppercase"><i class="fas fa-times-circle mr-2"></i>Dibatalkan</span>`;
+                    // Fade out timeline?
+                    return;
+                }
+
+                // Header Badge
+                const badge = document.getElementById('status-badge-lg');
+                let badgeContent = '';
+                if (status === 'menunggu_pembayaran') badgeContent = `<span class="text-yellow-600"><i class="fas fa-clock mr-2"></i>Menunggu Pembayaran</span>`;
+                else if (status === 'diproses') badgeContent = `<span class="text-blue-600"><i class="fas fa-box-open mr-2"></i>Sedang Dikemas</span>`;
+                else if (status === 'dikirim') badgeContent = `<span class="text-purple-600"><i class="fas fa-shipping-fast mr-2"></i>Dalam Pengiriman</span>`;
+                else if (status === 'selesai') badgeContent = `<span class="text-green-600"><i class="fas fa-check-circle mr-2"></i>Pesanan Selesai</span>`;
+
+                badge.innerHTML = badgeContent;
+
+                // Loop timeline
+                for (let i = 0; i <= 3; i++) {
+                    const circle = circles[i];
+                    const label = labels[i];
+
+                    if (i < currentStep) {
+                        // Completed steps
+                        circle.classList.remove('bg-gray-200');
+                        circle.classList.add('bg-black', 'border-black');
+                        label.classList.remove('text-gray-400');
+                        label.classList.add('text-black');
+                    } else if (i === currentStep) {
+                        // Current step
+                        circle.classList.remove('bg-gray-200');
+                        circle.classList.add('bg-white', 'border-black', 'text-black', 'ring-4', 'ring-black/10');
+                        circle.querySelector('i').classList.add('text-black');
+                        circle.classList.remove('text-white');
+                        label.classList.remove('text-gray-400');
+                        label.classList.add('text-black', 'underline', 'decoration-2', 'underline-offset-4');
+                    }
+                }
+            }
+
+            window.copyResi = () => {
+                const r = document.getElementById('resi-number').innerText;
+                navigator.clipboard.writeText(r);
+                Swal.fire({
+                    toast: true, position: 'top', icon: 'success',
+                    title: 'Resi disalin!', showConfirmButton: false, timer: 1500
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

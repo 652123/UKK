@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Riwayat Pesanan - Dazeon Store</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛍️</text></svg>">
+
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: { brand: '#171717' }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* HIDE NAVBAR LOGIN BUTTON on this page */
+        #login-btn-nav {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 font-sans text-gray-800">
+
+    <!-- NAVBAR COMPONENT -->
+    <div id="navbar-container"></div>
+    <script src="js/components/navbar.js"></script>
+
+    <main class="container mx-auto max-w-6xl px-4 py-8 min-h-screen">
+        <h1 class="text-3xl font-bold mb-8">Riwayat Pesanan</h1>
+
+        <div id="orders-loading" class="text-center py-20">
+            <i class="fas fa-circle-notch fa-spin text-3xl text-gray-400"></i>
+            <p class="mt-4 text-gray-500">Memuat riwayat...</p>
+        </div>
+
+        <div id="orders-container" class="space-y-6 hidden">
+            <!-- Order Cards will be injected here -->
+        </div>
+
+        <div id="empty-state" class="hidden text-center py-20 bg-white rounded-xl shadow-sm">
+            <div class="text-6xl mb-4 text-gray-200">📦</div>
+            <h3 class="text-lg font-bold text-gray-900">Belum ada pesanan</h3>
+            <p class="text-gray-500 mb-6">Yuk mulai belanja koleksi terbaru kami!</p>
+            <a href="index.html"
+                class="inline-block bg-brand text-white px-6 py-2 rounded-lg font-medium hover:bg-black transition">Belanja
+                Sekarang</a>
+        </div>
+    </main>
+
+    <script src="auth_check.js"></script>
+    <script src="main.js"></script>
+    <script src="my-orders.js"></script>
+</body>
+
+</html>

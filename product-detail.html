@@ -1,170 +1,446 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Produk</title>
+    <title>Detail Produk - Dazeon</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script>tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] } } } }</script>
+    <!-- IMPORT CONFIG.JS AGAR CREDENTIALS SAMA DENGAN INDEX.HTML -->
+    <script src="config.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: { brand: '#171717' }
+                }
+            }
+        }
+    </script>
     <style>
-        .size-btn.active { @apply bg-gray-900 text-white border-gray-900; }
-        /* Style tabel spesifikasi */
-        .spec-table td { @apply py-2 px-2 text-sm; }
-        .spec-table td:first-child { @apply text-gray-500 w-40; }
+        .size-btn.active {
+            background-color: black;
+            color: white;
+            border-color: black;
+        }
+
+        /* Hide number input spinners */
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* HIDE NAVBAR LOGIN BUTTON on this page */
+        #login-btn-nav {
+            display: none !important;
+        }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans">
 
-    <nav class="sticky top-0 z-50 bg-white shadow-sm h-16 flex items-center justify-between px-6 lg:px-16">
-        <a href="index.html" class="text-2xl font-black text-gray-900 tracking-wider">DAZEON</a>
-        <div class="flex items-center gap-6">
-            <a href="index.html" class="text-sm font-medium text-gray-500 hover:text-gray-900">Beranda</a>
-            <a href="cart.html" class="relative text-gray-600 hover:text-gray-900">
-                <i class="fas fa-shopping-cart text-xl"></i>
-                <span id="cart-count" class="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">0</span>
-            </a>
-        </div>
-    </nav>
+<body class="bg-white text-gray-800 font-sans antialiased">
 
-    <main class="container mx-auto px-4 py-8 max-w-6xl min-h-screen">
-        
-        <div class="text-sm text-gray-500 mb-6">
-            <a href="index.html" class="hover:text-gray-900">Beranda</a> / 
-            <a href="index.html#produk" class="hover:text-gray-900">Produk</a> / 
-            <span class="text-gray-900 font-medium">Detail</span>
+    <!-- NAV (Simple Version) -->
+    <div id="navbar-container"></div>
+    <script src="js/components/navbar.js"></script>
+
+    <main class="container mx-auto px-4 py-12 max-w-7xl min-h-screen">
+
+        <!-- Loading State -->
+        <div id="loading-ui" class="text-center py-32">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-black mb-4">
+            </div>
+            <p class="text-gray-500 font-medium tracking-wide animate-pulse">MEMUAT PRODUK...</p>
         </div>
 
-        <div id="loading-ui" class="text-center py-20 bg-white rounded-xl">
-            <i class="fas fa-circle-notch fa-spin text-4xl text-gray-300"></i>
-            <p class="mt-4 text-gray-500">Memuat detail produk...</p>
-        </div>
+        <div id="product-content" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
 
-        <div id="product-content" class="hidden">
-            
-            <div class="bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-100">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                    
-                    <div class="space-y-4">
-                        <div class="aspect-square bg-gray-100 rounded-lg overflow-hidden border">
-                            <img id="p-img" src="" alt="Produk" class="w-full h-full object-cover">
-                        </div>
-                    </div>
-
-                    <div>
-                        <h1 id="p-name" class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Nama Produk</h1>
-                        
-                        <div class="flex items-center gap-4 mb-6">
-                            <p id="p-price" class="text-3xl font-bold text-red-600">Rp0</p>
-                            <span class="bg-red-100 text-red-600 text-xs font-bold px-2 py-1 rounded">TERLARIS</span>
-                        </div>
-
-                        <div class="bg-gray-50 p-4 rounded-lg mb-6 text-sm text-gray-600 space-y-2">
-                            <div class="flex"><span class="w-32 text-gray-500">Bahan</span> <span class="font-medium text-gray-800">Cotton Combed 24s</span></div>
-                            <div class="flex"><span class="w-32 text-gray-500">Stok</span> <span class="font-medium text-gray-800" id="p-stock">0</span></div>
-                            <div class="flex"><span class="w-32 text-gray-500">Dikirim Dari</span> <span class="font-medium text-gray-800">Jakarta</span></div>
-                        </div>
-
-                        <div class="mb-6">
-                            <label class="block text-sm font-bold text-gray-700 mb-2">Pilih Ukuran:</label>
-                            <div id="size-options" class="flex flex-wrap gap-3">
-                                <button onclick="selectSize(this, 'S')" class="size-btn border rounded px-4 py-2 hover:border-gray-900 transition">S</button>
-                                <button onclick="selectSize(this, 'M')" class="size-btn border rounded px-4 py-2 hover:border-gray-900 transition">M</button>
-                                <button onclick="selectSize(this, 'L')" class="size-btn border rounded px-4 py-2 hover:border-gray-900 transition">L</button>
-                                <button onclick="selectSize(this, 'XL')" class="size-btn border rounded px-4 py-2 hover:border-gray-900 transition">XL</button>
-                                <button onclick="selectSize(this, 'XXL')" class="size-btn border rounded px-4 py-2 hover:border-gray-900 transition">XXL</button>
-                            </div>
-                            <p id="size-alert" class="text-red-500 text-xs mt-2 hidden">Silakan pilih ukuran terlebih dahulu.</p>
-                        </div>
-
-                        <div class="flex flex-col sm:flex-row gap-4 mt-8">
-                            <div class="flex items-center border rounded-lg w-fit h-12">
-                                <button onclick="updateQty(-1)" class="px-4 text-gray-500 hover:bg-gray-100 h-full">-</button>
-                                <input id="qty-input" type="text" value="1" class="w-12 text-center border-none focus:ring-0 font-bold" readonly>
-                                <button onclick="updateQty(1)" class="px-4 text-gray-500 hover:bg-gray-100 h-full">+</button>
-                            </div>
-                            <button onclick="addToCart()" id="btn-cart" class="flex-1 bg-gray-900 text-white font-bold h-12 rounded-lg hover:bg-gray-800 transition flex items-center justify-center gap-2">
-                                <i class="fas fa-cart-plus"></i> Masukkan Keranjang
-                            </button>
-                        </div>
-                    </div>
+            <!-- Left: Images -->
+            <div class="space-y-4">
+                <div class="aspect-[4/5] bg-gray-100 rounded-2xl overflow-hidden relative group">
+                    <img id="p-img" src="" alt="Produk"
+                        class="w-full h-full object-cover object-center transition duration-700 group-hover:scale-105">
                 </div>
             </div>
 
-            <div class="bg-white p-6 md:p-8 rounded-xl shadow-sm border border-gray-100 mt-6">
-                <h3 class="bg-gray-50 p-4 font-bold text-lg text-gray-900 mb-6 border-l-4 border-gray-900">Deskripsi Produk</h3>
-                
-                <div class="prose max-w-none text-gray-700 text-sm leading-relaxed space-y-6">
-                    
-                    <p>
-                        Produk kami terbuat dari <strong>100% Cotton Combed 24s Premium</strong>. Bahannya tebal namun tetap lembut, adem, menyerap keringat, dan sangat nyaman dipakai untuk aktivitas sehari-hari.
+            <!-- Right: Details -->
+            <div class="flex flex-col justify-start py-4">
+
+                <div class="mb-6">
+                    <h1 id="p-name"
+                        class="text-4xl md:text-5xl font-black text-gray-900 mb-4 leading-tight tracking-tight">Nama
+                        Produk</h1>
+                    <div class="flex items-end gap-4">
+                        <p id="p-price" class="text-3xl font-bold text-gray-900">Rp0</p>
+                        <span id="stock-badge" class="text-sm font-bold px-3 py-1 rounded-full mb-1">
+                            <!-- Dynamic Content -->
+                        </span>
+                    </div>
+                </div>
+
+                <div class="h-px bg-gray-100 w-full mb-8"></div>
+
+                <!-- Specs -->
+                <div class="grid grid-cols-2 gap-4 text-sm mb-8">
+                    <div>
+                        <p class="text-gray-500 mb-1">Material</p>
+                        <p class="font-bold text-gray-900" id="p-material">-</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 mb-1">Fit</p>
+                        <p class="font-bold text-gray-900" id="p-fit">-</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 mb-1">Stock</p>
+                        <p class="font-bold text-gray-900" id="p-stock">0</p>
+                    </div>
+                </div>
+
+                <!-- Size Selection -->
+                <div class="mb-8">
+                    <div class="mb-3">
+                        <label class="text-sm font-bold text-gray-900 uppercase tracking-wide block mb-2">Pilih
+                            Ukuran</label>
+                    </div>
+                    <div id="size-options" class="flex flex-wrap gap-3 mb-4">
+                        <button onclick="selectSize(this, 'S')"
+                            class="size-btn h-12 w-16 border rounded-lg font-bold hover:border-black transition flex items-center justify-center">S</button>
+                        <button onclick="selectSize(this, 'M')"
+                            class="size-btn h-12 w-16 border rounded-lg font-bold hover:border-black transition flex items-center justify-center">M</button>
+                        <button onclick="selectSize(this, 'L')"
+                            class="size-btn h-12 w-16 border rounded-lg font-bold hover:border-black transition flex items-center justify-center">L</button>
+                        <button onclick="selectSize(this, 'XL')"
+                            class="size-btn h-12 w-16 border rounded-lg font-bold hover:border-black transition flex items-center justify-center">XL</button>
+                        <button onclick="selectSize(this, 'XXL')"
+                            class="size-btn h-12 w-16 border rounded-lg font-bold hover:border-black transition flex items-center justify-center">XXL</button>
+                    </div>
+
+                    <p id="size-alert" class="text-red-500 text-sm mb-4 hidden font-medium flex items-center gap-2">
+                        <i class="fas fa-exclamation-circle"></i> Mohon pilih ukuran.
                     </p>
 
-                    <div>
-                        <h4 class="font-bold text-gray-900 mb-2">Spesifikasi Kaos:</h4>
-                        <ul class="list-disc pl-5 space-y-1">
-                            <li>Bahan: Cotton Combed 24s (Lebih tebal dari 30s).</li>
-                            <li>Sablon: Direct Transfer Film (DTF) - Hasil detail, awet, dan tidak pecah.</li>
-                            <li>Model Leher: O-Neck.</li>
-                            <li>Jahitan: Pundak Rantai & Stick Leher (Standar Distro).</li>
-                            <li>Pola: Regular Fit / Oversize (Sesuai varian).</li>
-                        </ul>
+                    <!-- Embedded Size Chart -->
+                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
+                        <p class="text-xs font-bold text-gray-500 uppercase mb-3">Panduan Ukuran (cm)</p>
+                        <table class="w-full text-xs text-left text-gray-600">
+                            <thead class="text-xs text-gray-400 uppercase border-b border-gray-200">
+                                <tr>
+                                    <th class="py-2">Size</th>
+                                    <th class="py-2">Lebar Dada</th>
+                                    <th class="py-2">Panjang</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-2 font-bold">S</td>
+                                    <td class="py-2">48</td>
+                                    <td class="py-2">68</td>
+                                </tr>
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-2 font-bold">M</td>
+                                    <td class="py-2">50</td>
+                                    <td class="py-2">70</td>
+                                </tr>
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-2 font-bold">L</td>
+                                    <td class="py-2">52</td>
+                                    <td class="py-2">72</td>
+                                </tr>
+                                <tr class="border-b border-gray-100">
+                                    <td class="py-2 font-bold">XL</td>
+                                    <td class="py-2">54</td>
+                                    <td class="py-2">74</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-2 pt-3 font-bold">XXL</td>
+                                    <td class="py-2 pt-3">56</td>
+                                    <td class="py-2 pt-3">76</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
+                </div>
 
-                    <div>
-                        <h4 class="font-bold text-gray-900 mb-2">Catatan Tambahan:</h4>
-                        <p id="p-desc" class="whitespace-pre-line text-gray-600">
-                            </p>
-                    </div>
-
-                    <div>
-                        <h4 class="font-bold text-gray-900 mb-3">Panduan Ukuran (Size Chart):</h4>
-                        <div class="overflow-x-auto">
-                            <table class="w-full max-w-md text-left text-sm border">
-                                <thead class="bg-gray-100 font-bold">
-                                    <tr>
-                                        <th class="p-3 border">Ukuran</th>
-                                        <th class="p-3 border">Panjang (cm)</th>
-                                        <th class="p-3 border">Lebar (cm)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr class="border-b"><td class="p-3 border">S</td><td class="p-3 border">68</td><td class="p-3 border">46</td></tr>
-                                    <tr class="border-b"><td class="p-3 border">M</td><td class="p-3 border">70</td><td class="p-3 border">48</td></tr>
-                                    <tr class="border-b"><td class="p-3 border">L</td><td class="p-3 border">72</td><td class="p-3 border">50</td></tr>
-                                    <tr class="border-b"><td class="p-3 border">XL</td><td class="p-3 border">74</td><td class="p-3 border">52</td></tr>
-                                    <tr><td class="p-3 border">XXL</td><td class="p-3 border">76</td><td class="p-3 border">54</td></tr>
-                                </tbody>
-                            </table>
+                <!-- Action Buttons -->
+                <div class="flex flex-col gap-4 mt-auto">
+                    <!-- Qty & Add to Cart -->
+                    <div class="flex gap-4 h-14">
+                        <div class="flex items-center border border-gray-300 rounded-xl w-32 px-2">
+                            <button onclick="updateQty(-1)"
+                                class="w-10 h-full text-gray-500 hover:text-black text-xl">-</button>
+                            <input id="qty-input" type="number" value="1" min="1" onchange="validateQty(this)"
+                                class="flex-1 text-center font-bold text-lg border-none focus:outline-none focus:ring-0">
+                            <button onclick="updateQty(1)"
+                                class="w-10 h-full text-gray-500 hover:text-black text-xl">+</button>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2">*Toleransi ukuran 1-2 cm karena proses jahit.</p>
+                        <button onclick="addToCart(false)" id="btn-cart"
+                            class="flex-1 bg-white border-2 border-black text-black font-bold rounded-xl hover:bg-gray-50 transition uppercase tracking-wide">
+                            Masukkan Keranjang
+                        </button>
                     </div>
 
-                    <p class="font-bold text-gray-900 pt-4">Happy Shopping!</p>
+                    <!-- Buy Now -->
+                    <button onclick="addToCart(true)" id="btn-buy-now"
+                        class="w-full h-14 bg-black text-white font-bold rounded-xl hover:bg-gray-900 transition shadow-xl shadow-gray-200 uppercase tracking-wide text-lg flex items-center justify-center gap-2">
+                        <span>Beli Sekarang</span> <i class="fas fa-arrow-right"></i>
+                    </button>
+
+                    <p class="text-center text-xs text-gray-400 mt-2 flex items-center justify-center gap-2">
+                        <i class="fas fa-shield-alt"></i> Jaminan 100% Aman & Original
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- Specifications Section (Shopee Design Style) -->
+            <div class="lg:col-span-2 mt-16">
+                <div class="bg-gray-50 rounded-xl p-8 border border-gray-100">
+                    <h3 class="text-lg font-bold text-gray-900 mb-6">Spesifikasi Produk</h3>
+
+                    <div class="grid grid-cols-1 gap-y-4">
+                        <!-- Category & Breadcrumbs -->
+                        <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+                            <span class="text-gray-500 text-sm">Jalur</span>
+                            <div class="col-span-2 md:col-span-5 text-sm font-medium text-gray-900" id="breadcrumbs">
+                                <i class="fas fa-circle-notch fa-spin text-gray-400"></i>
+                            </div>
+                        </div>
+
+                        <!-- Brand -->
+                        <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+                            <span class="text-gray-500 text-sm">Merek</span>
+                            <div class="col-span-2 md:col-span-5 text-sm font-medium text-gray-900">Dazeon Store</div>
+                        </div>
+
+                        <!-- Material -->
+                        <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+                            <span class="text-gray-500 text-sm">Bahan</span>
+                            <div class="col-span-2 md:col-span-5 text-sm font-medium text-gray-900" id="spec-material">-
+                            </div>
+                        </div>
+
+                        <!-- Fit -->
+                        <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+                            <span class="text-gray-500 text-sm">Fit Type</span>
+                            <div class="col-span-2 md:col-span-5 text-sm font-medium text-gray-900" id="spec-fit">-
+                            </div>
+                        </div>
+
+                        <!-- Origin -->
+                        <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+                            <span class="text-gray-500 text-sm">Negara Asal</span>
+                            <div class="col-span-2 md:col-span-5 text-sm font-medium text-gray-900">Indonesia</div>
+                        </div>
+
+                        <!-- Stock -->
+                        <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+                            <span class="text-gray-500 text-sm">Stok Tersedia</span>
+                            <div class="col-span-2 md:col-span-5 text-sm font-medium text-gray-900" id="spec-stock">0
+                            </div>
+                        </div>
+
+                        <!-- Ships From -->
+                        <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
+                            <span class="text-gray-500 text-sm">Dikirim Dari</span>
+                            <div class="col-span-2 md:col-span-5 text-sm font-medium text-gray-900">Kab Mojokerto
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description Section (Full Width below) -->
+            <div class="lg:col-span-2 mt-8 pt-8 border-t border-gray-100">
+                <h3 class="text-xl font-bold mb-6">Deskripsi Produk</h3>
+                <div class="prose max-w-none text-gray-600 leading-relaxed font-light">
+                    <p class="mb-4 text-gray-800 whitespace-pre-line" id="p-desc">
+
                 </div>
             </div>
 
         </div>
+
+        <!-- REVIEW SECTION -->
+        <div class="mt-12 pt-10 border-t border-gray-100">
+            <h3 class="text-2xl font-bold text-gray-900 mb-8">Ulasan Pembeli</h3>
+
+            <!-- Reviews Summary & List -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+
+                <!-- Left: Summary & Form Trigger -->
+                <div class="md:col-span-1 space-y-6">
+                    <div class="bg-gray-50 p-6 rounded-2xl text-center border border-gray-100">
+                        <h4 class="text-5xl font-black text-gray-900 mb-2" id="avg-rating">0.0</h4>
+                        <div class="flex justify-center text-yellow-400 text-lg mb-2" id="avg-stars">
+                            <i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i
+                                class="far fa-star"></i><i class="far fa-star"></i>
+                        </div>
+                        <p class="text-sm text-gray-500 font-medium" id="total-reviews">0 Ulasan</p>
+                    </div>
+
+                    <!-- Write Review Button (Visible if Logged In) -->
+                    <div id="write-review-container" class="hidden">
+                        <button onclick="toggleReviewForm()"
+                            class="w-full py-3 bg-white border-2 border-gray-900 text-gray-900 font-bold rounded-xl hover:bg-gray-900 hover:text-white transition shadow-sm">
+                            <i class="fas fa-pen mr-2"></i> Tulis Ulasan
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right: Review List -->
+                <div class="md:col-span-2">
+
+                    <!-- Form Input Review (Hidden by default) -->
+                    <div id="review-form"
+                        class="hidden mb-8 bg-white border border-gray-200 p-6 rounded-2xl shadow-sm relative">
+                        <button onclick="toggleReviewForm()"
+                            class="absolute top-4 right-4 text-gray-400 hover:text-red-500">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <h4 class="font-bold text-lg mb-4">Bagikan Pengalamanmu</h4>
+                        <form onsubmit="submitReview(event)">
+                            <div class="mb-4">
+                                <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Rating</label>
+                                <div class="flex gap-2 text-2xl text-gray-300">
+                                    <i class="fas fa-star cursor-pointer hover:text-yellow-400 transition"
+                                        onclick="setRating(1)"></i>
+                                    <i class="fas fa-star cursor-pointer hover:text-yellow-400 transition"
+                                        onclick="setRating(2)"></i>
+                                    <i class="fas fa-star cursor-pointer hover:text-yellow-400 transition"
+                                        onclick="setRating(3)"></i>
+                                    <i class="fas fa-star cursor-pointer hover:text-yellow-400 transition"
+                                        onclick="setRating(4)"></i>
+                                    <i class="fas fa-star cursor-pointer hover:text-yellow-400 transition"
+                                        onclick="setRating(5)"></i>
+                                </div>
+                                <input type="hidden" id="review-rating" value="0" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Ulasan Anda</label>
+                                <textarea id="review-comment" rows="3" required
+                                    class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-black focus:border-transparent outline-none"
+                                    placeholder="Kualitas bahan bagus, pengiriman cepat..."></textarea>
+                            </div>
+                            <button type="submit" id="btn-submit-review"
+                                class="bg-black text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-gray-800 transition">
+                                Kirim Ulasan
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- List Container -->
+                    <div id="reviews-list" class="space-y-6">
+                        <!-- Items Injected Here -->
+                        <div class="text-center py-10 text-gray-400">
+                            <i class="fas fa-circle-notch fa-spin mb-2"></i> Memuat ulasan...
+                        </div>
+                    </div>
+
+                    <!-- Pagination (Simple Load More if needed, or just scroll) -->
+                </div>
+            </div>
+        </div>
+
+        </div>
+
+        <!-- --- FITUR RELATED PRODUCTS --- -->
+        <div class="mt-16 border-t pt-10">
+            <h2 class="text-2xl font-bold mb-6">Produk Lainnya</h2>
+            <div id="related-products" class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <!-- Related products will use the same card style from main.js -->
+                <div class="col-span-full text-center py-10">
+                    <i class="fas fa-spinner fa-spin text-gray-300"></i> Memuat rekomendasi...
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <script>
-        const SUPABASE_URL = 'https://vatlrekidlsxtvxoaegn.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZhdGxyZWtpZGxzeHR2eG9hZWduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjEyODc3NTIsImV4cCI6MjA3Njg2Mzc1Mn0.4ZrBuQDO-dspKY72lquNuGn5BisUChJwBxtKPD0aKE0';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // --- LOGIC RELATED PRODUCTS ---
+        async function loadRelatedProducts(currentId) {
+            try {
+                // Ambil 4 produk acak yang bukan produk saat ini
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('*')
+                    .neq('id', currentId)
+                    .limit(4);
+
+                if (error) throw error;
+
+                const container = document.getElementById('related-products');
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500 col-span-full">Tidak ada produk terkait.</p>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                data.forEach(product => {
+                    // Logic Gambar (Sama seperti main.js)
+                    let imageUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"%3E%3Crect fill="%23f3f4f6" width="300" height="300"/%3E%3Ctext x="50%25" y="50%25" fill="%239ca3af" font-size="16" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
+                    if (product.image_url) {
+                        if (product.image_url.startsWith('http')) {
+                            imageUrl = product.image_url;
+                        } else {
+                            const { data: imgData } = supabase.storage.from('product-images').getPublicUrl(product.image_url);
+                            imageUrl = imgData.publicUrl;
+                        }
+                    }
+
+                    const html = `
+                    <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition overflow-hidden border border-gray-100 group">
+                        <a href="product-detail.html?id=${product.id}" class="block overflow-hidden relative aspect-[4/5]">
+                            <img src="${imageUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        </a>
+                        <div class="p-4">
+                            <h3 class="text-sm font-bold text-gray-900 line-clamp-1 mb-1">${product.name}</h3>
+                            <p class="text-sm font-semibold text-gray-900">Rp ${parseInt(product.price).toLocaleString('id-ID')}</p>
+                        </div>
+                    </div>`;
+                    container.insertAdjacentHTML('beforeend', html);
+                });
+
+            } catch (err) {
+                console.error("Related product error:", err);
+                document.getElementById('related-products').innerHTML = '';
+            }
+        }
+    </script>
+
+    <script>
+        // --- CONFIG & SUPABASE ---
+        // Kita menggunakan window.db yang murni dari config.js
+        // Pastikan config.js sudah diload di <head>
+        // const supabase = ... (REMOVED due to SyntaxError: identifier already declared)
+
+        // Cek koneksi
+        if (!window.db) console.log("Menunggu config.js...");
 
         let currentProduct = null;
         let selectedSize = null;
         let currentUserId = null;
 
-        // INIT
+        // --- INIT ---
         async function init() {
             const params = new URLSearchParams(window.location.search);
             const id = params.get('id');
 
             if (!id) {
-                alert("Produk tidak ditemukan.");
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Produk tidak ditemukan/ID invalid.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
                 window.location.href = 'index.html';
                 return;
             }
@@ -172,86 +448,217 @@
             try {
                 // Fetch Produk
                 const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
-                if (error || !data) throw new Error("Gagal mengambil data");
+
+                if (error) throw error;
+                if (!data) throw new Error("Data produk kosong.");
 
                 currentProduct = data;
                 renderUI(data);
+                renderUI(data);
                 checkUser();
+                loadReviews(data.id); // Load Reviews
 
             } catch (err) {
-                console.error(err);
-                document.getElementById('loading-ui').innerHTML = "<p class='text-red-500'>Gagal memuat produk.</p>";
+                console.error("Error init product:", err);
+                document.getElementById('loading-ui').innerHTML = `
+                    <div class='bg-red-50 p-6 rounded-lg inline-block'>
+                        <p class='text-red-600 font-bold mb-2'>Gagal memuat produk</p>
+                        <p class='text-sm text-red-500'>${err.message}</p>
+                        <button onclick="location.reload()" class="mt-4 underline text-red-700">Coba Lagi</button>
+                    </div>`;
             }
         }
 
-        // RENDER UI
+        // --- RENDER UI ---
         function renderUI(p) {
             document.getElementById('loading-ui').classList.add('hidden');
             document.getElementById('product-content').classList.remove('hidden');
 
+            // Update UI Standard
             document.getElementById('p-name').innerText = p.name;
             document.getElementById('p-price').innerText = `Rp${p.price.toLocaleString('id-ID')}`;
-            document.getElementById('p-stock').innerText = p.stock;
-            document.getElementById('p-desc').innerText = p.description || "-";
+            document.getElementById('p-stock').innerText = p.stock; // Update Top Stock Value
+
+            // LOGIC BADGE STOK
+            const badge = document.getElementById('stock-badge');
+            if (p.stock > 0) {
+                badge.innerText = "Ready Stock";
+                badge.className = "text-sm text-green-600 font-bold bg-green-50 px-3 py-1 rounded-full mb-1";
+            } else {
+                badge.innerText = "Stok Habis";
+                badge.className = "text-sm text-red-600 font-bold bg-red-50 px-3 py-1 rounded-full mb-1";
+            }
+
+            document.getElementById('p-desc').innerText = p.description || 'Tidak ada deskripsi.';
+            document.getElementById('spec-stock').innerText = p.stock;
+            document.getElementById('spec-material').innerText = p.material || 'Cotton Combed 24s';
+
+            // Update Breadcrumbs
+            const breadcrumbsEl = document.getElementById('breadcrumbs');
+            if (breadcrumbsEl) {
+                breadcrumbsEl.innerHTML = `
+                        <a href="index.html" class="text-gray-500 hover:text-black transition">Beranda</a> 
+                        <span class="mx-2 text-gray-300">/</span> 
+                        <a href="index.html?search=${p.category || ''}#produk" class="text-gray-500 hover:text-black transition">${p.category || 'Atasan'}</a> 
+                        <span class="mx-2 text-gray-300">/</span> 
+                        <span class="text-gray-900 font-bold">${p.name}</span>
+                    `;
+            }
+
+            // Dynamic specs
+            document.getElementById('p-material').innerText = p.material || '-';
+            // Also update the new bottom specs section
+            // document.getElementById('spec-material').innerText = p.material || '-'; // This line is now redundant due to the update above
+
+            document.getElementById('p-fit').innerText = p.fit || '-';
+            document.getElementById('spec-fit').innerText = p.fit || '-';
+
+            // document.getElementById('spec-stock').innerText = p.stock + " buah"; // This line is now redundant due to the update above
+
+            // Handle Description (preserve newlines)
+            const descElem = document.getElementById('p-desc');
+            descElem.innerText = p.description || "Tidak ada deskripsi.";
 
             // Image
-            const imgUrl = p.image_url ? 
-                supabase.storage.from('product-images').getPublicUrl(p.image_url).data.publicUrl : 
-                'https://via.placeholder.com/400';
+            // Gunakan helper yang konsisten jika ada, atau manual:
+            let imgUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 600"%3E%3Crect fill="%23f3f4f6" width="500" height="600"/%3E%3Ctext x="50%25" y="50%25" fill="%239ca3af" font-size="16" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
+            if (p.image_url) {
+                if (p.image_url.startsWith('http')) imgUrl = p.image_url;
+                else {
+                    const { data } = supabase.storage.from('product-images').getPublicUrl(p.image_url);
+                    imgUrl = data.publicUrl;
+                }
+            }
             document.getElementById('p-img').src = imgUrl;
 
             // Stok Logic
-            const qtyInput = document.getElementById('qty-input');
             const btnCart = document.getElementById('btn-cart');
-            
+            const btnBuy = document.getElementById('btn-buy-now');
+
             if (p.stock < 1) {
                 btnCart.disabled = true;
                 btnCart.innerText = "Stok Habis";
-                btnCart.classList.add('opacity-50', 'cursor-not-allowed');
-                qtyInput.value = 0;
+                btnCart.classList.add('opacity-50', 'cursor-not-allowed', 'bg-gray-200', 'border-gray-200');
+                btnCart.classList.remove('hover:bg-gray-50', 'border-black');
+
+                btnBuy.style.display = 'none'; // Sembunyikan tombol beli jika habis
+
+                document.getElementById('qty-input').value = 0;
+            } else {
+                // Set Max Input
+                document.getElementById('qty-input').max = p.stock;
             }
         }
 
-        // INTERACTION
+        // --- INTERACTION ---
         window.selectSize = (btn, size) => {
-            document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
+            // Reset all
+            document.querySelectorAll('.size-btn').forEach(b => {
+                b.classList.remove('bg-black', 'text-white', 'border-black');
+                // Ensure default state
+                b.classList.add('hover:border-black');
+            });
+
+            // Set Active
+            btn.classList.remove('hover:border-black');
+            btn.classList.add('bg-black', 'text-white', 'border-black');
+
             selectedSize = size;
             document.getElementById('size-alert').classList.add('hidden');
         };
 
         window.updateQty = (change) => {
+            if (!currentProduct || currentProduct.stock < 1) return;
             const input = document.getElementById('qty-input');
-            let val = parseInt(input.value) + change;
-            if (val >= 1 && val <= currentProduct.stock) input.value = val;
+            let val = parseInt(input.value) || 1;
+            val += change;
+            if (val < 1) val = 1;
+            if (val > currentProduct.stock) val = currentProduct.stock;
+            input.value = val;
         };
 
-        window.addToCart = async () => {
-            if (!currentUserId) return alert("Silakan login dulu.");
-            if (!selectedSize) {
-                document.getElementById('size-alert').classList.remove('hidden');
+        window.validateQty = (input) => {
+            if (!currentProduct) return;
+            let val = parseInt(input.value);
+            if (isNaN(val) || val < 1) val = 1;
+            if (val > currentProduct.stock) val = currentProduct.stock;
+            input.value = val;
+        };
+
+        // --- ADD TO CART / BUY NOW ---
+        window.addToCart = async (isBuyNow = false) => {
+
+            // 1. Cek Login
+            if (!currentUserId) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Login Diperlukan',
+                    text: 'Anda harus login untuk memproses pesanan.',
+                    showCancelButton: true,
+                    confirmButtonText: 'Login Sekarang',
+                    confirmButtonColor: '#111827'
+                }).then((result) => {
+                    if (result.isConfirmed) window.location.href = 'index.html';
+                });
                 return;
             }
 
-            const btn = document.getElementById('btn-cart');
+            // 2. Cek Ukuran
+            if (!selectedSize) {
+                document.getElementById('size-alert').classList.remove('hidden');
+                document.getElementById('size-options').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Pilih Ukuran',
+                    text: 'Mohon pilih ukuran terlebih dahulu.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
+                return;
+            }
+
+            // 3. Validasi Qty Akhir
+            let qty = parseInt(document.getElementById('qty-input').value);
+            if (isNaN(qty) || qty < 1) qty = 1;
+            if (qty > currentProduct.stock) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Stok Tidak Cukup',
+                    text: `Maaf, stok hanya tersedia ${currentProduct.stock} pcs.`,
+                    confirmButtonColor: '#111827'
+                });
+                document.getElementById('qty-input').value = currentProduct.stock;
+                return;
+            }
+
+            // 4. UI Feedback
+            const btn = isBuyNow ? document.getElementById('btn-buy-now') : document.getElementById('btn-cart');
             const originalText = btn.innerHTML;
-            btn.innerText = "Memproses...";
+
+            btn.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> Memproses...`;
             btn.disabled = true;
 
             try {
-                const qty = parseInt(document.getElementById('qty-input').value);
-                
-                // Cek Item di Cart
-                const { data: exist } = await supabase.from('cart_items')
-                    .select('*')
+                // Cek existence
+                const { data: exist, error: fetchError } = await supabase
+                    .from('cart_items')
+                    .select('id, quantity')
                     .eq('user_id', currentUserId)
                     .eq('product_id', currentProduct.id)
                     .eq('size', selectedSize)
                     .maybeSingle();
 
+                if (fetchError) throw fetchError;
+
                 if (exist) {
-                    await supabase.from('cart_items').update({ quantity: exist.quantity + qty }).eq('id', exist.id);
+                    // Update
+                    await supabase.from('cart_items')
+                        .update({ quantity: exist.quantity + qty })
+                        .eq('id', exist.id);
                 } else {
+                    // Insert
                     await supabase.from('cart_items').insert([{
                         user_id: currentUserId,
                         product_id: currentProduct.id,
@@ -260,11 +667,40 @@
                     }]);
                 }
 
-                alert("Berhasil masuk keranjang!");
-                window.location.href = 'cart.html';
+                if (isBuyNow) {
+                    window.location.href = 'checkout.html';
+                } else {
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class="fas fa-check"></i> Masuk Keranjang`;
+                    btn.classList.remove('bg-white', 'text-black');
+                    btn.classList.add('bg-black', 'text-white');
+
+                    // SweetAlert Success
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: 'Produk masuk ke keranjang.',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+
+                    checkUser();
+
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.classList.add('bg-white', 'text-black');
+                        btn.classList.remove('bg-black', 'text-white');
+                    }, 2000);
+                }
 
             } catch (err) {
-                alert("Gagal: " + err.message);
+                console.error("Cart Error:", err);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Terjadi Kesalahan',
+                    text: err.message,
+                    confirmButtonColor: '#d33'
+                });
                 btn.disabled = false;
                 btn.innerHTML = originalText;
             }
@@ -274,15 +710,247 @@
             const { data } = await supabase.auth.getSession();
             if (data.session) {
                 currentUserId = data.session.user.id;
+                // Show Write Review Button
+                document.getElementById('write-review-container').classList.remove('hidden');
+
+                // Update Cart Count
                 const { data: cart } = await supabase.from('cart_items').select('quantity').eq('user_id', currentUserId);
-                if(cart) {
+                if (cart) {
                     const total = cart.reduce((a, b) => a + b.quantity, 0);
-                    document.getElementById('cart-count').innerText = total;
+                    const countElem = document.getElementById('cart-count');
+                    countElem.innerText = total;
+                    if (total > 0) countElem.classList.remove('scale-0');
                 }
+            } else {
+                currentUserId = null;
+                document.getElementById('write-review-container').classList.add('hidden');
             }
         }
 
+        // --- REVIEWS LOGIC ---
+
+        async function loadReviews(productId) {
+            const container = document.getElementById('reviews-list');
+            try {
+                // Fetch reviews
+                const { data: reviews, error } = await supabase
+                    .from('reviews')
+                    .select('*')
+                    .eq('product_id', productId)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!reviews || reviews.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                            <i class="far fa-comment-dots text-4xl text-gray-300 mb-3 block"></i>
+                            <p class="text-gray-500 font-medium">Belum ada ulasan.</p>
+                            <p class="text-sm text-gray-400">Jadilah yang pertama mereview produk ini!</p>
+                        </div>`;
+                    updateRatingStats([]);
+                    return;
+                }
+
+                updateRatingStats(reviews);
+
+                // Fetch Profile Names for these reviews
+                // Note: user_id is in reviews. We need to map it to names in 'profiles' table.
+                const userIds = [...new Set(reviews.map(r => r.user_id))];
+                const { data: profiles } = await supabase
+                    .from('profiles')
+                    .select('id, name, avatar_url')
+                    .in('id', userIds);
+
+                const profileMap = {};
+                if (profiles) {
+                    profiles.forEach(p => profileMap[p.id] = p);
+                }
+
+                // Render List
+                container.innerHTML = reviews.map(r => {
+                    const profile = profileMap[r.user_id] || { name: 'Pengguna' };
+                    const name = profile.name || 'Pengguna';
+                    const date = new Date(r.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+                    const isOwnReview = currentUserId === r.user_id;
+
+                    // Avatar Logic
+                    let avatarHtml = '';
+                    if (profile.avatar_url) {
+                        let avUrl = profile.avatar_url;
+                        if (!avUrl.startsWith('http')) {
+                            const { data: imgData } = supabase.storage.from('product-images').getPublicUrl(avUrl);
+                            avUrl = imgData.publicUrl;
+                        }
+                        avatarHtml = `<img src="${avUrl}" class="w-10 h-10 rounded-full object-cover border border-gray-200">`;
+                    } else {
+                        const initial = name.charAt(0).toUpperCase();
+                        avatarHtml = `
+                        <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-600">
+                            ${initial}
+                        </div>`;
+                    }
+
+                    // Generate Stars HTML
+                    let starsHtml = '';
+                    for (let i = 1; i <= 5; i++) {
+                        if (i <= r.rating) starsHtml += '<i class="fas fa-star text-yellow-400 text-xs"></i>';
+                        else starsHtml += '<i class="far fa-star text-gray-300 text-xs"></i>';
+                    }
+
+                    return `
+                    <div class="flex gap-4 p-4 rounded-xl hover:bg-gray-50 transition border border-transparent hover:border-gray-100 group">
+                        <div class="flex-shrink-0">
+                            ${avatarHtml}
+                        </div>
+                        <div class="flex-grow">
+                            <div class="flex items-center justify-between mb-1">
+                                <h5 class="font-bold text-gray-900 text-sm">${name}</h5>
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xs text-gray-400">${date}</span>
+                                    ${isOwnReview ? `
+                                        <button onclick="deleteReview('${r.id}')" class="text-gray-300 hover:text-red-500 transition" title="Hapus Ulasan">
+                                            <i class="fas fa-trash-alt text-xs"></i>
+                                        </button>` : ''}
+                                </div>
+                            </div>
+                            <div class="mb-2">${starsHtml}</div>
+                            <p class="text-gray-600 text-sm leading-relaxed">${r.comment || ''}</p>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                console.error("Load Reviews Error:", err);
+                container.innerHTML = '<p class="text-red-500 text-sm">Gagal memuat ulasan.</p>';
+            }
+        }
+
+        async function deleteReview(reviewId) {
+            const result = await Swal.fire({
+                title: 'Hapus Ulasan?',
+                text: "Ulasan yang dihapus tidak dapat dikembalikan.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, Hapus',
+                cancelButtonText: 'Batal'
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                const { error } = await supabase.from('reviews').delete().eq('id', reviewId);
+                if (error) throw error;
+
+                Swal.fire('Terhapus', 'Ulasan berhasil dihapus.', 'success');
+                loadReviews(currentProduct.id); // Reload list
+
+            } catch (err) {
+                console.error("Delete Review Error:", err);
+                Swal.fire('Gagal', 'Gagal menghapus ulasan.', 'error');
+            }
+        }
+
+
+        function updateRatingStats(reviews) {
+            const count = reviews.length;
+            document.getElementById('total-reviews').innerText = `${count} Ulasan`;
+
+            if (count === 0) {
+                document.getElementById('avg-rating').innerText = '0.0';
+                document.getElementById('avg-stars').innerHTML = '<i class="far fa-star"></i>'.repeat(5);
+                return;
+            }
+
+            const sum = reviews.reduce((a, b) => a + b.rating, 0);
+            const avg = (sum / count).toFixed(1);
+
+            document.getElementById('avg-rating').innerText = avg;
+
+            // Render Review Stars Summary
+            let starsHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= Math.round(avg)) starsHtml += '<i class="fas fa-star"></i>';
+                else starsHtml += '<i class="far fa-star text-gray-300"></i>';
+            }
+            document.getElementById('avg-stars').innerHTML = starsHtml;
+        }
+
+        // --- FORM LOGIC ---
+        let currentRating = 0;
+
+        function toggleReviewForm() {
+            const form = document.getElementById('review-form');
+            form.classList.toggle('hidden');
+        }
+
+        window.setRating = (val) => {
+            currentRating = val;
+            document.getElementById('review-rating').value = val;
+            // Visual Update
+            const stars = document.querySelectorAll('#review-form .fa-star');
+            stars.forEach((s, idx) => {
+                if (idx < val) s.classList.add('text-yellow-400');
+                else s.classList.remove('text-yellow-400');
+            });
+        }
+
+        window.submitReview = async (e) => {
+            e.preventDefault();
+
+            if (!currentUserId) {
+                Swal.fire('Error', 'Silakan login dulu.', 'error');
+                return;
+            }
+
+            if (currentRating === 0) {
+                Swal.fire('Rating Kosong', 'Silakan berikan bintang 1-5.', 'warning');
+                return;
+            }
+
+            const comment = document.getElementById('review-comment').value;
+            const btn = document.getElementById('btn-submit-review');
+            const originalText = btn.innerText;
+
+            btn.disabled = true;
+            btn.innerText = 'Mengirim...';
+
+            try {
+                const { error } = await supabase.from('reviews').insert([{
+                    product_id: currentProduct.id,
+                    user_id: currentUserId,
+                    rating: currentRating,
+                    comment: comment
+                }]);
+
+                if (error) throw error;
+
+                // Success
+                Swal.fire('Terima Kasih', 'Ulasan Anda berhasil dikirim!', 'success');
+                toggleReviewForm();
+
+                // Reset Form
+                document.getElementById('review-comment').value = '';
+                setRating(0);
+
+                // Reload Reviews
+                loadReviews(currentProduct.id);
+
+            } catch (err) {
+                console.error("Submit Review Error:", err);
+                Swal.fire('Gagal', err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
+        }
+
+        // Start
         init();
     </script>
 </body>
+
 </html>

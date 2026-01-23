@@ -47,7 +47,7 @@ async function loadProducts() {
 
         // Jika berhasil, isi tabel
         console.log('Produk diterima:', products);
-        
+
         products.forEach((product, index) => {
             const productRowHTML = `
                 <tr class="hover:bg-gray-50 transition-colors duration-150">
@@ -56,7 +56,7 @@ async function loadProducts() {
                         <img src="${getImageUrl(product.image_url)}" 
                              alt="${product.name}" 
                              class="w-12 h-12 rounded-md object-cover"
-                             onerror="this.src='https://via.placeholder.com/60x60/f0f0f0/888888.png?text=Error';">
+                             onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 60 60%22%3E%3Crect fill=%22%23f0f0f0%22 width=%2260%22 height=%2260%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 fill=%22%23888%22 font-size=%228%22 text-anchor=%22middle%22 dy=%22.3em%22%3EError%3C/text%3E%3C/svg%3E';">
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${product.name}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">Rp${product.price.toLocaleString('id-ID')}</td>
@@ -75,7 +75,7 @@ async function loadProducts() {
             `;
             productTableBody.insertAdjacentHTML('beforeend', productRowHTML);
         });
-        
+
         // Update info pagination
         if (productCountInfo) productCountInfo.innerText = `Menampilkan ${products.length} dari ${count} produk`;
 
@@ -88,9 +88,18 @@ async function loadProducts() {
 
 // 4. FUNGSI AKSI: Hapus Produk
 async function deleteProduct(productId, productName, imageUrl) {
-    if (!confirm(`Anda yakin ingin menghapus produk "${productName}" (ID: ${productId})?`)) {
-        return;
-    }
+    const result = await Swal.fire({
+        title: 'Hapus Produk?',
+        text: `Anda yakin ingin menghapus produk "${productName}" (ID: ${productId})?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal'
+    });
+
+    if (!result.isConfirmed) return;
 
     console.log(`Menghapus produk ID: ${productId}...`);
     try {
@@ -99,7 +108,7 @@ async function deleteProduct(productId, productName, imageUrl) {
             const { error: storageError } = await supabase.storage
                 .from('product-images') // 👈 GANTI NAMA BUCKET JIKA BEDA
                 .remove([imageUrl]); // Hapus file berdasarkan namanya
-            
+
             if (storageError && storageError.message !== 'The resource was not found') {
                 // Tampilkan error jika HAPUS GAMBAR gagal (tapi lanjutkan proses)
                 console.warn('Gagal menghapus gambar di storage:', storageError.message);
@@ -117,18 +126,18 @@ async function deleteProduct(productId, productName, imageUrl) {
         if (dbError) throw dbError;
 
         // Jika berhasil
-        alert('Produk berhasil dihapus!');
+        Swal.fire('Berhasil!', 'Produk berhasil dihapus!', 'success');
         loadProducts(); // Muat ulang tabel
 
     } catch (error) {
         console.error('Gagal menghapus produk:', error.message);
-        alert(`Gagal menghapus produk: ${error.message}`);
+        Swal.fire('Gagal!', `Gagal menghapus produk: ${error.message}`, 'error');
     }
 }
 
 // 5. Fungsi Bantuan untuk URL Gambar (Sama seperti di main.js)
 function getImageUrl(fileName) {
-    if (!fileName) return 'https://via.placeholder.com/60x60/f0f0f0/888888.png?text=No+Img';
+    if (!fileName) return 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60"%3E%3Crect fill="%23f0f0f0" width="60" height="60"/%3E%3Ctext x="50%25" y="50%25" fill="%23888" font-size="8" text-anchor="middle" dy=".3em"%3ENo Img%3C/text%3E%3C/svg%3E';
     const { data } = supabase.storage.from('product-images').getPublicUrl(fileName); // 👈 GANTI NAMA BUCKET
     return data.publicUrl;
 }
@@ -136,7 +145,7 @@ function getImageUrl(fileName) {
 // 6. Fungsi Cek Login (PENTING: Amankan Halaman Admin)
 async function checkAdminLogin() {
     const { data: { session } } = await supabase.auth.getSession();
-    
+
     if (!session) {
         // Jika tidak ada yang login, tendang ke login.html
         alert('Anda harus login untuk mengakses halaman ini.');
@@ -150,14 +159,14 @@ async function checkAdminLogin() {
         .select('role')
         .eq('id', session.user.id)
         .single();
-    
+
     if (error || !profile) {
         // Jika profil tidak ada, tendang
         alert('Gagal mengambil data profil.');
         window.location.href = '../login.html';
         return;
     }
-    
+
     // Cek jika perannya BUKAN admin atau karyawan
     if (profile.role !== 'admin' && profile.role !== 'karyawan') {
         // Jika dia pembeli, tendang ke halaman utama
@@ -165,7 +174,7 @@ async function checkAdminLogin() {
         window.location.href = '../index.html';
         return;
     }
-    
+
     // Jika lolos, tampilkan nama & muat produk
     document.getElementById('user-name').innerText = profile.role; // Tampilkan 'admin' or 'karyawan'
     loadProducts(); // Muat produk HANYA JIKA login berhasil

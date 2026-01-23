@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Role Access</title>
+    <script src="https://cd.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <!-- Gunakan config yang sama -->
+    <script src="config.js"></script>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 2rem;
+            background: #f3f4f6;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            max-width: 500px;
+            margin: 0 auto;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        button {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+
+        .btn-admin {
+            background: #4f46e5;
+            color: white;
+            border: none;
+        }
+
+        .btn-bos {
+            background: #059669;
+            color: white;
+            border: none;
+        }
+
+        .btn-user {
+            background: #9ca3af;
+            color: white;
+            border: none;
+        }
+
+        .btn-logout {
+            background: #dc2626;
+            color: white;
+            border: none;
+            margin-top: 2rem;
+            width: 100%;
+        }
+
+        pre {
+            background: #1f2937;
+            color: #10b981;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <h1 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1rem;">Setup Role Access</h1>
+        <p class="mb-4 text-gray-600">Gunakan halaman ini untuk mengubah role akun Anda agar bisa mengakses Dashboard
+            Admin atau Boss.</p>
+
+        <div id="status" class="mb-4 p-3 bg-yellow-100 text-yellow-800 rounded hidden"></div>
+
+        <div id="auth-section" class="hidden">
+            <p>Login sebagai: <strong id="user-email">...</strong></p>
+            <p>Role saat ini: <strong id="user-role" class="text-indigo-600">...</strong></p>
+
+            <hr class="my-6">
+
+            <h3 class="font-bold mb-2">Pilih Role:</h3>
+            <div class="flex flex-col gap-2">
+                <button onclick="updateRole('admin')" class="btn-admin">Set jadi ADMIN</button>
+                <button onclick="updateRole('bos')" class="btn-bos">Set jadi BOSS</button>
+                <button onclick="updateRole('pembeli')" class="btn-user">Set jadi PEMBELI (Reset)</button>
+            </div>
+
+            <button onclick="logout()" class="btn-logout">Logout</button>
+        </div>
+
+        <div id="login-section" class="hidden text-center">
+            <p class="mb-4">Anda belum login. Silakan login di halaman utama terlebih dahulu, lalu refresh halaman ini.
+            </p>
+            <a href="index.html" class="text-blue-600 underline">Ke Halaman Utama</a>
+        </div>
+    </div>
+
+    <script>
+        const statusEl = document.getElementById('status');
+
+        // Wait for config.js to load supabase
+        setTimeout(async () => {
+            if (!window.db) {
+                showStatus('Supabase belum connect. Cek config.js', 'error');
+                return;
+            }
+
+            const { data: { session } } = await window.db.auth.getSession();
+
+            if (session) {
+                document.getElementById('auth-section').classList.remove('hidden');
+                document.getElementById('user-email').innerText = session.user.email;
+                checkCurrentRole(session.user.id);
+            } else {
+                document.getElementById('login-section').classList.remove('hidden');
+            }
+        }, 500);
+
+        async function checkCurrentRole(userId) {
+            const { data, error } = await window.db
+                .from('profiles')
+                .select('role')
+                .eq('id', userId)
+                .single();
+
+            if (data) {
+                document.getElementById('user-role').innerText = data.role;
+            } else {
+                document.getElementById('user-role').innerText = "Tidak ditemukan (Error)";
+                console.error(error);
+            }
+        }
+
+        async function updateRole(newRole) {
+            const { data: { user } } = await window.db.auth.getUser();
+            if (!user) return;
+
+            showStatus(`Mengubah role menjadi ${newRole}...`, 'info');
+
+            const { data, error } = await window.db
+                .from('profiles')
+                .update({ role: newRole })
+                .eq('id', user.id)
+                .select();
+
+            if (error) {
+                console.error(error);
+                showStatus(`Gagal mengubah role: ${error.message} (Kemungkinan diblokir RLS)`, 'error');
+                alert("Gagal! RLS Policy mungkin mencegah update role. Silakan ubah manual di Dashboard Supabase.");
+            } else {
+                showStatus(`Berhasil! Role sekarang: ${newRole}`, 'success');
+                document.getElementById('user-role').innerText = newRole;
+                alert(`Sukses! Anda sekarang adalah ${newRole.toUpperCase()}. Silakan coba akses dashboard.`);
+            }
+        }
+
+        async function logout() {
+            await window.db.auth.signOut();
+            window.location.reload();
+        }
+
+        function showStatus(msg, type) {
+            statusEl.innerText = msg;
+            statusEl.classList.remove('hidden', 'bg-red-100', 'text-red-800', 'bg-green-100', 'text-green-800', 'bg-yellow-100', 'text-yellow-800');
+
+            if (type === 'error') statusEl.classList.add('bg-red-100', 'text-red-800');
+            else if (type === 'success') statusEl.classList.add('bg-green-100', 'text-green-800');
+            else statusEl.classList.add('bg-yellow-100', 'text-yellow-800');
+
+            statusEl.classList.remove('hidden');
+        }
+    </script>
+</body>
+
+</html>

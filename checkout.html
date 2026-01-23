@@ -1,36 +1,40 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout - Dazeon Store</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
     <script>
-      tailwind.config = { 
-        theme: { 
-            extend: { 
-                fontFamily: { sans: ['Poppins', 'sans-serif'] },
-                colors: { brand: '#1a1a1a' }
-            } 
-        } 
-      }
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: { brand: '#1a1a1a' }
+                }
+            }
+        }
     </script>
     <style>
         /* Custom Radio Button Styling */
-        .courier-radio:checked + div {
+        .courier-radio:checked+div {
             border-color: #1a1a1a;
             background-color: #f9fafb;
             position: relative;
         }
-        .courier-radio:checked + div::after {
+
+        .courier-radio:checked+div::after {
             content: '\f00c';
             font-family: 'Font Awesome 6 Free';
             font-weight: 900;
@@ -41,6 +45,7 @@
         }
     </style>
 </head>
+
 <body class="bg-gray-50 font-sans">
 
     <header class="bg-white shadow-sm sticky top-0 z-40">
@@ -54,55 +59,69 @@
 
     <main class="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
         <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-8">Pengiriman & Pembayaran</h1>
-        
+
         <div id="message-area" class="hidden p-4 rounded-lg mb-6"></div>
 
         <form id="checkout-form">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                
+
                 <div class="lg:col-span-2 space-y-6">
-                    
+
                     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                         <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                            <span class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mr-3 text-sm">1</span>
+                            <span
+                                class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mr-3 text-sm">1</span>
                             Alamat Pengiriman
                         </h2>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Nama Penerima</label>
-                                <input type="text" id="name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all">
+                                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Nama
+                                    Penerima</label>
+                                <input type="text" id="name" required
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all">
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Nomor Telepon</label>
-                                <input type="tel" id="phone" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all">
+                                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Nomor
+                                    Telepon</label>
+                                <input type="tel" id="phone" required
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all">
                             </div>
                             <div class="md:col-span-2">
-                                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Alamat Lengkap</label>
-                                <textarea id="address" rows="2" required placeholder="Nama Jalan, No. Rumah, RT/RW" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all"></textarea>
+                                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Alamat
+                                    Lengkap</label>
+                                <textarea id="address" rows="2" required placeholder="Nama Jalan, No. Rumah, RT/RW"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all"></textarea>
                             </div>
-                             <div>
-                                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Kota / Kabupaten</label>
-                                <input type="text" id="city" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all">
+                            <div>
+                                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Kota /
+                                    Kabupaten</label>
+                                <input type="text" id="city" required
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all">
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Kode Pos</label>
-                                <input type="text" id="postal_code" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all">
+                                <input type="text" id="postal_code" required
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all">
                             </div>
                         </div>
                     </div>
 
                     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                         <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                            <span class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mr-3 text-sm">2</span>
+                            <span
+                                class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mr-3 text-sm">2</span>
                             Pilih Kurir Pengiriman
                         </h2>
-                        
+
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="courier-options">
-                            
+
                             <label class="cursor-pointer relative">
-                                <input type="radio" name="shipping" value="JNE" data-cost="15000" class="courier-radio sr-only" checked onchange="updateTotal()">
-                                <div class="border-2 border-gray-200 rounded-xl p-4 hover:border-gray-400 transition-all text-center h-full flex flex-col justify-center items-center">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/92/New_Logo_JNE.png" alt="JNE" class="h-8 mb-2 object-contain">
+                                <input type="radio" name="shipping" value="JNE" data-cost="15000"
+                                    class="courier-radio sr-only" checked onchange="updateTotal()">
+                                <div
+                                    class="border-2 border-gray-200 rounded-xl p-4 hover:border-gray-400 transition-all text-center h-full flex flex-col justify-center items-center">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/92/New_Logo_JNE.png"
+                                        alt="JNE" class="h-8 mb-2 object-contain">
                                     <p class="font-bold text-gray-800">Reguler</p>
                                     <p class="text-sm text-gray-500">2-3 Hari</p>
                                     <p class="text-brand font-bold mt-1">Rp15.000</p>
@@ -110,9 +129,12 @@
                             </label>
 
                             <label class="cursor-pointer relative">
-                                <input type="radio" name="shipping" value="JNT" data-cost="16000" class="courier-radio sr-only" onchange="updateTotal()">
-                                <div class="border-2 border-gray-200 rounded-xl p-4 hover:border-gray-400 transition-all text-center h-full flex flex-col justify-center items-center">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/3/35/Logo_J%26T_Red.png" alt="J&T" class="h-6 mb-4 object-contain">
+                                <input type="radio" name="shipping" value="JNT" data-cost="16000"
+                                    class="courier-radio sr-only" onchange="updateTotal()">
+                                <div
+                                    class="border-2 border-gray-200 rounded-xl p-4 hover:border-gray-400 transition-all text-center h-full flex flex-col justify-center items-center">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/3/35/Logo_J%26T_Red.png"
+                                        alt="J&T" class="h-6 mb-4 object-contain">
                                     <p class="font-bold text-gray-800">Express</p>
                                     <p class="text-sm text-gray-500">1-2 Hari</p>
                                     <p class="text-brand font-bold mt-1">Rp16.000</p>
@@ -120,9 +142,12 @@
                             </label>
 
                             <label class="cursor-pointer relative">
-                                <input type="radio" name="shipping" value="SICEPAT" data-cost="14000" class="courier-radio sr-only" onchange="updateTotal()">
-                                <div class="border-2 border-gray-200 rounded-xl p-4 hover:border-gray-400 transition-all text-center h-full flex flex-col justify-center items-center">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/9c/SiCepat_Express_logo.png" alt="SiCepat" class="h-6 mb-4 object-contain">
+                                <input type="radio" name="shipping" value="SICEPAT" data-cost="14000"
+                                    class="courier-radio sr-only" onchange="updateTotal()">
+                                <div
+                                    class="border-2 border-gray-200 rounded-xl p-4 hover:border-gray-400 transition-all text-center h-full flex flex-col justify-center items-center">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/9c/SiCepat_Express_logo.png"
+                                        alt="SiCepat" class="h-6 mb-4 object-contain">
                                     <p class="font-bold text-gray-800">SiUntung</p>
                                     <p class="text-sm text-gray-500">2-4 Hari</p>
                                     <p class="text-brand font-bold mt-1">Rp14.000</p>
@@ -134,24 +159,30 @@
 
                     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                         <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                            <span class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mr-3 text-sm">3</span>
+                            <span
+                                class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mr-3 text-sm">3</span>
                             Metode Pembayaran
                         </h2>
-                        
+
                         <div class="border rounded-lg overflow-hidden">
                             <label class="flex items-center p-4 bg-gray-50 border-b cursor-pointer">
-                                <input type="radio" name="payment" value="midtrans" checked class="w-5 h-5 text-brand focus:ring-brand">
+                                <input type="radio" name="payment" value="midtrans" checked
+                                    class="w-5 h-5 text-brand focus:ring-brand">
                                 <div class="ml-4 flex-1">
                                     <span class="block font-bold text-gray-800">Midtrans Payment Gateway</span>
-                                    <span class="text-xs text-gray-500">Gopay, ShopeePay, Dana, Transfer Bank, Kartu Kredit</span>
+                                    <span class="text-xs text-gray-500">Gopay, ShopeePay, Dana, Transfer Bank, Kartu
+                                        Kredit</span>
                                 </div>
                                 <div class="flex space-x-2">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Gopay_logo.svg/2560px-Gopay_logo.svg.png" class="h-4">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Bank_Central_Asia.svg/1200px-Bank_Central_Asia.svg.png" class="h-4">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Gopay_logo.svg/2560px-Gopay_logo.svg.png"
+                                        class="h-4">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Bank_Central_Asia.svg/1200px-Bank_Central_Asia.svg.png"
+                                        class="h-4">
                                 </div>
                             </label>
                             <label class="flex items-center p-4 hover:bg-gray-50 cursor-pointer">
-                                <input type="radio" name="payment" value="cod" class="w-5 h-5 text-brand focus:ring-brand">
+                                <input type="radio" name="payment" value="cod"
+                                    class="w-5 h-5 text-brand focus:ring-brand">
                                 <div class="ml-4">
                                     <span class="block font-bold text-gray-800">COD (Bayar di Tempat)</span>
                                     <span class="text-xs text-gray-500">Bayar tunai saat kurir datang</span>
@@ -165,7 +196,7 @@
                 <div class="lg:col-span-1">
                     <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100 sticky top-24">
                         <h2 class="text-xl font-bold text-gray-900 mb-4">Rincian Pembayaran</h2>
-                        
+
                         <div id="summary-items-container" class="space-y-3 mb-6 max-h-48 overflow-y-auto pr-2">
                             <p id="summary-loading" class="text-center text-gray-500 text-sm">Memuat item...</p>
                         </div>
@@ -192,10 +223,11 @@
                             <span id="total-price" class="text-2xl font-black text-brand">Rp0</span>
                         </div>
 
-                        <button id="place-order-button" type="submit" class="w-full mt-6 bg-brand text-white font-bold py-4 rounded-xl shadow-lg hover:bg-gray-800 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                        <button id="place-order-button" type="submit"
+                            class="w-full mt-6 bg-brand text-white font-bold py-4 rounded-xl shadow-lg hover:bg-gray-800 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 disabled:bg-gray-400 disabled:cursor-not-allowed">
                             Bayar Sekarang <i class="fas fa-arrow-right ml-2"></i>
                         </button>
-                        
+
                         <p class="text-xs text-center text-gray-400 mt-4">
                             <i class="fas fa-lock mr-1"></i> Pembayaran Aman & Terenkripsi
                         </p>
@@ -204,8 +236,12 @@
             </div>
         </form>
     </main>
-    
-    <script src="assets/js/checkout.js"></script>
+
+    <!-- Midtrans Snap.js (Sandbox for Dev/Testing) -->
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="Mid-client-yYNCIMXONi2EHzhe"></script>
+    <script src="config.js"></script>
+    <script src="checkout.js?v=1.1"></script>
 
 </body>
+
 </html>

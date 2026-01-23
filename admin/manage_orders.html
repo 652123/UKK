@@ -1,48 +1,79 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manajemen Pesanan - Dazeon Admin</title>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <script>
-      tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] } } } }
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] } } } }
     </script>
-     <style>
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { scrollbar-width: none; }
-        .pill { padding: 0.25rem 0.75rem; display: inline-flex; font-size: 0.75rem; line-height: 1.25rem; font-weight: 600; border-radius: 9999px; }
+    <style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            scrollbar-width: none;
+        }
+
+        .pill {
+            padding: 0.25rem 0.75rem;
+            display: inline-flex;
+            font-size: 0.75rem;
+            line-height: 1.25rem;
+            font-weight: 600;
+            border-radius: 9999px;
+        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../config.js"></script>
+    <script src="../auth_check.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth(['admin']);
+        });
+    </script>
 </head>
+
 <body class="bg-gray-100 font-sans">
 
     <div class="flex h-screen bg-gray-100">
-        
+
         <div class="hidden md:flex md:flex-col md:w-64 bg-gray-900 text-gray-300">
             <div class="flex items-center justify-center h-20 border-b border-gray-700">
                 <span class="text-2xl font-black text-white uppercase tracking-wider">DAZEON ADMIN</span>
             </div>
             <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
-                <a href="dashboard.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                <a href="dashboard.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
                     <i class="fas fa-tachometer-alt w-6 text-lg"></i><span class="ml-4">Dashboard</span>
                 </a>
-                <a href="edit_product.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                <a href="manage_products.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
                     <i class="fas fa-tshirt w-6 text-lg"></i><span class="ml-4">Produk</span>
                 </a>
-                <a href="manage_orders.html" class="flex items-center px-4 py-3 rounded-lg bg-gray-700 text-white font-semibold"> <i class="fas fa-box-open w-6 text-lg"></i><span class="ml-4">Pesanan</span>
+                <a href="manage_orders.html"
+                    class="flex items-center px-4 py-3 rounded-lg bg-gray-700 text-white font-semibold"> <i
+                        class="fas fa-box-open w-6 text-lg"></i><span class="ml-4">Pesanan</span>
                 </a>
-                 <a href="manage_users.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                <a href="manage_users.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
                     <i class="fas fa-users w-6 text-lg"></i><span class="ml-4">Pengguna</span>
                 </a>
-                 <a href="reports.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                <a href="reports.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
                     <i class="fas fa-chart-line w-6 text-lg"></i><span class="ml-4">Laporan</span>
                 </a>
-                 <a href="../login.html" class="flex items-center px-4 py-3 rounded-lg text-red-400 hover:bg-red-600 hover:text-white transition-colors duration-200 mt-auto">
+                <a href="../login.html"
+                    class="flex items-center px-4 py-3 rounded-lg text-red-400 hover:bg-red-600 hover:text-white transition-colors duration-200">
                     <i class="fas fa-sign-out-alt w-6 text-lg"></i><span class="ml-4">Logout</span>
                 </a>
             </nav>
@@ -51,16 +82,18 @@
         <div class="flex-1 flex flex-col overflow-hidden">
             <header class="flex justify-between items-center h-20 px-6 bg-white border-b border-gray-200 shadow-sm">
                 <h1 class="text-2xl font-semibold text-gray-800">Manajemen Pesanan</h1>
-                <span class="text-gray-700 hidden sm:block">Halo, <strong id="user-name">Karyawan/Admin</strong>!</span>
+                <span class="text-gray-700 hidden sm:block">Halo, <strong id="user-name">Admin</strong>!</span>
             </header>
-            
+
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
                 <div class="container mx-auto">
-                    
+
                     <div class="bg-white p-4 rounded-lg shadow-md mb-6">
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                            <input type="text" placeholder="Cari Order ID / Nama Pelanggan..." class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900">
-                            <select class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900">
+                            <input type="text" id="search-input" placeholder="Cari Order ID / Nama..."
+                                class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900">
+                            <select id="status-filter"
+                                class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900">
                                 <option value="">Semua Status</option>
                                 <option value="menunggu_pembayaran">Menunggu Pembayaran</option>
                                 <option value="diproses">Diproses</option>
@@ -68,12 +101,15 @@
                                 <option value="selesai">Selesai</option>
                                 <option value="dibatalkan">Dibatalkan</option>
                             </select>
-                            <input type="date" title="Tanggal Mulai" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900">
-                            <input type="date" title="Tanggal Akhir" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900">
+                            <input type="date" id="date-start" title="Tanggal Mulai"
+                                class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900">
+                            <input type="date" id="date-end" title="Tanggal Akhir"
+                                class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900">
                         </div>
-                         <div class="text-right mt-4">
-                              <button class="px-6 py-2 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-700">Filter</button>
-                         </div>
+                        <div class="text-right mt-4">
+                            <button onclick="loadOrders()"
+                                class="px-6 py-2 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-700">Filter</button>
+                        </div>
                     </div>
 
                     <div class="bg-white rounded-lg shadow-md overflow-hidden">
@@ -81,66 +117,47 @@
                             <table class="w-full min-w-[768px] divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pelanggan</th>
-                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Order ID</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Tanggal</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Pelanggan</th>
+                                        <th
+                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Total</th>
+                                        <th
+                                            class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status</th>
+                                        <th
+                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    
-                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 text-sm font-medium text-indigo-600 hover:underline">DZ-002</td>
-                                        <td class="px-6 py-4 text-sm text-gray-500">24 Okt 2025</td>
-                                        <td class="px-6 py-4 text-sm text-gray-700">Andi Pratama</td>
-                                        <td class="px-6 py-4 text-sm text-gray-900 font-semibold text-right">Rp99.000</td>
-                                        <td class="px-6 py-4 text-center">
-                                            <span class="pill bg-yellow-100 text-yellow-800">Menunggu Pembayaran</span>
-                                        </td>
-                                        <td class="px-6 py-4 text-right text-sm font-medium space-x-3">
-                                            <a href="order_detail.html?id=DZ-002" class="text-blue-600 hover:text-blue-900" title="Lihat Detail"><i class="fas fa-eye"></i></a>
-                                            <button onclick="updateStatus('DZ-002', 'diproses')" class="text-green-600 hover:text-green-900" title="Tandai Sudah Bayar & Proses"><i class="fas fa-check-circle"></i></button>
+                                <tbody id="orders-table-body" class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td colspan="6" class="px-6 py-10 text-center">
+                                            <div class="flex flex-col items-center justify-center">
+                                                <i class="fas fa-circle-notch fa-spin text-3xl text-gray-300 mb-4"></i>
+                                                <p class="text-gray-500">Memuat pesanan...</p>
+                                            </div>
                                         </td>
                                     </tr>
-                                    
-                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 text-sm font-medium text-indigo-600 hover:underline">DZ-001</td>
-                                        <td class="px-6 py-4 text-sm text-gray-500">23 Okt 2025</td>
-                                        <td class="px-6 py-4 text-sm text-gray-700">Rina Wijaya</td>
-                                        <td class="px-6 py-4 text-sm text-gray-900 font-semibold text-right">Rp198.000</td>
-                                        <td class="px-6 py-4 text-center">
-                                            <span class="pill bg-blue-100 text-blue-800">Diproses</span>
-                                        </td>
-                                        <td class="px-6 py-4 text-right text-sm font-medium space-x-3">
-                                            <a href="order_detail.html?id=DZ-001" class="text-blue-600 hover:text-blue-900" title="Lihat Detail"><i class="fas fa-eye"></i></a>
-                                            <button onclick="showShippingModal('DZ-001')" class="text-purple-600 hover:text-purple-900" title="Kirim Pesanan"><i class="fas fa-truck"></i></button>
-                                        </td>
-                                    </tr>
-
-                                     <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 text-sm font-medium text-indigo-600 hover:underline">DZ-003</td>
-                                        <td class="px-6 py-4 text-sm text-gray-500">22 Okt 2025</td>
-                                        <td class="px-6 py-4 text-sm text-gray-700">Citra Lestari</td>
-                                        <td class="px-6 py-4 text-sm text-gray-900 font-semibold text-right">Rp297.000</td>
-                                        <td class="px-6 py-4 text-center">
-                                            <span class="pill bg-purple-100 text-purple-800">Dikirim</span>
-                                        </td>
-                                        <td class="px-6 py-4 text-right text-sm font-medium space-x-3">
-                                            <a href="order_detail.html?id=DZ-003" class="text-blue-600 hover:text-blue-900" title="Lihat Detail"><i class="fas fa-eye"></i></a>
-                                            <button onclick="updateStatus('DZ-003', 'selesai')" class="text-teal-600 hover:text-teal-900" title="Tandai Selesai"><i class="fas fa-check-double"></i></button>
-                                        </td>
-                                    </tr>
-
-                                    </tbody>
+                                </tbody>
                             </table>
                         </div>
                         <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center text-sm">
-                            <div>Menampilkan <span class="font-semibold">1</span> - <span class="font-semibold">10</span> dari <span class="font-semibold">125</span> pesanan</div>
+                            <div id="pagination-info">Menampilkan <span class="font-semibold">-</span> pesanan</div>
                             <div class="flex space-x-1">
-                                <button class="px-3 py-1 border border-gray-300 rounded-md text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50" disabled>&laquo; Prev</button>
-                                <button class="px-3 py-1 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50">Next &raquo;</button>
+                                <button
+                                    class="px-3 py-1 border border-gray-300 rounded-md text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50"
+                                    disabled>&laquo; Prev</button>
+                                <button
+                                    class="px-3 py-1 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50">Next
+                                    &raquo;</button>
                             </div>
                         </div>
                     </div>
@@ -149,59 +166,225 @@
             </main>
         </div>
     </div>
-    
-    <div id="shipping-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
-        <div class="relative bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-            <h3 class="text-xl font-semibold mb-4">Input Nomor Resi Pengiriman</h3>
-            <p class="text-sm mb-4">Untuk Order ID: <strong id="modal-order-id">DZ-XXX</strong></p>
-            <form id="shipping-form">
-                <div>
-                    <label for="tracking_number" class="block text-sm font-medium text-gray-700">Nomor Resi</label>
-                    <input type="text" id="tracking_number" name="tracking_number" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-gray-900 focus:border-gray-900">
-                </div>
-                <div class="mt-6 flex justify-end space-x-3">
-                    <button type="button" onclick="closeShippingModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Batal</button>
-                    <button type="submit" class="px-4 py-2 bg-gray-900 text-white rounded-md hover:bg-gray-700">Simpan & Kirim</button>
-                </div>
-            </form>
-        </div>
-    </div>
+
+
 
 
     <script>
-        function updateStatus(orderId, newStatus) {
-            if (confirm(`Anda yakin ingin mengubah status Order ID: ${orderId} menjadi "${newStatus}"?`)) {
-                console.log(`Mengubah status Order ${orderId} menjadi ${newStatus}...`);
-                alert('Status berhasil diubah (simulasi).');
-                // Nanti tambahkan logika Supabase & update tampilan tabel
+        // 1. Load Orders
+        async function loadOrders() {
+            const tbody = document.getElementById('orders-table-body');
+            const searchVal = document.getElementById('search-input').value.toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value;
+            const textPagination = document.getElementById('pagination-info');
+
+            // --- FETCH DATA ---
+            let query = window.db
+                .from('orders')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            // Apply Filters
+            if (statusFilter) {
+                query = query.eq('status', statusFilter);
+            }
+
+            const { data: orders, error } = await query;
+
+            if (error) {
+                console.error(error);
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-red-500">Gagal memuat pesanan: ${error.message}</td></tr>`;
+                return;
+            }
+
+            // Client-side Search (Name or ID)
+            const filteredOrders = orders.filter(o => {
+                const idMatch = String(o.id).toLowerCase().includes(searchVal);
+                const nameMatch = (o.customer_name || '').toLowerCase().includes(searchVal);
+                return idMatch || nameMatch;
+            });
+
+            if (filteredOrders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6">Tidak ada pesanan ditemukan.</td></tr>`;
+                textPagination.innerHTML = 'Menampilkan <span class="font-semibold">0</span> pesanan';
+                return;
+            }
+
+            // Update Pagination Text
+            textPagination.innerHTML = `Menampilkan <span class="font-semibold">1</span> - <span class="font-semibold">${filteredOrders.length}</span> dari <span class="font-semibold">${orders.length}</span> pesanan`;
+
+            // Render Rows
+            tbody.innerHTML = '';
+            filteredOrders.forEach(order => {
+                const dateStr = new Date(order.created_at).toLocaleDateString("id-ID", {
+                    day: 'numeric', month: 'short', year: 'numeric'
+                });
+                const totalStr = "Rp" + (order.total_amount || 0).toLocaleString('id-ID');
+
+                // Extract Name from shipping_address JSON if available
+                let customerName = 'Tanpa Nama';
+                if (order.shipping_address) {
+                    try {
+                        const addr = typeof order.shipping_address === 'string' ? JSON.parse(order.shipping_address) : order.shipping_address;
+                        customerName = addr.name || addr.penerima || customerName;
+                    } catch (e) { console.error("Error parse address", e); }
+                }
+
+                // Badge Color
+                let badgeClass = 'bg-gray-100 text-gray-800';
+                if (order.status === 'menunggu_pembayaran') badgeClass = 'bg-yellow-100 text-yellow-800';
+                else if (order.status === 'diproses') badgeClass = 'bg-blue-100 text-blue-800';
+                else if (order.status === 'dikirim') badgeClass = 'bg-purple-100 text-purple-800';
+                else if (order.status === 'selesai') badgeClass = 'bg-green-100 text-green-800';
+                else if (order.status === 'dibatalkan') badgeClass = 'bg-red-100 text-red-800';
+
+                // Action Buttons Logic
+                let actions = `
+                    <a href="order-detail.html?id=${order.id}" class="text-blue-600 hover:text-blue-900 mx-1" title="Lihat Detail"><i class="fas fa-eye"></i></a>
+                `;
+
+                if (order.status === 'menunggu_pembayaran') {
+                    // Manual confirm if needed, but usually Midtrans handles this.
+                    // But admin can override.
+                    actions += `<button onclick="updateStatus('${order.id}', 'dikemas')" class="text-green-600 hover:text-green-900 mx-1" title="Terima / Proses"><i class="fas fa-box"></i></button>`;
+                } else if (order.status === 'diproses' || order.status === 'dikemas') {
+                    actions += `<button onclick="updateStatus('${order.id}', 'dikirim')" class="text-purple-600 hover:text-purple-900 mx-1" title="Kirim Barang"><i class="fas fa-truck"></i></button>`;
+                } else if (order.status === 'dikirim') {
+                    actions += `<button onclick="updateStatus('${order.id}', 'selesai')" class="text-green-600 hover:text-green-900 mx-1" title="Selesai"><i class="fas fa-check-double"></i></button>`;
+                }
+
+                const row = `
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 text-sm font-medium text-indigo-600 hover:underline cursor-pointer">
+                            ${String(order.id).slice(0, 8).toUpperCase()}...
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500">${dateStr}</td>
+                        <td class="px-6 py-4 text-sm text-gray-700 font-medium">${customerName}</td>
+                        <td class="px-6 py-4 text-sm text-gray-900 font-semibold text-right">${totalStr}</td>
+                        <td class="px-6 py-4 text-center">
+                            <span class="pill ${badgeClass}">${formatStatus(order.status)}</span>
+                        </td>
+                        <td class="px-6 py-4 text-right text-sm font-medium">
+                            ${actions}
+                        </td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+        }
+
+        // 2. Update Status
+        async function updateStatus(orderId, newStatus) {
+            let trackingNumber = null;
+
+            // Jika status 'dikirim', minta input resi
+            if (newStatus === 'dikirim') {
+                const { value: resi } = await Swal.fire({
+                    title: 'Masukkan Nomor Resi',
+                    input: 'text',
+                    inputLabel: 'Nomor Resi / Tracking Number',
+                    inputPlaceholder: 'Contoh: JNE123456789',
+                    showCancelButton: true,
+                    confirmButtonText: 'Kirim',
+                    cancelButtonText: 'Batal',
+                    inputValidator: (value) => {
+                        if (!value) {
+                            return 'Nomor resi harus diisi!'
+                        }
+                    }
+                });
+
+                if (!resi) return; // User cancel
+                trackingNumber = resi;
+            } else {
+                // Konfirmasi biasa untuk status lain
+                const result = await Swal.fire({
+                    title: 'Konfirmasi',
+                    text: `Ubah status pesanan ${orderId} menjadi '${newStatus}'?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Ya, Ubah',
+                    cancelButtonText: 'Batal'
+                });
+                if (!result.isConfirmed) return;
+            }
+
+            // Prepare Update Data
+            const updateData = { status: newStatus };
+            if (trackingNumber) {
+                updateData.resi_number = trackingNumber;
+            }
+
+            const { error } = await window.db
+                .from('orders')
+                .update(updateData)
+                .eq('id', orderId);
+
+            if (error) {
+                Swal.fire('Gagal', 'Gagal update status: ' + error.message, 'error');
+            } else {
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil',
+                    text: trackingNumber
+                        ? `Status 'Dikirim' dengan Resi ${trackingNumber} berhasil disimpan!`
+                        : 'Status berhasil diperbarui!',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+                loadOrders(); // Refresh table
             }
         }
 
-        const shippingModal = document.getElementById('shipping-modal');
-        const modalOrderId = document.getElementById('modal-order-id');
-        const shippingForm = document.getElementById('shipping-form');
-
-        function showShippingModal(orderId) {
-             if (modalOrderId) modalOrderId.innerText = orderId;
-             if (shippingModal) shippingModal.classList.remove('hidden');
-             // Nanti tambahkan input hidden untuk orderId di form
+        // Helper: Format Status Text
+        function formatStatus(s) {
+            if (s === 'diproses') return 'Sedang Dikemas';
+            if (s === 'dikemas') return 'Sedang Dikemas';
+            return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
         }
 
-        function closeShippingModal() {
-             if (shippingModal) shippingModal.classList.add('hidden');
+        // 3. Realtime Subscription
+        function initRealtime() {
+            const channel = window.db.channel('realtime-orders')
+                .on(
+                    'postgres_changes',
+                    { event: '*', schema: 'public', table: 'orders' },
+                    (payload) => {
+                        console.log('Realtime update:', payload);
+
+                        // Notification for new/updated orders
+                        const eventType = payload.eventType;
+                        const msg = eventType === 'INSERT' ? 'Pesanan Baru Masuk!' : 'Data Pesanan Diperbarui!';
+
+                        const Toast = Swal.mixin({
+                            toast: true,
+                            position: 'top-end',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true,
+                            didOpen: (toast) => {
+                                toast.addEventListener('mouseenter', Swal.stopTimer)
+                                toast.addEventListener('mouseleave', Swal.resumeTimer)
+                            }
+                        })
+
+                        Toast.fire({
+                            icon: 'info',
+                            title: msg
+                        });
+
+                        loadOrders(); // Reload data
+                    }
+                )
+                .subscribe();
         }
 
-        if (shippingForm) {
-            shippingForm.addEventListener('submit', function(event) {
-                event.preventDefault();
-                const trackingNumber = document.getElementById('tracking_number').value;
-                const orderId = modalOrderId.innerText; // Ambil dari teks modal
-                console.log(`Menyimpan resi ${trackingNumber} untuk Order ${orderId} dan mengubah status jadi 'Dikirim'...`);
-                alert('Nomor resi berhasil disimpan & status diubah menjadi Dikirim (simulasi).');
-                closeShippingModal();
-                // Nanti tambahkan logika Supabase & update tampilan tabel
-            });
-        }
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            loadOrders();
+            initRealtime();
+        });
     </script>
 </body>
+
 </html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,17 +9,40 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <script>
-      tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] } } } }
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] } } } }
     </script>
     <style>
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { scrollbar-width: none; }
-        .pill { padding: 0.25rem 0.75rem; display: inline-flex; font-size: 0.75rem; line-height: 1.25rem; font-weight: 600; border-radius: 9999px; }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            scrollbar-width: none;
+        }
+
+        .pill {
+            padding: 0.25rem 0.75rem;
+            display: inline-flex;
+            font-size: 0.75rem;
+            line-height: 1.25rem;
+            font-weight: 600;
+            border-radius: 9999px;
+        }
     </style>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../config.js"></script>
+    <script src="../auth_check.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth(['bos']);
+        });
+    </script>
 </head>
+
 <body class="bg-gray-100 font-sans">
 
     <div class="flex h-screen bg-gray-100">
@@ -28,21 +52,28 @@
                 <span class="text-2xl font-black text-white uppercase tracking-wider">DAZEON ADMIN</span>
             </div>
             <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
-                <a href="boss_dashboard.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                <a href="boss_dashboard.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
                     <i class="fas fa-chart-pie w-6 text-lg"></i><span class="ml-4">Ringkasan Bisnis</span>
                 </a>
-                <a href="reports.html" class="flex items-center px-4 py-3 rounded-lg bg-gray-700 text-white font-semibold"> <i class="fas fa-chart-line w-6 text-lg"></i><span class="ml-4">Laporan Detail</span>
+                <a href="reports.html"
+                    class="flex items-center px-4 py-3 rounded-lg bg-gray-700 text-white font-semibold"> <i
+                        class="fas fa-chart-line w-6 text-lg"></i><span class="ml-4">Laporan Detail</span>
                 </a>
-                <a href="manage_users.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                <a href="manage_users.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
                     <i class="fas fa-users-cog w-6 text-lg"></i><span class="ml-4">Kelola Staf</span>
                 </a>
-                <a href="manage_products.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                <a href="manage_products.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
                     <i class="fas fa-tshirt w-6 text-lg"></i><span class="ml-4">Produk</span>
                 </a>
-                <a href="boss_manage_orders.html" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                <a href="boss_manage_orders.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
                     <i class="fas fa-receipt w-6 text-lg"></i><span class="ml-4">Pesanan</span>
                 </a>
-                 <a href="../login.html" class="flex items-center px-4 py-3 rounded-lg text-red-400 hover:bg-red-600 hover:text-white transition-colors duration-200 mt-auto">
+                <a href="../login.html"
+                    class="flex items-center px-4 py-3 rounded-lg text-red-400 hover:bg-red-600 hover:text-white transition-colors duration-200 mt-auto">
                     <i class="fas fa-sign-out-alt w-6 text-lg"></i><span class="ml-4">Logout</span>
                 </a>
             </nav>
@@ -51,7 +82,7 @@
         <div class="flex-1 flex flex-col overflow-hidden">
             <header class="flex justify-between items-center h-20 px-6 bg-white border-b border-gray-200 shadow-sm">
                 <h1 class="text-2xl font-semibold text-gray-800">Laporan Penjualan Detail</h1>
-                 <span class="text-gray-700 hidden sm:block">Halo, <strong id="user-name">Bos</strong>!</span>
+                <span class="text-gray-700 hidden sm:block">Halo, <strong id="user-name">Bos</strong>!</span>
             </header>
 
             <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
@@ -60,13 +91,18 @@
                     <div class="bg-white p-6 rounded-lg shadow-md mb-8">
                         <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
                             <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
-                                <label for="start-date" class="text-sm font-medium text-gray-700 whitespace-nowrap">Pilih Periode:</label>
-                                <input type="date" id="start-date" name="start_date" value="2025-10-01" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-gray-900">
+                                <label for="start-date"
+                                    class="text-sm font-medium text-gray-700 whitespace-nowrap">Pilih Periode:</label>
+                                <input type="date" id="start-date" name="start_date"
+                                    class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-gray-900">
                                 <span class="text-gray-500">s/d</span>
-                                <input type="date" id="end-date" name="end_date" value="2025-10-24" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-gray-900">
-                                <button class="px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-700">Tampilkan</button>
+                                <input type="date" id="end-date" name="end_date"
+                                    class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-gray-900">
+                                <button onclick="loadReport()"
+                                    class="px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-700">Tampilkan</button>
                             </div>
-                            <button class="w-full sm:w-auto px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 inline-flex items-center justify-center">
+                            <button onclick="exportToCSV()"
+                                class="w-full sm:w-auto px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 inline-flex items-center justify-center">
                                 <i class="fas fa-download mr-2"></i> Download CSV
                             </button>
                         </div>
@@ -75,76 +111,79 @@
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                         <div class="bg-white p-6 rounded-lg shadow text-center">
                             <div class="text-sm font-medium text-gray-500 uppercase">Total Pendapatan</div>
-                            <div class="text-3xl font-bold text-green-600 mt-2">Rp 15.750.000</div>
-                        </div>
-                         <div class="bg-white p-6 rounded-lg shadow text-center">
-                            <div class="text-sm font-medium text-gray-500 uppercase">Total Pesanan</div>
-                            <div class="text-3xl font-bold text-blue-600 mt-2">125</div>
-                        </div>
-                         <div class="bg-white p-6 rounded-lg shadow text-center">
-                            <div class="text-sm font-medium text-gray-500 uppercase">Produk Terjual</div>
-                            <div class="text-3xl font-bold text-purple-600 mt-2">180 pcs</div>
+                            <div class="text-3xl font-bold text-green-600 mt-2" id="total-revenue">Rp 0</div>
                         </div>
                         <div class="bg-white p-6 rounded-lg shadow text-center">
-                            <div class="text-sm font-medium text-gray-500 uppercase">Rata-rata Order</div>
-                            <div class="text-3xl font-bold text-amber-600 mt-2">Rp 126.000</div>
+                            <div class="text-sm font-medium text-gray-500 uppercase">Total Profit (Est)</div>
+                            <div class="text-3xl font-bold text-blue-600 mt-2" id="total-profit">Rp 0</div>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow text-center">
+                            <div class="text-sm font-medium text-gray-500 uppercase">Barang Terjual</div>
+                            <div class="text-3xl font-bold text-purple-600 mt-2"><span id="total-sold">0</span> pcs
+                            </div>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg shadow text-center">
+                            <div class="text-sm font-medium text-gray-500 uppercase">Total Pesanan</div>
+                            <div class="text-3xl font-bold text-amber-600 mt-2" id="total-orders">0</div>
                         </div>
                     </div>
 
                     <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                        <h3 class="text-xl font-semibold text-gray-800 px-6 py-4 border-b border-gray-200">Detail Transaksi (Oktober 2025)</h3>
+                        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                            <h3 class="text-xl font-semibold text-gray-800">Detail Transaksi <span
+                                    id="report-period-text" class="text-base font-normal text-gray-500 ml-2"></span>
+                            </h3>
+                        </div>
                         <div class="overflow-x-auto">
                             <table class="w-full min-w-[768px] divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pelanggan</th>
-                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Item</th>
-                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total (Rp)</th>
-                                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Tanggal</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Order ID</th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Pelanggan</th>
+                                        <th
+                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Qty</th>
+                                        <th
+                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Total (Rp)</th>
+                                        <th
+                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Profit (Rp)</th>
+                                        <th
+                                            class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status</th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">24 Okt 2025, 10:30</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600 hover:underline">DZ-002</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">Andi Pratama</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right">1</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold text-right">99.000</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                                             <span class="pill bg-yellow-100 text-yellow-800">Menunggu Pembayaran</span>
+                                <tbody id="report-table-body" class="bg-white divide-y divide-gray-200">
+                                    <tr>
+                                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                                            <i class="fas fa-spinner fa-spin mr-2"></i> Memuat data...
                                         </td>
                                     </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">23 Okt 2025, 15:15</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600 hover:underline">DZ-001</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">Rina Wijaya</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right">2</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold text-right">198.000</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                                            <span class="pill bg-green-100 text-green-800">Selesai</span>
-                                        </td>
-                                    </tr>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">22 Okt 2025, 08:00</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-indigo-600 hover:underline">DZ-003</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">Citra Lestari</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 text-right">3</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold text-right">297.000</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                                             <span class="pill bg-purple-100 text-purple-800">Dikirim</span>
-                                        </td>
-                                    </tr>
-                                    </tbody>
+                                </tbody>
                             </table>
                         </div>
-                        <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center text-sm">
-                            <div>Menampilkan <span class="font-semibold">1</span> - <span class="font-semibold">10</span> dari <span class="font-semibold">125</span> transaksi</div>
+                        <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center text-sm"
+                            id="pagination-container">
+                            <div>Menampilkan <span class="font-semibold" id="disp-start">0</span> - <span
+                                    class="font-semibold" id="disp-end">0</span> dari <span class="font-semibold"
+                                    id="disp-total">0</span>
+                                transaksi</div>
                             <div class="flex space-x-1">
-                                <button class="px-3 py-1 border border-gray-300 rounded-md text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50" disabled>&laquo; Prev</button>
-                                <button class="px-3 py-1 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50">Next &raquo;</button>
+                                <button id="btn-prev" onclick="changePage(-1)"
+                                    class="px-3 py-1 border border-gray-300 rounded-md text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50"
+                                    disabled>&laquo; Prev</button>
+                                <button id="btn-next" onclick="changePage(1)"
+                                    class="px-3 py-1 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                                    disabled>Next
+                                    &raquo;</button>
                             </div>
                         </div>
                     </div>
@@ -154,4 +193,5 @@
         </div>
     </div>
 </body>
+
 </html>

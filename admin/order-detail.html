@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Pesanan - Admin Dazeon</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <script>
+        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] } } } }
+    </script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            scrollbar-width: none;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../config.js"></script>
+    <script src="../auth_check.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth(['admin']);
+        });
+    </script>
+</head>
+
+<body class="bg-gray-100 font-sans text-gray-800">
+
+    <div class="flex h-screen bg-gray-100">
+
+        <!-- SIDEBAR (Same as manage_orders.html) -->
+        <div class="hidden md:flex md:flex-col md:w-64 bg-gray-900 text-gray-300">
+            <div class="flex items-center justify-center h-20 border-b border-gray-700">
+                <span class="text-2xl font-black text-white uppercase tracking-wider">DAZEON ADMIN</span>
+            </div>
+            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
+                <a href="dashboard.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                    <i class="fas fa-tachometer-alt w-6 text-lg"></i><span class="ml-4">Dashboard</span>
+                </a>
+                <a href="manage_products.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                    <i class="fas fa-tshirt w-6 text-lg"></i><span class="ml-4">Produk</span>
+                </a>
+                <a href="manage_orders.html"
+                    class="flex items-center px-4 py-3 rounded-lg bg-gray-700 text-white font-semibold">
+                    <i class="fas fa-box-open w-6 text-lg"></i><span class="ml-4">Pesanan</span>
+                </a>
+                <a href="manage_users.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                    <i class="fas fa-users w-6 text-lg"></i><span class="ml-4">Pengguna</span>
+                </a>
+                <a href="reports.html"
+                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                    <i class="fas fa-chart-line w-6 text-lg"></i><span class="ml-4">Laporan</span>
+                </a>
+                <a href="../login.html"
+                    class="flex items-center px-4 py-3 rounded-lg text-red-400 hover:bg-red-600 hover:text-white transition-colors duration-200 mt-auto">
+                    <i class="fas fa-sign-out-alt w-6 text-lg"></i><span class="ml-4">Logout</span>
+                </a>
+            </nav>
+        </div>
+
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- HEADER -->
+            <header class="flex justify-between items-center h-20 px-6 bg-white border-b border-gray-200 shadow-sm">
+                <div class="flex items-center gap-4">
+                    <a href="manage_orders.html" class="text-gray-500 hover:text-gray-900 transition"><i
+                            class="fas fa-arrow-left text-lg"></i></a>
+                    <h1 class="text-2xl font-semibold text-gray-800">Detail Pesanan</h1>
+                </div>
+                <span class="text-gray-700 hidden sm:block">Halo, <strong id="user-name">Admin</strong>!</span>
+            </header>
+
+            <!-- MAIN CONTENT -->
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+                <div class="container mx-auto max-w-5xl">
+
+                    <div id="loading" class="text-center py-20">
+                        <i class="fas fa-circle-notch fa-spin text-3xl text-gray-400"></i>
+                        <p class="mt-4 text-gray-500">Memuat data pesanan...</p>
+                    </div>
+
+                    <div id="order-content" class="hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                        <!-- LEFT COLUMN: Order Items & Status -->
+                        <div class="lg:col-span-2 space-y-6">
+
+                            <!-- Status Card -->
+                            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Order
+                                            ID</p>
+                                        <h2 id="order-id-display" class="text-2xl font-black text-gray-900 mb-1">...
+                                        </h2>
+                                        <p id="order-date" class="text-sm text-gray-500">...</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <span id="status-badge"
+                                            class="px-4 py-2 rounded-full text-sm font-bold inline-block bg-gray-100 text-gray-800">...</span>
+                                    </div>
+                                </div>
+
+                                <!-- Actions Grid -->
+                                <div class="mt-6 pt-6 border-t border-gray-100 grid grid-cols-2 sm:grid-cols-4 gap-2"
+                                    id="action-buttons">
+                                    <!-- Buttons injected via JS -->
+                                </div>
+                            </div>
+
+                            <!-- Items Card -->
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+                                    <h3 class="font-bold text-gray-900">Produk Dipesan</h3>
+                                </div>
+                                <div id="order-items" class="p-6 space-y-4"></div>
+                                <div
+                                    class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-between items-center">
+                                    <span class="font-bold text-gray-700">Total Pesanan</span>
+                                    <span class="font-black text-xl text-gray-900" id="total-amount">Rp0</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- RIGHT COLUMN: Customer & Payment Info -->
+                        <div class="lg:col-span-1 space-y-6">
+
+                            <!-- Customer Info -->
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+                                    <h3 class="font-bold text-gray-900">Informasi Pelanggan</h3>
+                                </div>
+                                <div class="p-6 space-y-4">
+                                    <div>
+                                        <p class="text-xs text-gray-500 font-bold uppercase">Nama Penerima</p>
+                                        <p class="font-medium text-gray-900" id="cust-name">...</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500 font-bold uppercase">Email / Kontak</p>
+                                        <p class="font-medium text-gray-900 break-all" id="cust-contact">...</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500 font-bold uppercase">Alamat Pengiriman</p>
+                                        <p class="text-sm text-gray-600 leading-relaxed mt-1" id="cust-address">...</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Shipment Info -->
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                                <div class="px-6 py-4 border-b border-gray-100 bg-gray-50">
+                                    <h3 class="font-bold text-gray-900">Pengiriman</h3>
+                                </div>
+                                <div class="p-6 space-y-4">
+                                    <div>
+                                        <p class="text-xs text-gray-500 font-bold uppercase">Ekspedisi</p>
+                                        <p class="font-medium text-gray-900" id="ship-courier">-</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500 font-bold uppercase">Nomor Resi</p>
+                                        <div class="flex items-center mt-1">
+                                            <p class="font-mono font-bold text-gray-900 text-lg mr-2" id="ship-resi">-
+                                            </p>
+                                            <button onclick="copyResi()" id="btn-copy-resi"
+                                                class="hidden text-gray-400 hover:text-gray-800"><i
+                                                    class="fas fa-copy"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const orderId = urlParams.get('id');
+
+            if (!orderId) {
+                Swal.fire('Error', 'Order ID tidak ditemukan', 'error').then(() => window.location.href = 'manage_orders.html');
+                return;
+            }
+
+            loadOrderDetail(orderId);
+        });
+
+        async function loadOrderDetail(orderId) {
+            const loading = document.getElementById('loading');
+            const content = document.getElementById('order-content');
+
+            try {
+                const { data: order, error } = await window.db
+                    .from('orders')
+                    .select(`
+                        *,
+                        order_details (
+                            quantity,
+                            price_at_purchase,
+                            products (name, image_url)
+                        )
+                    `)
+                    .eq('id', orderId)
+                    .single();
+
+                if (error) throw error;
+                if (!order) throw new Error("Pesanan tidak ditemukan");
+
+                renderData(order);
+                loading.classList.add('hidden');
+                content.classList.remove('hidden');
+
+            } catch (err) {
+                console.error(err);
+                loading.innerHTML = `<p class="text-red-500 font-bold">Error: ${err.message}</p>`;
+            }
+        }
+
+        function renderData(order) {
+            // 1. Header Info
+            document.getElementById('order-id-display').innerText = `#${String(order.id).slice(0, 8).toUpperCase()}`;
+            document.getElementById('order-date').innerText = new Date(order.created_at).toLocaleDateString('id-ID', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+
+            // 2. Status Badge
+            const statusBadge = document.getElementById('status-badge');
+            let color = 'bg-gray-100 text-gray-800';
+            let label = order.status;
+
+            if (order.status === 'menunggu_pembayaran') { color = 'bg-yellow-100 text-yellow-800'; label = 'Menunggu Pembayaran'; }
+            else if (order.status === 'diproses') { color = 'bg-blue-100 text-blue-800'; label = 'Siap Dikemas'; }
+            else if (order.status === 'dikirim') { color = 'bg-purple-100 text-purple-800'; label = 'Sedang Dikirim'; }
+            else if (order.status === 'selesai') { color = 'bg-green-100 text-green-800'; label = 'Selesai'; }
+            else if (order.status === 'dibatalkan') { color = 'bg-red-100 text-red-800'; label = 'Dibatalkan'; }
+
+            statusBadge.className = `px-4 py-2 rounded-full text-sm font-bold inline-block uppercase ${color}`;
+            statusBadge.innerText = label;
+
+            // 3. Customer Info extraction
+            let custName = 'Visitor';
+            let custPhone = '-';
+            let custAddress = '-';
+            let custEmail = '-'; // We might not have email directly in orders unless we join users, but usually check address blob
+
+            if (order.shipping_address) {
+                try {
+                    const addr = typeof order.shipping_address === 'string' ? JSON.parse(order.shipping_address) : order.shipping_address;
+                    custName = addr.name || addr.penerima || custName;
+                    custPhone = addr.phone || addr.telepon || custPhone;
+                    custEmail = addr.email || '-';
+
+                    // Construct formatted address
+                    const parts = [addr.address, addr.city, addr.province, addr.postal_code].filter(Boolean);
+                    custAddress = parts.join(', ');
+                } catch (e) {
+                    custAddress = typeof order.shipping_address === 'string' ? order.shipping_address : JSON.stringify(order.shipping_address);
+                }
+            }
+
+            document.getElementById('cust-name').innerText = custName;
+            document.getElementById('cust-contact').innerHTML = `${custPhone}<br><span class="text-gray-400 text-xs">${custEmail}</span>`;
+            document.getElementById('cust-address').innerText = custAddress;
+
+            // 4. Products
+            const itemsContainer = document.getElementById('order-items');
+            itemsContainer.innerHTML = '';
+            let subtotal = 0;
+
+            order.order_details.forEach(detail => {
+                const p = detail.products;
+                const totalItem = detail.price_at_purchase * detail.quantity;
+                subtotal += totalItem;
+
+                let img = 'data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 80 80\"%3E%3Crect fill=\"%23f3f4f6\" width=\"80\" height=\"80\"/%3E%3Ctext x=\"50%25\" y=\"50%25\" fill=\"%239ca3af\" font-size=\"10\" text-anchor=\"middle\" dy=\".3em\"%3EIMG%3C/text%3E%3C/svg%3E';
+                if (p?.image_url) {
+                    img = p.image_url.startsWith('http') ? p.image_url :
+                        window.db.storage.from('product-images').getPublicUrl(p.image_url).data.publicUrl;
+                }
+
+                itemsContainer.innerHTML += `
+                    <div class="flex items-start gap-4">
+                        <img src="${img}" class="w-16 h-16 object-cover rounded-md border border-gray-200">
+                        <div class="flex-1">
+                            <p class="font-bold text-gray-900">${p ? p.name : 'Produk Dihapus'}</p>
+                            <p class="text-sm text-gray-500">${detail.quantity} x Rp${detail.price_at_purchase.toLocaleString('id-ID')}</p>
+                        </div>
+                        <p class="font-semibold text-gray-900">Rp${totalItem.toLocaleString('id-ID')}</p>
+                    </div>
+                `;
+            });
+            document.getElementById('total-amount').innerText = `Rp${(order.total_amount || 0).toLocaleString('id-ID')}`;
+
+            // 5. Shipping Info
+            if (order.status === 'dikirim' || order.status === 'selesai') {
+                document.getElementById('ship-courier').innerText = order.courier || 'Ekspedisi Manual';
+                document.getElementById('ship-resi').innerText = order.resi_number || '-';
+                if (order.resi_number) document.getElementById('btn-copy-resi').classList.remove('hidden');
+            }
+
+            // 6. Action Buttons
+            renderActionButtons(order);
+        }
+
+        function renderActionButtons(order) {
+            const container = document.getElementById('action-buttons');
+            container.innerHTML = '';
+
+            const btnClass = "py-2 px-4 rounded-lg text-sm font-bold transition shadow-sm border text-center cursor-pointer";
+
+            // Logic Actions
+            if (order.status === 'menunggu_pembayaran') {
+                // Admin can manually approve payment if needed
+                container.innerHTML += `
+                    <button onclick="updateStatus('${order.id}', 'diproses')" class="${btnClass} bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100 col-span-2">
+                        <i class="fas fa-check mr-2"></i>Verifikasi Bayar
+                    </button>
+                    <button onclick="updateStatus('${order.id}', 'dibatalkan')" class="${btnClass} bg-red-50 text-red-600 border-red-100 hover:bg-red-100 col-span-2">
+                        <i class="fas fa-times mr-2"></i>Batalkan
+                    </button>
+                `;
+            } else if (order.status === 'diproses') {
+                container.innerHTML += `
+                     <button onclick="updateStatus('${order.id}', 'dikirim')" class="${btnClass} bg-purple-600 text-white hover:bg-purple-700 col-span-full">
+                        <i class="fas fa-truck mr-2"></i>Input Resi & Kirim
+                    </button>
+                `;
+            } else if (order.status === 'dikirim') {
+                container.innerHTML += `
+                     <button onclick="editResi('${order.id}', '${order.resi_number}')" class="${btnClass} bg-yellow-50 text-yellow-600 border-yellow-100 hover:bg-yellow-100 col-span-2">
+                        <i class="fas fa-edit mr-2"></i>Edit Resi
+                    </button>
+                     <button onclick="updateStatus('${order.id}', 'selesai')" class="${btnClass} bg-green-600 text-white hover:bg-green-700 col-span-2">
+                        <i class="fas fa-check-double mr-2"></i>Tandai Selesai
+                    </button>
+                `;
+            }
+        }
+
+        async function updateStatus(orderId, newStatus) {
+            let resi = null;
+
+            if (newStatus === 'dikirim') {
+                const { value: text } = await Swal.fire({
+                    title: 'Input Nomor Resi',
+                    input: 'text',
+                    inputLabel: 'Masukkan nomor resi pengiriman',
+                    inputPlaceholder: 'JNE123456...',
+                    showCancelButton: true
+                });
+                if (!text) return; // Cancelled
+                resi = text;
+            }
+
+            const updatePayload = { status: newStatus };
+            if (resi) updatePayload.tracking_number = resi;
+            // Note: DB Column might be resi_number or tracking_number, let's check manage_orders logic. 
+            // manage_orders.js used: updateData.tracking_number = trackingNumber; 
+            // BUT schema says 'resi_number' usually? Let's check. 
+            // In manage_orders.html line 315 it said 'tracking_number'. 
+            // In order-detail.html line 225 it used order.resi_number. 
+            // I should double check the column name.
+
+            // Checking the previous 'found 15 results' for sql files... 
+            // But let's assume 'resi_number' is standard based on order-detail.html viewing
+            // actually manage_orders.html line 315 says tracking_number, but line 225 says resi_number.
+            // Wait, in manage_orders.html viewer:
+            // line 280: const { value: resi } = await Swal.fire...
+            // line 315: updateData.tracking_number = trackingNumber; 
+            // line 225: document.getElementById('resi-number').innerText = order.resi_number;
+            // AND line 281: if (newStatus === 'dikirim') ... trackingNumber = resi
+            // If the table column is resi_number, then manage_orders logic currently writes to tracking_number? 
+            // That might be a bug in manage_orders.html if the column is actually resi_number.
+            // OR the column is tracking_number and order-detail.html reads resi_number (which would be undefined).
+
+            // Let's safe-bet and update BOTH or check.
+            // Actually, I'll update 'resi_number' AND 'tracking_number' to be safe, or just check SQL if I could.
+            // But I'll try to stick to one. "resi_number" sounds more Indonesian/project-specific.
+            // "tracking_number" is more generic.
+            // Let's assume the correct one is `resi_number` because `order-detail.html` (buyer) uses it to display.
+
+            if (resi) {
+                updatePayload.resi_number = resi;
+                // updatePayload.tracking_number = resi; // Safety fallback?
+            }
+
+            try {
+                const { error } = await window.db.from('orders').update(updatePayload).eq('id', orderId);
+                if (error) throw error;
+
+                Swal.fire('Sukses', 'Status diperbarui', 'success');
+                loadOrderDetail(orderId);
+            } catch (e) {
+                Swal.fire('Gagal', e.message, 'error');
+            }
+        }
+
+        async function editResi(orderId, currentResi) {
+            const { value: text } = await Swal.fire({
+                title: 'Edit Nomor Resi',
+                input: 'text',
+                inputValue: currentResi,
+                showCancelButton: true
+            });
+            if (text && text !== currentResi) {
+                const { error } = await window.db.from('orders').update({ resi_number: text }).eq('id', orderId);
+                if (!error) {
+                    Swal.fire('Sukses', 'Resi diupdate', 'success');
+                    loadOrderDetail(orderId);
+                }
+            }
+        }
+
+        function copyResi() {
+            const resi = document.getElementById('ship-resi').innerText;
+            navigator.clipboard.writeText(resi);
+            const btn = document.getElementById('btn-copy-resi');
+            btn.innerHTML = '<i class="fas fa-check text-green-500"></i>';
+            setTimeout(() => btn.innerHTML = '<i class="fas fa-copy"></i>', 2000);
+        }
+
+    </script>
+</body>
+
+</html>

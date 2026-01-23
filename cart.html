@@ -1,26 +1,30 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Keranjang Belanja - Dazeon Store</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    <script src="config.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
     <script>
-      // CONFIG: Warna Brand sekarang HITAM
-      tailwind.config = { 
-        theme: { 
-            extend: { 
-                fontFamily: { sans: ['Poppins', 'sans-serif'] },
-                colors: { brand: '#171717' } // Neutral-900 (Hitam Pekat)
-            } 
-        } 
-      }
+        // CONFIG: Warna Brand sekarang HITAM
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
+                    colors: { brand: '#171717' } // Neutral-900 (Hitam Pekat)
+                }
+            }
+        }
     </script>
     <style type="text/tailwindcss">
         input[type='number']::-webkit-inner-spin-button, 
@@ -35,6 +39,7 @@
         }
     </style>
 </head>
+
 <body class="bg-gray-50 font-sans text-gray-800">
 
     <header class="bg-white shadow-sm sticky top-0 z-50">
@@ -52,7 +57,8 @@
 
     <main class="container mx-auto max-w-7xl px-4 py-8 min-h-screen flex flex-col">
 
-        <div class="hidden md:grid grid-cols-12 gap-4 bg-white p-5 rounded-xl shadow-sm mb-4 text-gray-500 text-sm font-bold uppercase tracking-wide">
+        <div
+            class="hidden md:grid grid-cols-12 gap-4 bg-white p-5 rounded-xl shadow-sm mb-4 text-gray-500 text-sm font-bold uppercase tracking-wide">
             <div class="col-span-6 text-left pl-4">Produk</div>
             <div class="col-span-2 text-center">Harga</div>
             <div class="col-span-2 text-center">Jumlah</div>
@@ -67,25 +73,31 @@
             </div>
         </div>
 
-        <div class="sticky bottom-0 bg-white/90 backdrop-blur-md shadow-[0_-5px_20px_rgba(0,0,0,0.05)] mt-8 p-6 border-t border-gray-100 z-40 rounded-t-2xl md:rounded-none">
+        <div
+            class="sticky bottom-0 bg-white/90 backdrop-blur-md shadow-[0_-5px_20px_rgba(0,0,0,0.05)] mt-8 p-6 border-t border-gray-100 z-40 rounded-t-2xl md:rounded-none">
             <div class="container mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center gap-6">
-                
+
                 <div class="flex items-center gap-6 w-full md:w-auto justify-between md:justify-start">
                     <div class="flex items-center gap-3">
-                        <input type="checkbox" id="select-all" class="custom-checkbox" checked>
-                        <label for="select-all" class="text-sm font-semibold cursor-pointer select-none text-gray-700">Pilih Semua</label>
+                        <input type="checkbox" id="select-all" class="custom-checkbox" checked
+                            onchange="toggleSelectAll(this)">
+                        <label for="select-all"
+                            class="text-sm font-semibold cursor-pointer select-none text-gray-700">Pilih Semua</label>
                     </div>
-                    <button class="text-gray-400 hover:text-red-600 text-sm font-medium transition-colors hidden md:block">
+                    <button
+                        class="text-gray-400 hover:text-red-600 text-sm font-medium transition-colors hidden md:block">
                         Hapus Pilihan
                     </button>
                 </div>
 
                 <div class="flex items-center gap-6 w-full md:w-auto justify-end">
                     <div class="text-right">
-                        <p class="text-xs text-gray-500 uppercase font-bold tracking-wide mb-1">Total (<span id="total-items-count">0</span> item)</p>
+                        <p class="text-xs text-gray-500 uppercase font-bold tracking-wide mb-1">Total (<span
+                                id="total-items-count">0</span> item)</p>
                         <p class="text-3xl font-black text-gray-900" id="total-price">Rp0</p>
                     </div>
-                    <a href="checkout.html" class="bg-gray-900 text-white font-bold px-12 py-4 rounded-xl hover:bg-black transition-all transform hover:scale-105 shadow-lg w-full md:w-auto text-center tracking-wide">
+                    <a href="checkout.html"
+                        class="bg-gray-900 text-white font-bold px-12 py-4 rounded-xl hover:bg-black transition-all transform hover:scale-105 shadow-lg w-full md:w-auto text-center tracking-wide">
                         CHECKOUT
                     </a>
                 </div>
@@ -97,4 +109,5 @@
 
     <script src="cart.js"></script>
 </body>
+
 </html>

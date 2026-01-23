@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Saya - Dazeon Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+
+    <!-- Navbar Container -->
+    <div id="navbar-container"></div>
+
+    <main class="container mx-auto px-4 py-8 max-w-2xl">
+        <h1 class="text-2xl font-bold mb-6">Profil Saya</h1>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <!-- Avatar Section -->
+            <div class="flex flex-col items-center mb-6">
+                <div class="relative group">
+                    <img id="avatar-img"
+                        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23e5e7eb'/%3E%3Ccircle cx='50' cy='40' r='18' fill='%239ca3af'/%3E%3Cellipse cx='50' cy='80' rx='28' ry='20' fill='%239ca3af'/%3E%3C/svg%3E"
+                        class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg">
+                    <label for="avatar-input"
+                        class="absolute bottom-0 right-0 bg-gray-900 text-white p-2 rounded-full cursor-pointer hover:bg-black transition shadow-md">
+                        <i class="fas fa-camera text-xs"></i>
+                    </label>
+                    <input type="file" id="avatar-input" class="hidden" accept="image/*">
+                </div>
+                <p class="text-xs text-gray-500 mt-2">Format: JPG, PNG (Max 2MB)</p>
+            </div>
+
+            <form id="profile-form" class="space-y-4">
+
+                <!-- Email (Read Only) -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="email" disabled
+                        class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm px-4 py-2 cursor-not-allowed text-gray-500">
+                </div>
+
+                <!-- Nama -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+                    <input type="text" id="name" required
+                        class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:ring-black focus:border-black transition">
+                </div>
+
+                <!-- No HP -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">No. Handphone</label>
+                    <input type="tel" id="phone" placeholder="08..."
+                        class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:ring-black focus:border-black transition">
+                </div>
+
+                <!-- Alamat -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Alamat Lengkap</label>
+                    <textarea id="address" rows="3" placeholder="Jl. Contoh No. 123..."
+                        class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:ring-black focus:border-black transition"></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Kota</label>
+                        <input type="text" id="city"
+                            class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:ring-black focus:border-black transition">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Kode Pos</label>
+                        <input type="text" id="postal_code"
+                            class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:ring-black focus:border-black transition">
+                    </div>
+                </div>
+
+                <div class="pt-4">
+                    <button type="submit" id="save-btn"
+                        class="w-full bg-gray-900 text-white font-bold py-3 rounded-lg hover:bg-black transition shadow-lg flex justify-center items-center gap-2">
+                        <i class="fas fa-save"></i> Simpan Perubahan
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- Section Ganti Password -->
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mt-6">
+            <h2 class="text-lg font-bold mb-4 text-gray-900">Ganti Password</h2>
+            <form id="password-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Password Baru</label>
+                    <input type="password" id="change-password-input" required minlength="6"
+                        placeholder="Minimal 6 karakter"
+                        class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 focus:ring-black focus:border-black transition">
+                </div>
+                <button type="submit" id="pass-btn"
+                    class="w-full bg-white text-gray-900 border border-gray-300 font-bold py-2 rounded-lg hover:bg-gray-50 transition">
+                    Update Password
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <script src="js/components/navbar.js"></script>
+    <script src="config.js"></script>
+    <script src="auth_check.js"></script>
+    <script>
+        // Fallback agar tidak error jika tombol Login di-klik sebelum Auth Check selesai
+        function openAuthModal() { console.log("User is already logged in on Profile page."); }
+
+        // Trigger Auth Check untuk update Navbar (Ganti tombol Masuk jadi Menu User)
+        document.addEventListener('DOMContentLoaded', () => {
+            // Tunggu sebentar agar renderNavbar selesai
+            setTimeout(() => {
+                if (typeof checkAuth === 'function') {
+                    checkAuth([], true); // true = anggap halaman publik agar UI navbar diupdate
+                }
+            }, 100);
+        });
+    </script>
+    <script src="profile.js"></script>
+
+</body>
+
+</html>
