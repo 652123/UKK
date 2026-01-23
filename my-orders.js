@@ -68,7 +68,7 @@ async function initOrders() {
                 statusText = 'Sedang Dikemas';
                 order.status = 'dikemas_visual_override';
             }
-            else if (order.status === 'diproses') { statusColor = 'bg-blue-100 text-blue-800'; statusText = 'Sedang Dikemas'; }
+            else if (order.status === 'diproses' || order.status === 'dikemas') { statusColor = 'bg-blue-100 text-blue-800'; statusText = 'Sedang Dikemas'; }
             else if (order.status === 'dikirim') { statusColor = 'bg-purple-100 text-purple-800'; statusText = 'Dalam Pengiriman'; }
             else if (order.status === 'selesai') { statusColor = 'bg-green-100 text-green-800'; statusText = 'Selesai'; }
             else if (order.status === 'dibatalkan') { statusColor = 'bg-red-100 text-red-800'; statusText = 'Dibatalkan'; }

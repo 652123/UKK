@@ -242,6 +242,7 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
         const orderDetails = cartItems.map(item => ({
             order_id: order.id,
             product_id: item.product_id,
+            size: item.size, // Save size info
             quantity: item.quantity,
             price_at_purchase: item.price
         }));

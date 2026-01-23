@@ -309,7 +309,7 @@
                             <div class="flex-1 flex flex-col md:flex-row justify-between">
                                 <div>
                                     <h4 class="font-bold text-gray-900 text-lg mb-1">${p ? p.name : 'Produk Dihapus'}</h4>
-                                    <p class="text-sm text-gray-500 font-medium">Qty: ${qty} x Rp${price.toLocaleString('id-ID')}</p>
+                                    <p class="text-sm text-gray-500 font-medium">Size: ${detail.size || '-'} | Qty: ${qty} x Rp${price.toLocaleString('id-ID')}</p>
                                 </div>
                                 <div class="mt-2 md:mt-0 text-left md:text-right">
                                     <p class="font-bold text-gray-900 text-lg">Rp${totalLine.toLocaleString('id-ID')}</p>
@@ -373,13 +373,14 @@
                 const steps = {
                     'menunggu_pembayaran': 0,
                     'diproses': 1, // Pending done -> Process active
+                    'dikemas': 1, // Dikemas is same step as Diproses visually (Processing)
                     'dikirim': 2,
                     'selesai': 3,
                     'dibatalkan': -1
                 };
 
                 let currentStep = steps[status] ?? 0;
-                if (status === 'diproses') currentStep = 1;
+                if (status === 'diproses' || status === 'dikemas') currentStep = 1;
 
                 // Reset all
                 const circles = document.querySelectorAll('.step-circle');
@@ -414,7 +415,7 @@
                 const badge = document.getElementById('status-badge-lg');
                 let badgeContent = '';
                 if (status === 'menunggu_pembayaran') badgeContent = `<span class="text-yellow-600"><i class="fas fa-clock mr-2"></i>Menunggu Pembayaran</span>`;
-                else if (status === 'diproses') badgeContent = `<span class="text-blue-600"><i class="fas fa-box-open mr-2"></i>Sedang Dikemas</span>`;
+                else if (status === 'diproses' || status === 'dikemas') badgeContent = `<span class="text-blue-600"><i class="fas fa-box-open mr-2"></i>Sedang Dikemas</span>`;
                 else if (status === 'dikirim') badgeContent = `<span class="text-purple-600"><i class="fas fa-shipping-fast mr-2"></i>Dalam Pengiriman</span>`;
                 else if (status === 'selesai') badgeContent = `<span class="text-green-600"><i class="fas fa-check-circle mr-2"></i>Pesanan Selesai</span>`;
 

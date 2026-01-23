@@ -214,8 +214,7 @@
                     .select(`
                         *,
                         order_details (
-                            quantity,
-                            price_at_purchase,
+                            *,
                             products (name, image_url)
                         )
                     `)
@@ -248,7 +247,7 @@
             let label = order.status;
 
             if (order.status === 'menunggu_pembayaran') { color = 'bg-yellow-100 text-yellow-800'; label = 'Menunggu Pembayaran'; }
-            else if (order.status === 'diproses') { color = 'bg-blue-100 text-blue-800'; label = 'Siap Dikemas'; }
+            else if (order.status === 'diproses' || order.status === 'dikemas') { color = 'bg-blue-100 text-blue-800'; label = 'Siap Dikemas'; }
             else if (order.status === 'dikirim') { color = 'bg-purple-100 text-purple-800'; label = 'Sedang Dikirim'; }
             else if (order.status === 'selesai') { color = 'bg-green-100 text-green-800'; label = 'Selesai'; }
             else if (order.status === 'dibatalkan') { color = 'bg-red-100 text-red-800'; label = 'Dibatalkan'; }
@@ -302,7 +301,7 @@
                         <img src="${img}" class="w-16 h-16 object-cover rounded-md border border-gray-200">
                         <div class="flex-1">
                             <p class="font-bold text-gray-900">${p ? p.name : 'Produk Dihapus'}</p>
-                            <p class="text-sm text-gray-500">${detail.quantity} x Rp${detail.price_at_purchase.toLocaleString('id-ID')}</p>
+                            <p class="text-sm text-gray-500">Size: ${detail.size || '-'} | ${detail.quantity} x Rp${detail.price_at_purchase.toLocaleString('id-ID')}</p>
                         </div>
                         <p class="font-semibold text-gray-900">Rp${totalItem.toLocaleString('id-ID')}</p>
                     </div>
@@ -338,7 +337,7 @@
                         <i class="fas fa-times mr-2"></i>Batalkan
                     </button>
                 `;
-            } else if (order.status === 'diproses') {
+            } else if (order.status === 'diproses' || order.status === 'dikemas') {
                 container.innerHTML += `
                      <button onclick="updateStatus('${order.id}', 'dikirim')" class="${btnClass} bg-purple-600 text-white hover:bg-purple-700 col-span-full">
                         <i class="fas fa-truck mr-2"></i>Input Resi & Kirim
