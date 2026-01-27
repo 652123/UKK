@@ -1,9 +1,10 @@
 # Node dependencies
 node_modules/
 
-# Package files (tidak ikut ke repo)
-package.json
-package-lock.json
+# Package files
+# package.json and lock files SHOULD be tracked for deployment
+# package.json
+# package-lock.json
 yarn.lock
 pnpm-lock.yaml
 

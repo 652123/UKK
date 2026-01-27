@@ -275,6 +275,12 @@ app.get('/api/payment/:orderId', async (req, res) => {
         res.status(404).json({ error: "Transaction not found", details: error.message });
     }
 });
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+// Conditional Listen for Local Development
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`🚀 Server running on http://localhost:${PORT}`);
+    });
+}
+
+// Export the app for Vercel (Serverless)
+module.exports = app;
