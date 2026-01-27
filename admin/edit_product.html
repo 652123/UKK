@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Produk - Dazeon Admin</title>
+    <title>Edit Produk - Dazeon Admin (Bos)</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -14,166 +14,210 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
     <script>
-        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] }, colors: { dark: '#0f172a', darker: '#020617' } } } }
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            accent: '#d946ef',
+                        }
+                    },
+                    animation: {
+                        'gradient': 'gradient 8s linear infinite',
+                    },
+                    keyframes: {
+                        'gradient': {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            },
+                        }
+                    }
+                }
+            }
+        }
     </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .glass {
+                @apply bg-[#121212] border border-white/5 backdrop-blur-md;
+            }
+            .text-glow {
+                text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+            }
+        }
+        /* Custom Scrollbar for Dark Theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050505; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555; 
+        }
+    </style>
+    </style>
     <script src="../config.js"></script>
     <script src="../auth_check.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            checkAuth(['admin']);
+            checkAuth(['bos', 'admin']);
         });
     </script>
 </head>
 
-<body class="bg-gray-100 font-sans">
+<body class="bg-[#050505] font-sans text-gray-100 selection:bg-brand-500 selection:text-white">
 
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex h-screen bg-[#050505]">
 
-        <div class="hidden md:flex md:flex-col md:w-64 bg-gray-900 text-gray-300">
-            <div class="flex items-center justify-center h-20 border-b border-gray-700">
-                <span class="text-2xl font-black text-white uppercase tracking-wider">DAZEON ADMIN</span>
+        <!-- SIDEBAR (Admin) -->
+        <div class="hidden md:flex md:flex-col md:w-64 bg-[#121212] border-r border-white/5">
+            <div class="flex items-center justify-center h-20 border-b border-white/5">
+                <span
+                    class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-brand-accent uppercase tracking-wider">DAZEON</span>
             </div>
-            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
+
+            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto custom-scrollbar">
                 <a href="dashboard.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
-                    <i class="fas fa-tachometer-alt w-6 text-lg"></i><span class="ml-4">Dashboard</span>
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200">
+                    <i class="fas fa-home w-6 text-lg"></i><span class="ml-4">Dashboard</span>
                 </a>
+
+                <!-- Active Product Link -->
                 <a href="manage_products.html"
-                    class="flex items-center px-4 py-3 rounded-lg bg-gray-700 text-white font-semibold">
+                    class="flex items-center px-4 py-3 rounded-xl bg-brand-600/10 text-brand-400 border border-brand-500/20 font-semibold shadow-[0_0_15px_rgba(139,92,246,0.2)]">
                     <i class="fas fa-tshirt w-6 text-lg"></i><span class="ml-4">Produk</span>
                 </a>
+
                 <a href="manage_orders.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
-                    <i class="fas fa-box-open w-6 text-lg"></i><span class="ml-4">Pesanan</span>
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200">
+                    <i class="fas fa-receipt w-6 text-lg"></i><span class="ml-4">Pesanan</span>
                 </a>
+
                 <a href="manage_users.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
-                    <i class="fas fa-users w-6 text-lg"></i><span class="ml-4">Pengguna</span>
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200">
+                    <i class="fas fa-users w-6 text-lg"></i><span class="ml-4">Pelanggan</span>
                 </a>
-                <a href="reports.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
-                    <i class="fas fa-chart-line w-6 text-lg"></i><span class="ml-4">Laporan</span>
+
+                <a href="helpdesk.html"
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200">
+                    <i class="fas fa-headset w-6 text-lg"></i><span class="ml-4">Helpdesk</span>
                 </a>
+
                 <a href="../login.html"
-                    class="flex items-center px-4 py-3 rounded-lg text-red-400 hover:bg-red-600 hover:text-white transition-colors duration-200">
+                    class="flex items-center px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors duration-200 mt-auto border border-transparent hover:border-red-500/20">
                     <i class="fas fa-sign-out-alt w-6 text-lg"></i><span class="ml-4">Logout</span>
                 </a>
             </nav>
         </div>
 
         <div class="flex-1 flex flex-col overflow-hidden">
-            <header class="flex justify-between items-center h-20 px-6 bg-white border-b border-gray-200 shadow-sm">
-                <h1 class="text-2xl font-semibold text-gray-800">Edit Produk</h1>
-                <span class="text-gray-700 hidden sm:block">Halo, <strong id="user-name">Admin</strong>!</span>
+            <header
+                class="flex justify-between items-center h-20 px-6 bg-[#121212]/80 backdrop-blur-md border-b border-white/5 sticky top-0 z-10">
+                <h2 class="text-2xl font-bold text-white tracking-wide">Edit Produk (Admin)</h2>
+                <span
+                    class="text-gray-400 hidden sm:block bg-[#0a0a0a] px-4 py-2 rounded-full border border-white/5">Halo,
+                    <strong class="text-brand-400">Admin</strong>!</span>
             </header>
 
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-[#050505] p-6">
                 <div class="container mx-auto max-w-3xl">
 
                     <a href="manage_products.html"
-                        class="inline-flex items-center text-gray-500 hover:text-gray-900 mb-6 font-medium transition-colors">
+                        class="inline-flex items-center text-gray-500 hover:text-white mb-6 font-medium transition-colors">
                         <i class="fas fa-arrow-left mr-2"></i> Kembali ke Daftar Produk
                     </a>
 
-                    <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+                    <div class="glass p-8 rounded-2xl">
                         <form id="edit-product-form" class="space-y-6">
                             <input type="hidden" id="product_id" name="id">
                             <input type="hidden" id="existing_image" name="existing_image">
 
                             <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-2">Nama Produk</label>
+                                <label class="block text-sm font-bold text-gray-400 mb-2">Nama Produk</label>
                                 <input type="text" id="name" name="name" required
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-gray-900 outline-none transition-all">
+                                    class="w-full px-4 py-3 bg-[#0a0a0a] border border-white/10 rounded-xl text-gray-200 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-all">
                             </div>
 
-
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Harga (Rp)</label>
+                                    <label class="block text-sm font-bold text-gray-400 mb-2">Harga Jual (Rp)</label>
                                     <input type="number" id="price" name="price" required
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 outline-none">
+                                        class="w-full px-4 py-3 bg-[#0a0a0a] border border-white/10 rounded-xl text-gray-200 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-all">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Harga Modal
-                                        (Rp)</label>
+                                    <label class="block text-sm font-bold text-gray-400 mb-2">Harga Modal (Rp)</label>
                                     <input type="number" id="cost_price" name="cost_price" required
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 outline-none">
+                                        class="w-full px-4 py-3 bg-[#0a0a0a] border border-white/10 rounded-xl text-gray-200 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-all">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-gray-400 mb-2">Stok</label>
+                                    <input type="number" id="stock" name="stock" required
+                                        class="w-full px-4 py-3 bg-[#0a0a0a] border border-white/10 rounded-xl text-gray-200 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-all">
                                 </div>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label class="block text-sm font-semibold text-gray-700 mb-2">Stok</label>
-                                    <input type="number" id="stock" name="stock" required
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 outline-none">
-                                </div>
-                                <div>
+                            <div>
+                                <label class="block text-sm font-bold text-gray-400 mb-2">Deskripsi</label>
+                                <textarea id="description" name="description" rows="4"
+                                    class="w-full px-4 py-3 bg-[#0a0a0a] border border-white/10 rounded-xl text-gray-200 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-all"></textarea>
+                            </div>
 
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div>
-                                            <label
-                                                class="block text-sm font-semibold text-gray-700 mb-2">Material</label>
-                                            <input type="text" id="material" name="material"
-                                                placeholder="Contoh: Cotton Combed 24s"
-                                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 outline-none">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-400 mb-3">Gambar Produk</label>
+                                <div class="flex flex-col sm:flex-row items-start gap-5">
+
+                                    <div id="preview-box"
+                                        class="w-40 h-40 border-2 border-dashed border-white/20 rounded-xl bg-[#0a0a0a] flex items-center justify-center relative overflow-hidden transition-all">
+                                        <div id="placeholder" class="text-center p-4 hidden">
+                                            <i class="fas fa-cloud-upload-alt text-gray-600 text-3xl mb-2"></i>
+                                            <p class="text-xs text-gray-500 font-medium">No Image</p>
                                         </div>
-                                        <div>
-                                            <label class="block text-sm font-semibold text-gray-700 mb-2">Fit /
-                                                Potongan</label>
-                                            <input type="text" id="fit" name="fit" placeholder="Contoh: Regular Fit"
-                                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 outline-none">
-                                        </div>
+
+                                        <img id="img-preview" src="#" alt="Preview"
+                                            class="absolute inset-0 w-full h-full object-cover z-10">
                                     </div>
 
-                                    <div>
-                                        <label class="block text-sm font-semibold text-gray-700 mb-2">Deskripsi</label>
-                                        <textarea id="description" name="description" rows="4"
-                                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 outline-none"></textarea>
-                                    </div>
-
-                                    <div>
-                                        <label class="block text-sm font-semibold text-gray-700 mb-3">Gambar
-                                            Produk</label>
-                                        <div class="flex flex-col sm:flex-row items-start gap-5">
-
-                                            <div id="preview-box"
-                                                class="w-40 h-40 border-2 border-solid border-gray-900 rounded-xl bg-white flex items-center justify-center relative overflow-hidden transition-all">
-                                                <!-- Placeholder hidden by default if image exists (handled by js) -->
-                                                <div id="placeholder" class="text-center p-4 hidden">
-                                                    <i class="fas fa-cloud-upload-alt text-gray-400 text-3xl mb-2"></i>
-                                                    <p class="text-xs text-gray-500 font-medium">No Image</p>
-                                                </div>
-
-                                                <img id="img-preview" src="#" alt="Preview"
-                                                    class="absolute inset-0 w-full h-full object-cover z-10">
-                                            </div>
-
-                                            <div class="flex-1 w-full self-center">
-                                                <input type="file" name="image" id="img-input"
-                                                    accept="image/png, image/jpeg, image/jpg, image/webp"
-                                                    onchange="previewImage(event)" class="block w-full text-sm text-gray-500 
+                                    <div class="flex-1 w-full self-center">
+                                        <input type="file" name="image" id="img-input"
+                                            accept="image/png, image/jpeg, image/jpg, image/webp"
+                                            onchange="previewImage(event)" class="block w-full text-sm text-gray-500 
                                                       file:mr-4 file:py-3 file:px-6 
                                                       file:rounded-xl file:border-0 
                                                       file:text-sm file:font-bold 
-                                                      file:bg-gray-900 file:text-white 
-                                                      hover:file:bg-gray-700 
-                                                      cursor-pointer shadow-sm transition-all">
-                                                <p class="text-xs text-gray-500 mt-3">
-                                                    <i class="fas fa-info-circle mr-1"></i> Biarkan kosong jika tidak
-                                                    ingin
-                                                    mengubah gambar.
-                                                </p>
-                                            </div>
-                                        </div>
+                                                      file:bg-brand-600 file:text-white 
+                                                      hover:file:bg-brand-500 
+                                                      cursor-pointer transition-all">
+                                        <p class="text-xs text-gray-500 mt-3">
+                                            <i class="fas fa-info-circle mr-1"></i> Biarkan kosong jika tidak ingin
+                                            mengubah gambar.
+                                        </p>
                                     </div>
-                                    <div class="pt-8 border-t border-gray-100">
-                                        <button type="submit" id="btn-submit"
-                                            class="w-full bg-gray-900 text-white font-bold py-4 rounded-xl hover:bg-gray-800 transition-all transform hover:scale-[1.01] shadow-md flex justify-center items-center gap-2">
-                                            <i class="fas fa-save"></i>
-                                            <span>Simpan Perubahan</span>
-                                        </button>
-                                    </div>
+                                </div>
+                            </div>
+                            <div class="pt-8 border-t border-white/5">
+                                <button type="submit" id="btn-submit"
+                                    class="w-full bg-brand-600 text-white font-bold py-4 rounded-xl hover:bg-brand-500 transition-all transform hover:scale-[1.01] shadow-lg shadow-brand-600/20 flex justify-center items-center gap-2">
+                                    <i class="fas fa-save"></i>
+                                    <span>Simpan Perubahan</span>
+                                </button>
+                            </div>
 
                         </form>
                     </div>
@@ -213,13 +257,15 @@
                     title: 'Error',
                     text: 'ID Produk tidak ditemukan!',
                     timer: 1500,
-                    showConfirmButton: false
+                    showConfirmButton: false,
+                    background: '#121212',
+                    color: '#fff'
                 });
                 window.location.href = 'manage_products.html';
                 return;
             }
 
-            // A. Kategori sudah hardcoded, tidak perlu fetch
+            // A. Kategori hardcoded
 
 
             // B. Load Produk
@@ -230,14 +276,15 @@
                 .single();
 
             if (prodError || !product) {
-                Swal.fire({
+                await Swal.fire({
                     icon: 'error',
                     title: 'Gagal',
                     text: "Gagal memuat produk: " + (prodError?.message || "Data tidak ditemukan"),
-                    confirmButtonColor: '#d33'
-                }).then(() => {
-                    window.location.href = 'manage_products.html';
+                    confirmButtonColor: '#d33',
+                    background: '#121212',
+                    color: '#fff'
                 });
+                window.location.href = 'manage_products.html';
                 return;
             }
 
@@ -249,8 +296,6 @@
             document.getElementById('cost_price').value = product.cost_price || 0;
             document.getElementById('stock').value = product.stock;
             document.getElementById('description').value = product.description;
-            document.getElementById('material').value = product.material || '';
-            document.getElementById('fit').value = product.fit || '';
             document.getElementById('existing_image').value = product.image_url;
 
             // Preview Image
@@ -314,8 +359,6 @@
                         cost_price: formData.get('cost_price'),
                         stock: formData.get('stock'),
                         description: formData.get('description'),
-                        material: formData.get('material'),
-                        fit: formData.get('fit'),
                         image_url: imageUrl
                     })
                     .eq('id', productId);
@@ -327,7 +370,9 @@
                     title: 'Berhasil!',
                     text: 'Produk berhasil diperbarui!',
                     timer: 1500,
-                    showConfirmButton: false
+                    showConfirmButton: false,
+                    background: '#121212',
+                    color: '#fff'
                 });
                 window.location.href = 'manage_products.html';
 
@@ -337,7 +382,9 @@
                     icon: 'error',
                     title: 'Gagal',
                     text: error.message,
-                    confirmButtonColor: '#d33'
+                    confirmButtonColor: '#d33',
+                    background: '#121212',
+                    color: '#fff'
                 });
                 btn.disabled = false;
                 btn.innerHTML = originalText;
@@ -347,7 +394,7 @@
 
         // INIT
         document.addEventListener('DOMContentLoaded', () => {
-            checkAuth(['admin']); // Ensure auth check
+            checkAuth(['admin']);
             loadData();
         });
     </script>

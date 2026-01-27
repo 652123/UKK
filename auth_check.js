@@ -5,7 +5,7 @@
 // Helper for notifications (Fallback to alert if Swal not loaded)
 function notify(type, title, text) {
     if (typeof Swal !== 'undefined') {
-        return Swal.fire({ icon: type, title: title, text: text, confirmButtonColor: '#111827' });
+        return Swal.fire({ icon: type, title: title, text: text, confirmButtonColor: '#111827', background: '#121212', color: '#fff' });
     } else {
         alert(`${title}\n${text}`);
         return Promise.resolve({ isConfirmed: true });
@@ -36,7 +36,7 @@ async function checkAuth(allowedRoles = [], isPublic = false) {
                 window.location.href = '/index.html';
             });
         } else {
-            console.log("Halaman publik: User belum login.");
+            // console.log("Halaman publik: User belum login.");
         }
         return;
     }
@@ -74,7 +74,7 @@ async function checkAuth(allowedRoles = [], isPublic = false) {
     }
 
     // Jika berhasil
-    console.log(`Auth sukses.User: ${profile.name} (${profile.role})`);
+    // console.log(`Auth sukses.User: ${profile.name} (${profile.role})`);
 
     // Update nama user di UI jika ada elemennya
     const userNameEl = document.getElementById('user-name');
@@ -86,7 +86,9 @@ async function checkAuth(allowedRoles = [], isPublic = false) {
     if (isPublic) {
         const loginBtn = document.querySelector("button[onclick=\"openAuthModal('login')\"]");
         if (loginBtn) {
-            loginBtn.innerText = `Halo, ${profile.name}`;
+            // Updated: Show only first name to handle long names in navbar
+            const firstName = profile.name ? profile.name.split(' ')[0] : 'User';
+            loginBtn.innerText = `Halo, ${firstName}`;
             // Hapus onclick lama (openAuthModal) dan ganti baru
             loginBtn.removeAttribute("onclick");
             loginBtn.addEventListener("click", async () => {
@@ -102,7 +104,9 @@ async function checkAuth(allowedRoles = [], isPublic = false) {
                             confirmButtonText: '🚀 Dashboard Admin',
                             cancelButtonText: '🚪 Logout',
                             confirmButtonColor: '#111827',
-                            cancelButtonColor: '#d33'
+                            cancelButtonColor: '#d33',
+                            background: '#121212',
+                            color: '#fff'
                         });
 
                         if (result.isConfirmed) {
@@ -126,7 +130,9 @@ async function checkAuth(allowedRoles = [], isPublic = false) {
                             confirmButtonText: '💼 Dashboard Bos',
                             cancelButtonText: '🚪 Logout',
                             confirmButtonColor: '#111827',
-                            cancelButtonColor: '#d33'
+                            cancelButtonColor: '#d33',
+                            background: '#121212',
+                            color: '#fff'
                         });
 
                         if (result.isConfirmed) {
@@ -151,9 +157,13 @@ async function checkAuth(allowedRoles = [], isPublic = false) {
                             confirmButtonText: '👤 Profil Saya',
                             denyButtonText: '📦 Pesanan Saya',
                             cancelButtonText: '🚪 Logout',
-                            confirmButtonColor: '#111827',
-                            denyButtonColor: '#3B82F6',
-                            cancelButtonColor: '#d33'
+                            confirmButtonColor: '#fff',
+                            confirmButtonAriaLabel: 'Profil Saya',
+                            customClass: { confirmButton: 'text-black font-bold' },
+                            denyButtonColor: '#6366f1',
+                            cancelButtonColor: '#dc2626',
+                            background: '#121212',
+                            color: '#fff'
                         });
 
                         if (result.isConfirmed) {
@@ -176,8 +186,8 @@ async function checkAuth(allowedRoles = [], isPublic = false) {
                 }
             });
 
-            loginBtn.classList.remove('bg-gray-900');
-            loginBtn.classList.add('bg-green-600');
+            loginBtn.classList.remove('bg-gray-900', 'bg-white', 'text-black');
+            loginBtn.classList.add('bg-gradient-to-r', 'from-brand-600', 'to-brand-accent', 'text-white', 'border', 'border-white/20', 'shadow-[0_0_15px_rgba(139,92,246,0.5)]');
         }
     }
 
@@ -205,7 +215,9 @@ function setupLogout() {
                     showCancelButton: true,
                     confirmButtonColor: '#d33',
                     cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Ya, Keluar'
+                    confirmButtonText: 'Ya, Keluar',
+                    background: '#121212',
+                    color: '#fff'
                 });
                 confirmed = result.isConfirmed;
             } else {
@@ -220,3 +232,37 @@ function setupLogout() {
         });
     });
 }
+
+// --- REALTIME AUTH LISTENER ---
+document.addEventListener('DOMContentLoaded', () => {
+    // Tunggu window.db siap
+    const interval = setInterval(() => {
+        if (window.db) {
+            clearInterval(interval);
+
+            // Listen for Auth Changes
+            window.db.auth.onAuthStateChange((event, session) => {
+                // console.log("Auth State Change:", event);
+
+                if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED_OR_USER_UPDATED') {
+                    // Re-run checkAuth to update UI (Pass true for isPublic to avoid redirect loops on public pages)
+                    // We detect current path to decide allowedRoles? 
+                    // For simplicity, we just trigger UI update logic if on public page
+                    const isAdminPage = window.location.pathname.includes('/admin/');
+                    const isBosPage = window.location.pathname.includes('/bos/');
+
+                    if (!isAdminPage && !isBosPage) {
+                        checkAuth([], true);
+                    }
+                } else if (event === 'SIGNED_OUT') {
+                    // Reset Navbar UI
+                    const loginBtn = document.querySelector("button[onclick^='openAuthModal']"); // Selector might need adjust if ID changed
+                    const userNameEl = document.getElementById('user-name'); // If used
+
+                    // Simply reload to clear state is easiest, or manually reset
+                    // window.location.reload(); // Reloading is safest for clean state
+                }
+            });
+        }
+    }, 100);
+});

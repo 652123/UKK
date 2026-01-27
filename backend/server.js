@@ -12,6 +12,29 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const fs = require('fs');
+
+// Serve config.js dynamically with Env Vars
+app.get('/config.js', (req, res) => {
+    const configPath = path.join(__dirname, '../config.js');
+    fs.readFile(configPath, 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading config.js:', err);
+            return res.status(500).send('Error loading configuration');
+        }
+
+        // Inject Environment Variables
+        const processedConfig = data
+            .replace(/'__SUPABASE_URL__'/g, `'${process.env.SUPABASE_URL || ''}'`)
+            .replace(/'__SUPABASE_KEY__'/g, `'${process.env.SUPABASE_KEY || ''}'`)
+            .replace(/'__MIDTRANS_CLIENT_KEY__'/g, `'${process.env.MIDTRANS_CLIENT_KEY || ''}'`)
+            .replace(/'__API_BASE_URL__'/g, `'${process.env.API_BASE_URL || 'http://localhost:3000'}'`);
+
+        res.setHeader('Content-Type', 'application/javascript');
+        res.send(processedConfig);
+    });
+});
+
 // Static files - serve the frontend
 app.use(express.static(path.join(__dirname, '..')));
 
@@ -88,20 +111,6 @@ app.post('/api/notification', async (req, res) => {
 
         console.log(`Notification Received: Order: ${orderId} | Status: ${transactionStatus} | Fraud: ${fraudStatus}`);
 
-        // Mapping Status Midtrans ke Database
-        let dbStatus = 'menunggu_pembayaran';
-
-        if (transactionStatus == 'capture') {
-            // Force 'dikemas' for all capture statuses as requested by user
-            dbStatus = 'dikemas';
-        } else if (transactionStatus == 'settlement') {
-            dbStatus = 'dikemas'; // Sukses (Transfer/Gopay/dll)
-        } else if (transactionStatus == 'cancel' || transactionStatus == 'deny' || transactionStatus == 'expire') {
-            dbStatus = 'dibatalkan'; // Gagal
-        } else if (transactionStatus == 'pending') {
-            dbStatus = 'menunggu_pembayaran';
-        }
-
         // Extract Real Order ID (jika format order-id-timestamp)
         // const realOrderId = orderId.split('-')[0]; // Hati-hati jika ID asli ternyata UUID
 
@@ -132,22 +141,32 @@ app.post('/api/notification', async (req, res) => {
 
         console.log(`Original Order ID: ${orderId} -> Extracted DB ID: ${realOrderId}`);
 
-        console.log(`Updating Database Order ID: ${realOrderId} to Status: ${dbStatus}`);
-
-        const { data, error } = await supabase
-            .from('orders')
-            .update({ status: dbStatus })
-            .eq('id', realOrderId)
-            .select();
-
-        if (error) {
-            console.error("Supabase Update Error:", error.message);
-            throw error;
-        }
-
-        if (data.length === 0) {
-            console.warn("No order updated. Check Order ID.");
+        if (transactionStatus == 'capture' || transactionStatus == 'settlement') {
+            // Sukses: Jalankan Finalize (Update Status + Kurangi Stok)
+            console.log(`Transaction Success (${transactionStatus}). Finalizing order...`);
+            await finalizeOrder(realOrderId);
         } else {
+            // Non-Sukses: Update Status Saja
+            let dbStatus = 'menunggu_pembayaran';
+
+            if (transactionStatus == 'cancel' || transactionStatus == 'deny' || transactionStatus == 'expire') {
+                dbStatus = 'dibatalkan';
+            } else if (transactionStatus == 'pending') {
+                dbStatus = 'menunggu_pembayaran';
+            }
+
+            console.log(`Updating Database Order ID: ${realOrderId} to Status: ${dbStatus}`);
+
+            const { data, error } = await supabase
+                .from('orders')
+                .update({ status: dbStatus })
+                .eq('id', realOrderId)
+                .select();
+
+            if (error) {
+                console.error("Supabase Update Error:", error.message);
+                throw error;
+            }
             console.log("Database Updated Successfully.");
         }
 
@@ -158,6 +177,71 @@ app.post('/api/notification', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+// --- HELPER: Finalize Order (Update Status & Decrement Stock) ---
+async function finalizeOrder(realOrderId) {
+    // 1. Get current status to prevent double processing
+    const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .select('status')
+        .eq('id', realOrderId)
+        .single();
+
+    if (orderError) {
+        console.error(`Error fetching order ${realOrderId}:`, orderError.message);
+        return;
+    }
+
+    // Idempotency check: If already paid/processing, skip stock decrement
+    if (['dikemas', 'dikirim', 'selesai'].includes(order.status)) {
+        console.log(`Order ${realOrderId} already processed (Status: ${order.status}). Skipping stock deduction.`);
+        return;
+    }
+
+    console.log(`Finalizing Order ${realOrderId}... Decrementing Stock.`);
+
+    // 2. Fetch Order Details
+    const { data: details, error: detailsError } = await supabase
+        .from('order_details')
+        .select('product_id, quantity')
+        .eq('order_id', realOrderId);
+
+    if (detailsError) {
+        console.error("Error fetching details:", detailsError.message);
+    } else if (details) {
+        // 3. Decrement Stock Loop
+        for (const item of details) {
+            try {
+                // Fetch current stock
+                const { data: prod } = await supabase
+                    .from('products')
+                    .select('stock')
+                    .eq('id', item.product_id)
+                    .single();
+
+                if (prod) {
+                    const newStock = Math.max(0, prod.stock - item.quantity);
+                    await supabase
+                        .from('products')
+                        .update({ stock: newStock })
+                        .eq('id', item.product_id);
+                    console.log(`Stock updated for Product ${item.product_id}: ${prod.stock} -> ${newStock}`);
+                }
+            } catch (err) {
+                console.error(`Failed to update stock for product ${item.product_id}:`, err);
+            }
+        }
+    }
+
+    // 4. Update Status to 'dikemas'
+    const { error: updateError } = await supabase
+        .from('orders')
+        .update({ status: 'dikemas' })
+        .eq('id', realOrderId);
+
+    if (updateError) console.error("Error updating status:", updateError.message);
+    else console.log(`Order ${realOrderId} status updated to 'dikemas'.`);
+}
+
 // Check Transaction Status Endpoint
 app.get('/api/payment/:orderId', async (req, res) => {
     const { orderId } = req.params;
@@ -165,43 +249,28 @@ app.get('/api/payment/:orderId', async (req, res) => {
         const statusResponse = await snap.transaction.status(orderId);
         console.log(`Status Check for ${orderId}: ${statusResponse.transaction_status}`);
 
-        // --- EAGER UPDATE LOGIC ---
-        // Jika status sudah settlement/capture tapi di DB masih pending, paksa update sekarang.
-        // Ini mengatasi delay webhook.
-        const transactionStatus = statusResponse.transaction_status;
-        const fraudStatus = statusResponse.fraud_status;
-
-        let dbStatus = null;
-        if (transactionStatus == 'capture') {
-            dbStatus = 'dikemas';
-        } else if (transactionStatus == 'settlement') {
-            dbStatus = 'dikemas';
-        } else if (transactionStatus == 'cancel' || transactionStatus == 'deny' || transactionStatus == 'expire') {
-            dbStatus = 'dibatalkan';
-        } else if (transactionStatus == 'pending') {
-            dbStatus = 'menunggu_pembayaran';
-        }
-
-        if (dbStatus && dbStatus !== 'menunggu_pembayaran') {
-            // Logic Ekstraksi Real Order ID (Sama seperti Webhook)
-            let realOrderId = orderId;
-            const lastDashIndex = orderId.lastIndexOf('-');
-            if (lastDashIndex !== -1) {
-                const potentialTimestamp = orderId.substring(lastDashIndex + 1);
-                if (/^\d+$/.test(potentialTimestamp)) {
-                    realOrderId = orderId.substring(0, lastDashIndex);
-                }
+        // Extract Real Order ID
+        let realOrderId = orderId;
+        const lastDashIndex = orderId.lastIndexOf('-');
+        if (lastDashIndex !== -1) {
+            const potentialTimestamp = orderId.substring(lastDashIndex + 1);
+            if (/^\d+$/.test(potentialTimestamp)) {
+                realOrderId = orderId.substring(0, lastDashIndex);
             }
-
-            // Update DB
-            console.log(`Eager Update: Syncing Order ${realOrderId} to ${dbStatus}`);
-            await supabase.from('orders').update({ status: dbStatus }).eq('id', realOrderId);
         }
-        // --- END EAGER UPDATE ---
+
+        const transactionStatus = statusResponse.transaction_status;
+
+        if (transactionStatus == 'capture' || transactionStatus == 'settlement') {
+            // SUCCESS: Execute Finalize Logic
+            await finalizeOrder(realOrderId);
+        } else if (transactionStatus == 'cancel' || transactionStatus == 'deny' || transactionStatus == 'expire') {
+            // FAIL
+            await supabase.from('orders').update({ status: 'dibatalkan' }).eq('id', realOrderId);
+        }
 
         res.json(statusResponse);
     } catch (error) {
-        // Midtrans throws error if 404
         console.error("Status Check Error:", error.message);
         res.status(404).json({ error: "Transaction not found", details: error.message });
     }

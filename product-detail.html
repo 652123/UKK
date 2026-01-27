@@ -12,18 +12,77 @@
     <script src="config.js"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
+    <!-- Combine Poppins and Outfit imports -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&family=Poppins:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.classList.add('loaded'); // Trigger transition
+            // ... original DOMContentLoaded logic below ...
+        });
+
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
-                    colors: { brand: '#171717' }
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            accent: '#d946ef',
+                        }
+                    },
+                    animation: {
+                        'gradient': 'gradient 8s linear infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        'gradient': {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            },
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
                 }
             }
         }
     </script>
+    <style>
+        /* Page Transition Root */
+        body {
+            opacity: 0;
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body.loaded {
+            opacity: 1;
+        }
+
+        /* Typography Utilities */
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        .font-heading {
+            font-family: 'Outfit', sans-serif;
+        }
+    </style>
     <style>
         .size-btn.active {
             background-color: black;
@@ -42,323 +101,424 @@
         #login-btn-nav {
             display: none !important;
         }
+
+        /* ANIMATIONS FROM INDEX */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .text-glow {
+            text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
     </style>
 </head>
 
-<body class="bg-white text-gray-800 font-sans antialiased">
+<body class="bg-[#050505] text-gray-100 font-sans antialiased selection:bg-brand-500 selection:text-white">
 
     <!-- NAV (Simple Version) -->
     <div id="navbar-container"></div>
     <script src="js/components/navbar.js"></script>
 
-    <main class="container mx-auto px-4 py-12 max-w-7xl min-h-screen">
+    <main class="min-h-screen bg-[#050505] relative overflow-hidden">
+        <!-- Background Glow -->
+        <div class="absolute top-0 left-1/4 w-96 h-96 bg-brand-500/10 rounded-full blur-[120px] pointer-events-none">
+        </div>
+        <div
+            class="absolute bottom-0 right-1/4 w-96 h-96 bg-brand-accent/10 rounded-full blur-[120px] pointer-events-none">
+        </div>
 
         <!-- Loading State -->
-        <div id="loading-ui" class="text-center py-32">
-            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-black mb-4">
+        <div id="loading-ui" class="min-h-screen flex items-center justify-center bg-[#050505] relative z-50">
+            <div class="text-center">
+                <div
+                    class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-800 border-t-brand-500 mb-4">
+                </div>
+                <p class="text-gray-400 font-medium text-sm tracking-wide animate-pulse">MEMUAT PRODUK...</p>
             </div>
-            <p class="text-gray-500 font-medium tracking-wide animate-pulse">MEMUAT PRODUK...</p>
         </div>
 
-        <div id="product-content" class="hidden grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
+        <div id="product-content" class="hidden relative z-10">
 
-            <!-- Left: Images -->
-            <div class="space-y-4">
-                <div class="aspect-[4/5] bg-gray-100 rounded-2xl overflow-hidden relative group">
-                    <img id="p-img" src="" alt="Produk"
-                        class="w-full h-full object-cover object-center transition duration-700 group-hover:scale-105">
+            <!-- BREADCRUMB -->
+            <div class="border-b border-white/5 bg-[#050505]/80 backdrop-blur-md sticky top-0 z-40">
+                <div class="container mx-auto px-4 py-4">
+                    <nav class="text-xs font-medium tracking-wide" id="breadcrumbs">
+                        <a href="index.html" class="text-gray-500 hover:text-brand-400 transition">BERANDA</a>
+                        <span class="mx-2 text-gray-700">/</span>
+                        <span class="text-gray-300">PRODUK</span>
+                    </nav>
                 </div>
             </div>
 
-            <!-- Right: Details -->
-            <div class="flex flex-col justify-start py-4">
+            <!-- MAIN PRODUCT SECTION -->
+            <div class="relative">
+                <div class="container mx-auto px-4 py-8 lg:py-12 max-w-7xl">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-start">
 
-                <div class="mb-6">
-                    <h1 id="p-name"
-                        class="text-4xl md:text-5xl font-black text-gray-900 mb-4 leading-tight tracking-tight">Nama
-                        Produk</h1>
-                    <div class="flex items-end gap-4">
-                        <p id="p-price" class="text-3xl font-bold text-gray-900">Rp0</p>
-                        <span id="stock-badge" class="text-sm font-bold px-3 py-1 rounded-full mb-1">
-                            <!-- Dynamic Content -->
-                        </span>
-                    </div>
-                </div>
-
-                <div class="h-px bg-gray-100 w-full mb-8"></div>
-
-                <!-- Specs -->
-                <div class="grid grid-cols-2 gap-4 text-sm mb-8">
-                    <div>
-                        <p class="text-gray-500 mb-1">Material</p>
-                        <p class="font-bold text-gray-900" id="p-material">-</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-500 mb-1">Fit</p>
-                        <p class="font-bold text-gray-900" id="p-fit">-</p>
-                    </div>
-                    <div>
-                        <p class="text-gray-500 mb-1">Stock</p>
-                        <p class="font-bold text-gray-900" id="p-stock">0</p>
-                    </div>
-                </div>
-
-                <!-- Size Selection -->
-                <div class="mb-8">
-                    <div class="mb-3">
-                        <label class="text-sm font-bold text-gray-900 uppercase tracking-wide block mb-2">Pilih
-                            Ukuran</label>
-                    </div>
-                    <div id="size-options" class="flex flex-wrap gap-3 mb-4">
-                        <button onclick="selectSize(this, 'S')"
-                            class="size-btn h-12 w-16 border rounded-lg font-bold hover:border-black transition flex items-center justify-center">S</button>
-                        <button onclick="selectSize(this, 'M')"
-                            class="size-btn h-12 w-16 border rounded-lg font-bold hover:border-black transition flex items-center justify-center">M</button>
-                        <button onclick="selectSize(this, 'L')"
-                            class="size-btn h-12 w-16 border rounded-lg font-bold hover:border-black transition flex items-center justify-center">L</button>
-                        <button onclick="selectSize(this, 'XL')"
-                            class="size-btn h-12 w-16 border rounded-lg font-bold hover:border-black transition flex items-center justify-center">XL</button>
-                        <button onclick="selectSize(this, 'XXL')"
-                            class="size-btn h-12 w-16 border rounded-lg font-bold hover:border-black transition flex items-center justify-center">XXL</button>
-                    </div>
-
-                    <p id="size-alert" class="text-red-500 text-sm mb-4 hidden font-medium flex items-center gap-2">
-                        <i class="fas fa-exclamation-circle"></i> Mohon pilih ukuran.
-                    </p>
-
-                    <!-- Embedded Size Chart -->
-                    <div class="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                        <p class="text-xs font-bold text-gray-500 uppercase mb-3">Panduan Ukuran (cm)</p>
-                        <table class="w-full text-xs text-left text-gray-600">
-                            <thead class="text-xs text-gray-400 uppercase border-b border-gray-200">
-                                <tr>
-                                    <th class="py-2">Size</th>
-                                    <th class="py-2">Lebar Dada</th>
-                                    <th class="py-2">Panjang</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr class="border-b border-gray-100">
-                                    <td class="py-2 font-bold">S</td>
-                                    <td class="py-2">48</td>
-                                    <td class="py-2">68</td>
-                                </tr>
-                                <tr class="border-b border-gray-100">
-                                    <td class="py-2 font-bold">M</td>
-                                    <td class="py-2">50</td>
-                                    <td class="py-2">70</td>
-                                </tr>
-                                <tr class="border-b border-gray-100">
-                                    <td class="py-2 font-bold">L</td>
-                                    <td class="py-2">52</td>
-                                    <td class="py-2">72</td>
-                                </tr>
-                                <tr class="border-b border-gray-100">
-                                    <td class="py-2 font-bold">XL</td>
-                                    <td class="py-2">54</td>
-                                    <td class="py-2">74</td>
-                                </tr>
-                                <tr>
-                                    <td class="py-2 pt-3 font-bold">XXL</td>
-                                    <td class="py-2 pt-3">56</td>
-                                    <td class="py-2 pt-3">76</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="flex flex-col gap-4 mt-auto">
-                    <!-- Qty & Add to Cart -->
-                    <div class="flex gap-4 h-14">
-                        <div class="flex items-center border border-gray-300 rounded-xl w-32 px-2">
-                            <button onclick="updateQty(-1)"
-                                class="w-10 h-full text-gray-500 hover:text-black text-xl">-</button>
-                            <input id="qty-input" type="number" value="1" min="1" onchange="validateQty(this)"
-                                class="flex-1 text-center font-bold text-lg border-none focus:outline-none focus:ring-0">
-                            <button onclick="updateQty(1)"
-                                class="w-10 h-full text-gray-500 hover:text-black text-xl">+</button>
-                        </div>
-                        <button onclick="addToCart(false)" id="btn-cart"
-                            class="flex-1 bg-white border-2 border-black text-black font-bold rounded-xl hover:bg-gray-50 transition uppercase tracking-wide">
-                            Masukkan Keranjang
-                        </button>
-                    </div>
-
-                    <!-- Buy Now -->
-                    <button onclick="addToCart(true)" id="btn-buy-now"
-                        class="w-full h-14 bg-black text-white font-bold rounded-xl hover:bg-gray-900 transition shadow-xl shadow-gray-200 uppercase tracking-wide text-lg flex items-center justify-center gap-2">
-                        <span>Beli Sekarang</span> <i class="fas fa-arrow-right"></i>
-                    </button>
-
-                    <p class="text-center text-xs text-gray-400 mt-2 flex items-center justify-center gap-2">
-                        <i class="fas fa-shield-alt"></i> Jaminan 100% Aman & Original
-                    </p>
-                </div>
-
-            </div>
-
-            <!-- Specifications Section (Shopee Design Style) -->
-            <div class="lg:col-span-2 mt-16">
-                <div class="bg-gray-50 rounded-xl p-8 border border-gray-100">
-                    <h3 class="text-lg font-bold text-gray-900 mb-6">Spesifikasi Produk</h3>
-
-                    <div class="grid grid-cols-1 gap-y-4">
-                        <!-- Category & Breadcrumbs -->
-                        <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
-                            <span class="text-gray-500 text-sm">Jalur</span>
-                            <div class="col-span-2 md:col-span-5 text-sm font-medium text-gray-900" id="breadcrumbs">
-                                <i class="fas fa-circle-notch fa-spin text-gray-400"></i>
-                            </div>
-                        </div>
-
-                        <!-- Brand -->
-                        <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
-                            <span class="text-gray-500 text-sm">Merek</span>
-                            <div class="col-span-2 md:col-span-5 text-sm font-medium text-gray-900">Dazeon Store</div>
-                        </div>
-
-                        <!-- Material -->
-                        <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
-                            <span class="text-gray-500 text-sm">Bahan</span>
-                            <div class="col-span-2 md:col-span-5 text-sm font-medium text-gray-900" id="spec-material">-
-                            </div>
-                        </div>
-
-                        <!-- Fit -->
-                        <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
-                            <span class="text-gray-500 text-sm">Fit Type</span>
-                            <div class="col-span-2 md:col-span-5 text-sm font-medium text-gray-900" id="spec-fit">-
-                            </div>
-                        </div>
-
-                        <!-- Origin -->
-                        <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
-                            <span class="text-gray-500 text-sm">Negara Asal</span>
-                            <div class="col-span-2 md:col-span-5 text-sm font-medium text-gray-900">Indonesia</div>
-                        </div>
-
-                        <!-- Stock -->
-                        <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
-                            <span class="text-gray-500 text-sm">Stok Tersedia</span>
-                            <div class="col-span-2 md:col-span-5 text-sm font-medium text-gray-900" id="spec-stock">0
-                            </div>
-                        </div>
-
-                        <!-- Ships From -->
-                        <div class="grid grid-cols-3 md:grid-cols-6 gap-4">
-                            <span class="text-gray-500 text-sm">Dikirim Dari</span>
-                            <div class="col-span-2 md:col-span-5 text-sm font-medium text-gray-900">Kab Mojokerto
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Description Section (Full Width below) -->
-            <div class="lg:col-span-2 mt-8 pt-8 border-t border-gray-100">
-                <h3 class="text-xl font-bold mb-6">Deskripsi Produk</h3>
-                <div class="prose max-w-none text-gray-600 leading-relaxed font-light">
-                    <p class="mb-4 text-gray-800 whitespace-pre-line" id="p-desc">
-
-                </div>
-            </div>
-
-        </div>
-
-        <!-- REVIEW SECTION -->
-        <div class="mt-12 pt-10 border-t border-gray-100">
-            <h3 class="text-2xl font-bold text-gray-900 mb-8">Ulasan Pembeli</h3>
-
-            <!-- Reviews Summary & List -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-
-                <!-- Left: Summary & Form Trigger -->
-                <div class="md:col-span-1 space-y-6">
-                    <div class="bg-gray-50 p-6 rounded-2xl text-center border border-gray-100">
-                        <h4 class="text-5xl font-black text-gray-900 mb-2" id="avg-rating">0.0</h4>
-                        <div class="flex justify-center text-yellow-400 text-lg mb-2" id="avg-stars">
-                            <i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i
-                                class="far fa-star"></i><i class="far fa-star"></i>
-                        </div>
-                        <p class="text-sm text-gray-500 font-medium" id="total-reviews">0 Ulasan</p>
-                    </div>
-
-                    <!-- Write Review Button (Visible if Logged In) -->
-                    <div id="write-review-container" class="hidden">
-                        <button onclick="toggleReviewForm()"
-                            class="w-full py-3 bg-white border-2 border-gray-900 text-gray-900 font-bold rounded-xl hover:bg-gray-900 hover:text-white transition shadow-sm">
-                            <i class="fas fa-pen mr-2"></i> Tulis Ulasan
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Right: Review List -->
-                <div class="md:col-span-2">
-
-                    <!-- Form Input Review (Hidden by default) -->
-                    <div id="review-form"
-                        class="hidden mb-8 bg-white border border-gray-200 p-6 rounded-2xl shadow-sm relative">
-                        <button onclick="toggleReviewForm()"
-                            class="absolute top-4 right-4 text-gray-400 hover:text-red-500">
-                            <i class="fas fa-times"></i>
-                        </button>
-                        <h4 class="font-bold text-lg mb-4">Bagikan Pengalamanmu</h4>
-                        <form onsubmit="submitReview(event)">
-                            <div class="mb-4">
-                                <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Rating</label>
-                                <div class="flex gap-2 text-2xl text-gray-300">
-                                    <i class="fas fa-star cursor-pointer hover:text-yellow-400 transition"
-                                        onclick="setRating(1)"></i>
-                                    <i class="fas fa-star cursor-pointer hover:text-yellow-400 transition"
-                                        onclick="setRating(2)"></i>
-                                    <i class="fas fa-star cursor-pointer hover:text-yellow-400 transition"
-                                        onclick="setRating(3)"></i>
-                                    <i class="fas fa-star cursor-pointer hover:text-yellow-400 transition"
-                                        onclick="setRating(4)"></i>
-                                    <i class="fas fa-star cursor-pointer hover:text-yellow-400 transition"
-                                        onclick="setRating(5)"></i>
+                        <!-- Left: Product Image -->
+                        <div class="space-y-4 sticky top-24">
+                            <div
+                                class="aspect-square bg-[#121212] rounded-3xl overflow-hidden relative group border border-white/5 shadow-[0_0_50px_rgba(0,0,0,0.5)] reveal glass">
+                                <img id="p-img" src="" alt="Produk"
+                                    class="w-full h-full object-cover object-center transition duration-700 group-hover:scale-110 opacity-90 group-hover:opacity-100">
+                                <!-- Zoom Hint -->
+                                <div
+                                    class="absolute bottom-6 right-6 bg-black/50 backdrop-blur-md text-white text-xs px-4 py-2 rounded-full opacity-0 group-hover:opacity-100 transition border border-white/10 font-bold uppercase tracking-wider transform translate-y-2 group-hover:translate-y-0">
+                                    <i class="fas fa-search-plus mr-2"></i> Zoom Image
                                 </div>
-                                <input type="hidden" id="review-rating" value="0" required>
                             </div>
-                            <div class="mb-4">
-                                <label class="block text-xs font-bold uppercase text-gray-500 mb-2">Ulasan Anda</label>
-                                <textarea id="review-comment" rows="3" required
-                                    class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-black focus:border-transparent outline-none"
-                                    placeholder="Kualitas bahan bagus, pengiriman cepat..."></textarea>
-                            </div>
-                            <button type="submit" id="btn-submit-review"
-                                class="bg-black text-white px-6 py-2 rounded-lg font-bold text-sm hover:bg-gray-800 transition">
-                                Kirim Ulasan
-                            </button>
-                        </form>
-                    </div>
+                        </div>
 
-                    <!-- List Container -->
-                    <div id="reviews-list" class="space-y-6">
-                        <!-- Items Injected Here -->
-                        <div class="text-center py-10 text-gray-400">
-                            <i class="fas fa-circle-notch fa-spin mb-2"></i> Memuat ulasan...
+                        <!-- Right: Product Details -->
+                        <div class="flex flex-col">
+
+                            <!-- Product Header -->
+                            <div class="mb-8">
+                                <h1 id="p-name"
+                                    class="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-4 leading-tight tracking-tight drop-shadow-xl reveal">
+                                    Nama Produk
+                                </h1>
+                                <div class="flex flex-wrap items-center gap-4">
+                                    <p id="p-price"
+                                        class="text-2xl md:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-brand-accent">
+                                        Rp0</p>
+                                    <span id="stock-badge"
+                                        class="text-xs font-bold px-3 py-1.5 rounded-full ring-1 ring-inset">
+                                        <!-- Dynamic -->
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Divider -->
+                            <div class="h-px bg-gradient-to-r from-white/10 to-transparent mb-8"></div>
+
+                            <!-- Quick Specs -->
+                            <div class="grid grid-cols-3 gap-3 mb-8">
+                                <div
+                                    class="bg-[#121212] rounded-xl p-4 text-center border border-white/5 hover:border-brand-500/30 transition shadow-lg shadow-black/20">
+                                    <p class="text-[10px] uppercase text-gray-500 mb-1 tracking-widest">Material</p>
+                                    <p class="text-sm font-bold text-gray-200" id="p-material">-</p>
+                                </div>
+                                <div
+                                    class="bg-[#121212] rounded-xl p-4 text-center border border-white/5 hover:border-brand-500/30 transition shadow-lg shadow-black/20">
+                                    <p class="text-[10px] uppercase text-gray-500 mb-1 tracking-widest">Fit</p>
+                                    <p class="text-sm font-bold text-gray-200" id="p-fit">-</p>
+                                </div>
+                                <div
+                                    class="bg-[#121212] rounded-xl p-4 text-center border border-white/5 hover:border-brand-500/30 transition shadow-lg shadow-black/20">
+                                    <p class="text-[10px] uppercase text-gray-500 mb-1 tracking-widest">Stok</p>
+                                    <p class="text-sm font-bold text-gray-200" id="p-stock">0</p>
+                                </div>
+                            </div>
+
+                            <!-- Size Selection -->
+                            <div class="mb-8">
+                                <div class="flex items-center justify-between mb-4">
+                                    <label class="text-sm font-bold text-gray-300 uppercase tracking-widest">Pilih
+                                        Ukuran</label>
+                                    <button onclick="document.getElementById('size-guide').classList.toggle('hidden')"
+                                        class="text-xs text-brand-400 hover:text-brand-300 transition flex items-center gap-1 group">
+                                        <i class="fas fa-ruler"></i> <span class="group-hover:underline">Panduan
+                                            Ukuran</span>
+                                    </button>
+                                </div>
+                                <div id="size-options" class="flex flex-wrap gap-3 mb-3">
+                                    <button onclick="selectSize(this, 'S')"
+                                        class="size-btn h-12 w-14 border border-white/10 bg-[#121212] text-gray-400 rounded-xl font-bold text-sm hover:border-brand-500 hover:text-brand-400 transition flex items-center justify-center">S</button>
+                                    <button onclick="selectSize(this, 'M')"
+                                        class="size-btn h-12 w-14 border border-white/10 bg-[#121212] text-gray-400 rounded-xl font-bold text-sm hover:border-brand-500 hover:text-brand-400 transition flex items-center justify-center">M</button>
+                                    <button onclick="selectSize(this, 'L')"
+                                        class="size-btn h-12 w-14 border border-white/10 bg-[#121212] text-gray-400 rounded-xl font-bold text-sm hover:border-brand-500 hover:text-brand-400 transition flex items-center justify-center">L</button>
+                                    <button onclick="selectSize(this, 'XL')"
+                                        class="size-btn h-12 w-14 border border-white/10 bg-[#121212] text-gray-400 rounded-xl font-bold text-sm hover:border-brand-500 hover:text-brand-400 transition flex items-center justify-center">XL</button>
+                                    <button onclick="selectSize(this, 'XXL')"
+                                        class="size-btn h-12 w-14 border border-white/10 bg-[#121212] text-gray-400 rounded-xl font-bold text-sm hover:border-brand-500 hover:text-brand-400 transition flex items-center justify-center">XXL</button>
+                                </div>
+                                <p id="size-alert"
+                                    class="text-red-400 text-xs hidden font-medium flex items-center gap-2 bg-red-500/10 p-2 rounded-lg border border-red-500/20">
+                                    <i class="fas fa-exclamation-circle"></i> Mohon pilih ukuran terlebih dahulu.
+                                </p>
+
+                                <!-- Size Guide (Hidden by default) -->
+                                <div id="size-guide"
+                                    class="hidden mt-4 bg-[#121212] rounded-xl p-6 border border-white/5 shadow-2xl">
+                                    <p class="text-xs font-bold text-gray-400 uppercase mb-4 tracking-widest">Panduan
+                                        Ukuran (cm)</p>
+                                    <table class="w-full text-xs text-gray-400">
+                                        <thead class="text-brand-400 uppercase border-b border-white/10">
+                                            <tr>
+                                                <th class="py-3 text-left">Size</th>
+                                                <th class="py-3 text-left">Lebar Dada</th>
+                                                <th class="py-3 text-left">Panjang</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-white/5">
+                                            <tr>
+                                                <td class="py-3 font-bold text-white">S</td>
+                                                <td class="py-3">48</td>
+                                                <td class="py-3">68</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="py-3 font-bold text-white">M</td>
+                                                <td class="py-3">50</td>
+                                                <td class="py-3">70</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="py-3 font-bold text-white">L</td>
+                                                <td class="py-3">52</td>
+                                                <td class="py-3">72</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="py-3 font-bold text-white">XL</td>
+                                                <td class="py-3">54</td>
+                                                <td class="py-3">74</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="py-3 font-bold text-white">XXL</td>
+                                                <td class="py-3">56</td>
+                                                <td class="py-3">76</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="space-y-4 mt-auto pt-8 border-t border-white/5">
+                                <!-- Quantity & Add to Cart -->
+                                <div class="flex gap-4">
+                                    <div
+                                        class="flex items-center bg-[#121212] border border-white/10 rounded-xl overflow-hidden shrink-0">
+                                        <button onclick="updateQty(-1)"
+                                            class="w-12 h-14 text-gray-400 hover:text-white hover:bg-white/5 transition text-lg font-medium">−</button>
+                                        <input id="qty-input" type="number" value="1" min="1"
+                                            onchange="validateQty(this)"
+                                            class="w-16 h-14 text-center font-bold text-white bg-transparent border-none focus:outline-none focus:ring-0">
+                                        <button onclick="updateQty(1)"
+                                            class="w-12 h-14 text-gray-400 hover:text-white hover:bg-white/5 transition text-lg font-medium">+</button>
+                                    </div>
+                                    <button onclick="contactAdmin()"
+                                        class="w-14 h-14 rounded-xl border border-white/20 text-gray-400 hover:bg-brand-600 hover:text-white hover:border-brand-600 transition flex items-center justify-center shrink-0"
+                                        title="Chat Admin">
+                                        <i class="fas fa-comment-dots text-xl"></i>
+                                    </button>
+                                    <button onclick="addToCart(false)" id="btn-cart"
+                                        class="flex-1 h-14 bg-[#121212] border border-white/20 text-white font-bold rounded-xl hover:bg-white hover:text-black hover:border-white transition-all text-sm uppercase tracking-wider flex items-center justify-center gap-3 group">
+                                        <i class="fas fa-shopping-bag group-hover:scale-110 transition-transform"></i>
+                                        <span class="hidden sm:inline">Keranjang</span>
+                                    </button>
+                                </div>
+
+                                <!-- Buy Now -->
+                                <button onclick="addToCart(true)" id="btn-buy-now"
+                                    class="w-full h-14 bg-gradient-to-r from-brand-600 to-brand-accent text-white font-bold rounded-xl hover:shadow-[0_0_30px_rgba(139,92,246,0.4)] transition-all uppercase tracking-widest text-sm flex items-center justify-center gap-3 group relative overflow-hidden">
+                                    <div
+                                        class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:animate-shine">
+                                    </div>
+                                    <span>Beli Sekarang</span>
+                                    <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                                </button>
+
+                                <!-- Trust Badge -->
+                                <p
+                                    class="text-center text-[10px] uppercase tracking-widest text-gray-500 flex items-center justify-center gap-6 pt-4">
+                                    <span class="flex items-center gap-2"><i
+                                            class="fas fa-shield-alt text-brand-400"></i> Original</span>
+                                    <span class="flex items-center gap-2"><i class="fas fa-bolt text-yellow-400"></i>
+                                        Fast Delivery</span>
+                                    <span class="flex items-center gap-2"><i class="fas fa-sync text-blue-400"></i>
+                                        Easy Return</span>
+                                </p>
+                            </div>
+
                         </div>
                     </div>
-
-                    <!-- Pagination (Simple Load More if needed, or just scroll) -->
                 </div>
             </div>
-        </div>
 
-        </div>
+            <!-- PRODUCT INFO TABS -->
+            <div class="mt-4">
+                <div class="container mx-auto px-4 py-8 max-w-7xl">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-        <!-- --- FITUR RELATED PRODUCTS --- -->
-        <div class="mt-16 border-t pt-10">
-            <h2 class="text-2xl font-bold mb-6">Produk Lainnya</h2>
-            <div id="related-products" class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <!-- Related products will use the same card style from main.js -->
-                <div class="col-span-full text-center py-10">
-                    <i class="fas fa-spinner fa-spin text-gray-300"></i> Memuat rekomendasi...
+                        <!-- Specifications -->
+                        <div class="lg:col-span-1">
+                            <div class="bg-[#121212] rounded-2xl p-6 border border-white/5 sticky top-24 shadow-2xl">
+                                <h3
+                                    class="text-sm font-bold text-gray-200 uppercase tracking-widest mb-6 flex items-center gap-3 border-b border-white/5 pb-4">
+                                    <i class="fas fa-list-ul text-brand-400"></i> Spesifikasi
+                                </h3>
+                                <div class="space-y-4 text-sm text-gray-400">
+                                    <div class="flex justify-between py-2 border-b border-white/5">
+                                        <span>Merek</span>
+                                        <span class="font-bold text-gray-200">Dazeon Store</span>
+                                    </div>
+                                    <div class="flex justify-between py-2 border-b border-white/5">
+                                        <span>Bahan</span>
+                                        <span class="font-bold text-gray-200" id="spec-material">-</span>
+                                    </div>
+                                    <div class="flex justify-between py-2 border-b border-white/5">
+                                        <span>Fit Type</span>
+                                        <span class="font-bold text-gray-200" id="spec-fit">-</span>
+                                    </div>
+                                    <div class="flex justify-between py-2 border-b border-white/5">
+                                        <span>Stok</span>
+                                        <span class="font-bold text-gray-200" id="spec-stock">0</span>
+                                    </div>
+                                    <div class="flex justify-between py-2 border-b border-white/5">
+                                        <span>Asal</span>
+                                        <span class="font-bold text-gray-200">Indonesia</span>
+                                    </div>
+                                    <div class="flex justify-between py-2">
+                                        <span>Dikirim Dari</span>
+                                        <span class="font-bold text-gray-200">Kab Mojokerto</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="lg:col-span-2">
+                            <div class="bg-[#121212] rounded-2xl p-8 border border-white/5 shadow-2xl">
+                                <h3
+                                    class="text-sm font-bold text-gray-200 uppercase tracking-widest mb-6 flex items-center gap-3 border-b border-white/5 pb-4">
+                                    <i class="fas fa-align-left text-brand-400"></i> Deskripsi Produk
+                                </h3>
+                                <div
+                                    class="prose prose-invert prose-p:text-gray-400 prose-headings:text-white max-w-none">
+                                    <p class="leading-relaxed whitespace-pre-line text-sm" id="p-desc">
+                                        Tidak ada deskripsi.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
             </div>
+
+            <!-- REVIEW SECTION -->
+            <div class="mt-4">
+                <div class="container mx-auto px-4 py-8 max-w-7xl">
+                    <h3 class="text-xl font-bold text-white mb-8 flex items-center gap-3">
+                        <i class="fas fa-star text-yellow-500"></i> Ulasan Pembeli
+                    </h3>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+
+                        <!-- Rating Summary -->
+                        <div class="lg:col-span-1">
+                            <div
+                                class="bg-gradient-to-br from-[#121212] to-[#0a0a0a] rounded-2xl p-8 text-center border border-white/5 sticky top-24 shadow-2xl">
+                                <h4 id="avg-rating" class="text-6xl font-black text-white mb-2 tracking-tighter">0.0
+                                </h4>
+                                <div id="avg-stars" class="flex justify-center text-yellow-500 text-lg mb-4 gap-1">
+                                    <i class="far fa-star"></i><i class="far fa-star"></i><i class="far fa-star"></i><i
+                                        class="far fa-star"></i><i class="far fa-star"></i>
+                                </div>
+                                <p id="total-reviews" class="text-xs text-gray-500 font-bold uppercase tracking-widest">
+                                    0 Ulasan</p>
+
+                                <!-- Write Review Button -->
+                                <div id="write-review-container" class="hidden mt-8">
+                                    <button onclick="toggleReviewForm()"
+                                        class="w-full py-4 bg-brand-600 text-white font-bold rounded-xl hover:bg-brand-500 transition text-sm uppercase tracking-wide border border-brand-500 shadow-lg shadow-brand-500/20">
+                                        <i class="fas fa-pen mr-2"></i> Tulis Ulasan
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Review List -->
+                        <div class="lg:col-span-3">
+
+                            <!-- Review Form (Hidden) -->
+                            <div id="review-form"
+                                class="hidden mb-8 bg-[#121212] border border-white/10 p-6 rounded-2xl shadow-xl relative">
+                                <button onclick="toggleReviewForm()"
+                                    class="absolute top-4 right-4 text-gray-500 hover:text-red-500 transition">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                <h4 class="font-bold text-lg text-white mb-6">Bagikan Pengalamanmu</h4>
+                                <form onsubmit="submitReview(event)">
+                                    <div class="mb-6">
+                                        <label
+                                            class="block text-xs font-bold uppercase text-gray-500 mb-3 tracking-wider">Rating</label>
+                                        <div class="flex gap-3 text-3xl text-gray-700">
+                                            <i class="fas fa-star cursor-pointer hover:text-yellow-500 transition duration-200"
+                                                onclick="setRating(1)"></i>
+                                            <i class="fas fa-star cursor-pointer hover:text-yellow-500 transition duration-200"
+                                                onclick="setRating(2)"></i>
+                                            <i class="fas fa-star cursor-pointer hover:text-yellow-500 transition duration-200"
+                                                onclick="setRating(3)"></i>
+                                            <i class="fas fa-star cursor-pointer hover:text-yellow-500 transition duration-200"
+                                                onclick="setRating(4)"></i>
+                                            <i class="fas fa-star cursor-pointer hover:text-yellow-500 transition duration-200"
+                                                onclick="setRating(5)"></i>
+                                        </div>
+                                        <input type="hidden" id="review-rating" value="0" required>
+                                    </div>
+                                    <div class="mb-6">
+                                        <label
+                                            class="block text-xs font-bold uppercase text-gray-500 mb-3 tracking-wider">Ulasan</label>
+                                        <textarea id="review-comment" rows="4" required
+                                            class="w-full bg-[#0a0a0a] border border-white/10 rounded-xl p-4 text-sm text-gray-200 focus:ring-1 focus:ring-brand-500 focus:border-brand-500 outline-none resize-none transition"
+                                            placeholder="Ceritakan kepuasan Anda terhadap produk ini..."></textarea>
+                                    </div>
+                                    <button type="submit" id="btn-submit-review"
+                                        class="bg-brand-600 text-white px-8 py-3 rounded-xl font-bold text-sm hover:bg-brand-500 transition shadow-lg shadow-brand-600/20">
+                                        Kirim Ulasan
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Reviews List -->
+                            <div id="reviews-list" class="space-y-4">
+                                <div class="text-center py-12 text-gray-500">
+                                    <div
+                                        class="w-8 h-8 border-2 border-white/10 border-t-brand-500 rounded-full animate-spin mx-auto mb-3">
+                                    </div>
+                                    Memuat ulasan...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RELATED PRODUCTS -->
+            <div class="mt-8 py-12 border-t border-white/5">
+                <div class="container mx-auto px-4 max-w-7xl">
+                    <div class="flex items-center justify-between mb-8">
+                        <h2 class="text-xl font-bold text-white tracking-wide">Produk Lainnya</h2>
+                        <a href="index.html" class="text-sm text-brand-400 hover:text-brand-300 transition font-medium">
+                            Lihat Semua <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    <div id="related-products" class="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-6">
+                        <div class="col-span-full text-center py-10">
+                            <div
+                                class="w-8 h-8 border-2 border-white/10 border-t-brand-500 rounded-full animate-spin mx-auto mb-2">
+                            </div>
+                            <p class="text-gray-500 text-sm">Memuat rekomendasi...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
     </main>
@@ -368,7 +528,7 @@
         async function loadRelatedProducts(currentId) {
             try {
                 // Ambil 4 produk acak yang bukan produk saat ini
-                const { data, error } = await supabase
+                const { data, error } = await window.db
                     .from('products')
                     .select('*')
                     .neq('id', currentId)
@@ -378,31 +538,31 @@
 
                 const container = document.getElementById('related-products');
                 if (!data || data.length === 0) {
-                    container.innerHTML = '<p class="text-gray-500 col-span-full">Tidak ada produk terkait.</p>';
+                    container.innerHTML = '<p class="text-gray-500 col-span-full text-center">Tidak ada produk terkait.</p>';
                     return;
                 }
 
                 container.innerHTML = '';
                 data.forEach(product => {
                     // Logic Gambar (Sama seperti main.js)
-                    let imageUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"%3E%3Crect fill="%23f3f4f6" width="300" height="300"/%3E%3Ctext x="50%25" y="50%25" fill="%239ca3af" font-size="16" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
+                    let imageUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"%3E%3Crect fill="%231a1a1a" width="300" height="300"/%3E%3Ctext x="50%25" y="50%25" fill="%234b5563" font-size="16" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
                     if (product.image_url) {
                         if (product.image_url.startsWith('http')) {
                             imageUrl = product.image_url;
                         } else {
-                            const { data: imgData } = supabase.storage.from('product-images').getPublicUrl(product.image_url);
+                            const { data: imgData } = window.db.storage.from('product-images').getPublicUrl(product.image_url);
                             imageUrl = imgData.publicUrl;
                         }
                     }
 
                     const html = `
-                    <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition overflow-hidden border border-gray-100 group">
-                        <a href="product-detail.html?id=${product.id}" class="block overflow-hidden relative aspect-[4/5]">
-                            <img src="${imageUrl}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    <div class="bg-[#121212] rounded-xl shadow-lg hover:shadow-brand-500/10 hover:-translate-y-1 transition-all duration-300 overflow-hidden border border-white/5 group">
+                        <a href="product-detail.html?id=${product.id}" class="block overflow-hidden relative aspect-[4/5] bg-[#0a0a0a]">
+                            <img src="${imageUrl}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-90 group-hover:opacity-100">
                         </a>
                         <div class="p-4">
-                            <h3 class="text-sm font-bold text-gray-900 line-clamp-1 mb-1">${product.name}</h3>
-                            <p class="text-sm font-semibold text-gray-900">Rp ${parseInt(product.price).toLocaleString('id-ID')}</p>
+                            <h3 class="text-sm font-bold text-gray-200 line-clamp-1 mb-1 group-hover:text-brand-400 transition-colors">${product.name}</h3>
+                            <p class="text-sm font-bold text-white">Rp ${parseInt(product.price).toLocaleString('id-ID')}</p>
                         </div>
                     </div>`;
                     container.insertAdjacentHTML('beforeend', html);
@@ -447,16 +607,16 @@
 
             try {
                 // Fetch Produk
-                const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
+                const { data, error } = await window.db.from('products').select('*').eq('id', id).single();
 
                 if (error) throw error;
                 if (!data) throw new Error("Data produk kosong.");
 
                 currentProduct = data;
                 renderUI(data);
-                renderUI(data);
                 checkUser();
                 loadReviews(data.id); // Load Reviews
+                loadRelatedProducts(data.id); // Load Related Products
 
             } catch (err) {
                 console.error("Error init product:", err);
@@ -474,22 +634,56 @@
             document.getElementById('loading-ui').classList.add('hidden');
             document.getElementById('product-content').classList.remove('hidden');
 
+            // Trigger Animations
+            setTimeout(() => {
+                initScrollReveal();
+                document.querySelectorAll('.reveal').forEach(el => el.classList.add('active'));
+            }, 100);
+
             // Update UI Standard
             document.getElementById('p-name').innerText = p.name;
             document.getElementById('p-price').innerText = `Rp${p.price.toLocaleString('id-ID')}`;
-            document.getElementById('p-stock').innerText = p.stock; // Update Top Stock Value
+            updateStockUI(p.stock); // Use helper for consistency
+
+            // REALTIME SUBSCRIPTION
+            window.db.channel(`public:product:${p.id}`)
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'products', filter: `id=eq.${p.id}` }, (payload) => {
+                    console.log("Realtime Stock Update:", payload.new.stock);
+                    updateStockUI(payload.new.stock);
+                    currentProduct.stock = payload.new.stock; // Update local state
+                })
+                .subscribe();
 
             // LOGIC BADGE STOK
             const badge = document.getElementById('stock-badge');
             if (p.stock > 0) {
                 badge.innerText = "Ready Stock";
-                badge.className = "text-sm text-green-600 font-bold bg-green-50 px-3 py-1 rounded-full mb-1";
+                badge.className = "text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-full";
             } else {
                 badge.innerText = "Stok Habis";
-                badge.className = "text-sm text-red-600 font-bold bg-red-50 px-3 py-1 rounded-full mb-1";
+                badge.className = "text-xs font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-full";
             }
 
             document.getElementById('p-desc').innerText = p.description || 'Tidak ada deskripsi.';
+
+            // Setup Chat Context
+            window.contactAdmin = () => {
+                const params = new URLSearchParams({
+                    product_id: p.id,
+                    product_name: p.name,
+                    product_price: p.price,
+                    product_image: p.image_url // Assuming standard URL or handled by contact.html
+                });
+                // Fix image URL if it's a path
+                let img = p.image_url;
+                if (!img.startsWith('http')) {
+                    img = window.db.storage.from('product-images').getPublicUrl(img).data.publicUrl;
+                }
+                params.set('product_image', img);
+
+                window.location.href = `contact.html?${params.toString()}`;
+            };
+
             document.getElementById('spec-stock').innerText = p.stock;
             document.getElementById('spec-material').innerText = p.material || 'Cotton Combed 24s';
 
@@ -497,11 +691,11 @@
             const breadcrumbsEl = document.getElementById('breadcrumbs');
             if (breadcrumbsEl) {
                 breadcrumbsEl.innerHTML = `
-                        <a href="index.html" class="text-gray-500 hover:text-black transition">Beranda</a> 
+                        <a href="index.html" class="text-gray-400 hover:text-gray-900 transition">Beranda</a> 
                         <span class="mx-2 text-gray-300">/</span> 
-                        <a href="index.html?search=${p.category || ''}#produk" class="text-gray-500 hover:text-black transition">${p.category || 'Atasan'}</a> 
+                        <a href="index.html#produk" class="text-gray-400 hover:text-gray-900 transition">${p.category || 'Produk'}</a> 
                         <span class="mx-2 text-gray-300">/</span> 
-                        <span class="text-gray-900 font-bold">${p.name}</span>
+                        <span class="text-gray-600 font-medium">${p.name}</span>
                     `;
             }
 
@@ -525,7 +719,7 @@
             if (p.image_url) {
                 if (p.image_url.startsWith('http')) imgUrl = p.image_url;
                 else {
-                    const { data } = supabase.storage.from('product-images').getPublicUrl(p.image_url);
+                    const { data } = window.db.storage.from('product-images').getPublicUrl(p.image_url);
                     imgUrl = data.publicUrl;
                 }
             }
@@ -550,18 +744,53 @@
             }
         }
 
+        function updateStockUI(stock) {
+            document.getElementById('p-stock').innerText = stock;
+            document.getElementById('spec-stock').innerText = stock;
+
+            const badge = document.getElementById('stock-badge');
+            const btnCart = document.getElementById('btn-cart');
+            const btnBuy = document.getElementById('btn-buy-now');
+            const qtyInput = document.getElementById('qty-input');
+
+            if (stock > 0) {
+                badge.innerText = "Ready Stock";
+                badge.className = "text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-full";
+
+                btnCart.disabled = false;
+                btnCart.innerHTML = `<i class="fas fa-shopping-bag group-hover:scale-110 transition-transform"></i> <span class="hidden sm:inline">Keranjang</span>`;
+                btnCart.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-gray-200', 'border-gray-200');
+                btnCart.classList.add('hover:bg-white', 'hover:text-black');
+
+                btnBuy.style.display = 'flex';
+                qtyInput.max = stock;
+                if (parseInt(qtyInput.value) > stock) qtyInput.value = stock;
+
+            } else {
+                badge.innerText = "Stok Habis";
+                badge.className = "text-xs font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-full";
+
+                btnCart.disabled = true;
+                btnCart.innerText = "Stok Habis";
+                btnCart.classList.add('opacity-50', 'cursor-not-allowed', 'bg-gray-200', 'border-gray-200');
+
+                btnBuy.style.display = 'none';
+                qtyInput.value = 0;
+            }
+        }
+
         // --- INTERACTION ---
         window.selectSize = (btn, size) => {
             // Reset all
             document.querySelectorAll('.size-btn').forEach(b => {
-                b.classList.remove('bg-black', 'text-white', 'border-black');
+                b.classList.remove('bg-brand-600', 'text-white', 'border-brand-500', 'ring-2', 'ring-brand-500/50');
                 // Ensure default state
                 b.classList.add('hover:border-black');
             });
 
             // Set Active
             btn.classList.remove('hover:border-black');
-            btn.classList.add('bg-black', 'text-white', 'border-black');
+            btn.classList.add('bg-brand-600', 'text-white', 'border-brand-500', 'ring-2', 'ring-brand-500/50');
 
             selectedSize = size;
             document.getElementById('size-alert').classList.add('hidden');
@@ -641,8 +870,27 @@
             btn.disabled = true;
 
             try {
+                // LOGIKA "BELI SEKARANG" (Direct Buy)
+                // Fitur: Tidak mencampur dengan keranjang database, dan tidak menyimpannya jika batal.
+                if (isBuyNow) {
+                    const directItem = {
+                        product_id: currentProduct.id,
+                        quantity: qty,
+                        size: selectedSize,
+                        name: currentProduct.name,
+                        price: currentProduct.price,
+                        stock: currentProduct.stock // Simpan stok untuk validasi di checkout
+                    };
+
+                    localStorage.setItem('direct_buy_item', JSON.stringify(directItem));
+                    // Pass source param for smart back navigation
+                    window.location.href = `checkout.html?from_product=${currentProduct.id}`;
+                    return; // STOP Here, jangan simpan ke DB
+                }
+
+                // LOGIKA "KERANJANG" (Simpan ke DB)
                 // Cek existence
-                const { data: exist, error: fetchError } = await supabase
+                const { data: exist, error: fetchError } = await window.db
                     .from('cart_items')
                     .select('id, quantity')
                     .eq('user_id', currentUserId)
@@ -654,12 +902,12 @@
 
                 if (exist) {
                     // Update
-                    await supabase.from('cart_items')
+                    await window.db.from('cart_items')
                         .update({ quantity: exist.quantity + qty })
                         .eq('id', exist.id);
                 } else {
                     // Insert
-                    await supabase.from('cart_items').insert([{
+                    await window.db.from('cart_items').insert([{
                         user_id: currentUserId,
                         product_id: currentProduct.id,
                         quantity: qty,
@@ -667,31 +915,28 @@
                     }]);
                 }
 
-                if (isBuyNow) {
-                    window.location.href = 'checkout.html';
-                } else {
-                    btn.disabled = false;
-                    btn.innerHTML = `<i class="fas fa-check"></i> Masuk Keranjang`;
-                    btn.classList.remove('bg-white', 'text-black');
-                    btn.classList.add('bg-black', 'text-white');
+                // Feedback UI untuk Keranjang
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fas fa-check"></i> Masuk Keranjang`;
+                btn.classList.remove('bg-white', 'text-black');
+                btn.classList.add('bg-black', 'text-white');
 
-                    // SweetAlert Success
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil!',
-                        text: 'Produk masuk ke keranjang.',
-                        showConfirmButton: false,
-                        timer: 1500
-                    });
+                // SweetAlert Success
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'Produk masuk ke keranjang.',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
 
-                    checkUser();
+                checkUser(); // Update counter cart
 
-                    setTimeout(() => {
-                        btn.innerHTML = originalText;
-                        btn.classList.add('bg-white', 'text-black');
-                        btn.classList.remove('bg-black', 'text-white');
-                    }, 2000);
-                }
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.add('bg-white', 'text-black');
+                    btn.classList.remove('bg-black', 'text-white');
+                }, 2000);
 
             } catch (err) {
                 console.error("Cart Error:", err);
@@ -707,14 +952,14 @@
         };
 
         async function checkUser() {
-            const { data } = await supabase.auth.getSession();
+            const { data } = await window.db.auth.getSession();
             if (data.session) {
                 currentUserId = data.session.user.id;
                 // Show Write Review Button
                 document.getElementById('write-review-container').classList.remove('hidden');
 
                 // Update Cart Count
-                const { data: cart } = await supabase.from('cart_items').select('quantity').eq('user_id', currentUserId);
+                const { data: cart } = await window.db.from('cart_items').select('quantity').eq('user_id', currentUserId);
                 if (cart) {
                     const total = cart.reduce((a, b) => a + b.quantity, 0);
                     const countElem = document.getElementById('cart-count');
@@ -733,7 +978,7 @@
             const container = document.getElementById('reviews-list');
             try {
                 // Fetch reviews
-                const { data: reviews, error } = await supabase
+                const { data: reviews, error } = await window.db
                     .from('reviews')
                     .select('*')
                     .eq('product_id', productId)
@@ -743,10 +988,10 @@
 
                 if (!reviews || reviews.length === 0) {
                     container.innerHTML = `
-                        <div class="text-center py-10 bg-gray-50 rounded-xl border border-dashed border-gray-300">
-                            <i class="far fa-comment-dots text-4xl text-gray-300 mb-3 block"></i>
-                            <p class="text-gray-500 font-medium">Belum ada ulasan.</p>
-                            <p class="text-sm text-gray-400">Jadilah yang pertama mereview produk ini!</p>
+                        <div class="text-center py-10 bg-[#0a0a0a] rounded-xl border border-dashed border-white/10">
+                            <i class="far fa-comment-dots text-4xl text-gray-700 mb-3 block"></i>
+                            <p class="text-gray-400 font-medium">Belum ada ulasan.</p>
+                            <p class="text-sm text-gray-500">Jadilah yang pertama mereview produk ini!</p>
                         </div>`;
                     updateRatingStats([]);
                     return;
@@ -757,7 +1002,7 @@
                 // Fetch Profile Names for these reviews
                 // Note: user_id is in reviews. We need to map it to names in 'profiles' table.
                 const userIds = [...new Set(reviews.map(r => r.user_id))];
-                const { data: profiles } = await supabase
+                const { data: profiles } = await window.db
                     .from('profiles')
                     .select('id, name, avatar_url')
                     .in('id', userIds);
@@ -768,7 +1013,7 @@
                 }
 
                 // Render List
-                container.innerHTML = reviews.map(r => {
+                container.innerHTML = reviews.map((r, index) => {
                     const profile = profileMap[r.user_id] || { name: 'Pengguna' };
                     const name = profile.name || 'Pengguna';
                     const date = new Date(r.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -779,14 +1024,16 @@
                     if (profile.avatar_url) {
                         let avUrl = profile.avatar_url;
                         if (!avUrl.startsWith('http')) {
-                            const { data: imgData } = supabase.storage.from('product-images').getPublicUrl(avUrl);
+                            const { data: imgData } = window.db.storage.from('product-images').getPublicUrl(avUrl);
                             avUrl = imgData.publicUrl;
                         }
-                        avatarHtml = `<img src="${avUrl}" class="w-10 h-10 rounded-full object-cover border border-gray-200">`;
+                        avatarHtml = `<img src="${avUrl}" class="w-12 h-12 rounded-full object-cover border-2 border-brand-500/20 shadow-lg group-hover:border-brand-500 transition-colors">`;
                     } else {
                         const initial = name.charAt(0).toUpperCase();
+                        const colors = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-purple-500', 'bg-orange-500'];
+                        const bg = colors[name.length % colors.length];
                         avatarHtml = `
-                        <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-600">
+                        <div class="w-12 h-12 rounded-full ${bg} flex items-center justify-center font-bold text-white shadow-lg text-lg border-2 border-white/5">
                             ${initial}
                         </div>`;
                     }
@@ -794,32 +1041,50 @@
                     // Generate Stars HTML
                     let starsHtml = '';
                     for (let i = 1; i <= 5; i++) {
-                        if (i <= r.rating) starsHtml += '<i class="fas fa-star text-yellow-400 text-xs"></i>';
-                        else starsHtml += '<i class="far fa-star text-gray-300 text-xs"></i>';
+                        if (i <= r.rating) starsHtml += '<i class="fas fa-star text-yellow-400 text-sm drop-shadow"></i>';
+                        else starsHtml += '<i class="far fa-star text-gray-600 text-sm"></i>';
                     }
 
+                    // Stagger Animation Delay
+                    const delay = index * 100;
+
                     return `
-                    <div class="flex gap-4 p-4 rounded-xl hover:bg-gray-50 transition border border-transparent hover:border-gray-100 group">
+                    <div class="flex gap-5 p-6 rounded-2xl bg-[#0a0a0a] border border-white/5 hover:border-brand-500/30 transition-all duration-300 hover:shadow-[0_4px_20px_rgba(139,92,246,0.1)] group reveal" style="transition-delay: ${delay}ms">
                         <div class="flex-shrink-0">
                             ${avatarHtml}
                         </div>
                         <div class="flex-grow">
-                            <div class="flex items-center justify-between mb-1">
-                                <h5 class="font-bold text-gray-900 text-sm">${name}</h5>
-                                <div class="flex items-center gap-3">
-                                    <span class="text-xs text-gray-400">${date}</span>
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
+                                <div class="flex items-center gap-2">
+                                    <h5 class="font-bold text-white text-base group-hover:text-brand-400 transition-colors">${name}</h5>
+                                    <span class="text-[10px] uppercase font-bold text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20 flex items-center gap-1">
+                                        <i class="fas fa-check-circle"></i> Verified
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-3 mt-1 sm:mt-0">
+                                    <span class="text-xs text-gray-500 font-medium">${date}</span>
                                     ${isOwnReview ? `
-                                        <button onclick="deleteReview('${r.id}')" class="text-gray-300 hover:text-red-500 transition" title="Hapus Ulasan">
+                                        <button onclick="deleteReview('${r.id}')" class="w-8 h-8 flex items-center justify-center rounded-full bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all shadow-lg hover:shadow-red-500/30" title="Hapus Ulasan">
                                             <i class="fas fa-trash-alt text-xs"></i>
                                         </button>` : ''}
                                 </div>
                             </div>
-                            <div class="mb-2">${starsHtml}</div>
-                            <p class="text-gray-600 text-sm leading-relaxed">${r.comment || ''}</p>
+                            <div class="mb-3 flex items-center gap-2 bg-[#121212] w-fit px-3 py-1.5 rounded-lg border border-white/5">
+                                <div class="flex gap-0.5">${starsHtml}</div>
+                                <span class="text-xs text-gray-400 font-bold ml-1">${r.rating}.0</span>
+                            </div>
+                            <p class="text-gray-300 text-sm leading-relaxed font-light tracking-wide">${r.comment || ''}</p>
                         </div>
                     </div>
                     `;
                 }).join('');
+
+                // Re-trigger animations for new elements
+                setTimeout(() => {
+                    if (window.revealObserver) {
+                        document.querySelectorAll('#reviews-list .reveal').forEach(el => window.revealObserver.observe(el));
+                    }
+                }, 100);
 
             } catch (err) {
                 console.error("Load Reviews Error:", err);
@@ -842,7 +1107,7 @@
             if (!result.isConfirmed) return;
 
             try {
-                const { error } = await supabase.from('reviews').delete().eq('id', reviewId);
+                const { error } = await window.db.from('reviews').delete().eq('id', reviewId);
                 if (error) throw error;
 
                 Swal.fire('Terhapus', 'Ulasan berhasil dihapus.', 'success');
@@ -919,7 +1184,7 @@
             btn.innerText = 'Mengirim...';
 
             try {
-                const { error } = await supabase.from('reviews').insert([{
+                const { error } = await window.db.from('reviews').insert([{
                     product_id: currentProduct.id,
                     user_id: currentUserId,
                     rating: currentRating,
@@ -946,6 +1211,20 @@
                 btn.disabled = false;
                 btn.innerText = originalText;
             }
+        }
+
+        // --- SCROLL REVEAL ANIMATION ---
+        function initScrollReveal() {
+            const reveals = document.querySelectorAll('.reveal');
+            window.revealObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            reveals.forEach(el => window.revealObserver.observe(el));
         }
 
         // Start

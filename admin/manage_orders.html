@@ -4,16 +4,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen Pesanan - Dazeon Admin</title>
+    <title>Manajemen Pesanan - Dazeon Admin (Bos)</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <script>
-        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] } } } }
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            accent: '#d946ef',
+                        }
+                    },
+                    animation: {
+                        'gradient': 'gradient 8s linear infinite',
+                    },
+                    keyframes: {
+                        'gradient': {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            },
+                        }
+                    }
+                }
+            }
+        }
     </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .glass {
+                @apply bg-[#121212] border border-white/5 backdrop-blur-md;
+            }
+            .text-glow {
+                text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+            }
+        }
+
+        body { opacity: 0; transition: opacity 0.5s ease; }
+        body.loaded { opacity: 1; }
+
+        /* Custom Scrollbar for Dark Theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050505; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555; 
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-enter {
+            animation: fadeInUp 0.5s ease-out forwards;
+            opacity: 0;
+        }
+    </style>
     <style>
         .no-scrollbar::-webkit-scrollbar {
             display: none;
@@ -38,111 +108,178 @@
     <script src="../auth_check.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            checkAuth(['admin']);
+            document.body.classList.add('loaded');
+            checkAuth(['bos', 'admin']);
+            initUnreadBadge();
         });
+
+        function initUnreadBadge() {
+            const client = window.db || window.supabase;
+            client.channel('global_unread')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'helpdesk_messages', filter: "sender_role=eq.user" }, () => showUnreadBadge())
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'helpdesk_tickets' }, () => showUnreadBadge())
+                .subscribe();
+        }
+
+        function showUnreadBadge() {
+            const links = document.querySelectorAll('a[href="helpdesk.html"]');
+            links.forEach(link => {
+                if (!link.querySelector('.unread-dot')) link.insertAdjacentHTML('beforeend', '<span class="unread-dot ml-auto w-2 h-2 rounded-full bg-red-500 shadow-[0_0_10px_red]"></span>');
+            });
+        }
+
+        // MOBILE SIDEBAR TOGGLE
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            if (overlay.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        }
     </script>
 </head>
 
-<body class="bg-gray-100 font-sans">
+<body class="bg-[#050505] font-sans text-gray-100 selection:bg-brand-500 selection:text-white">
 
-    <div class="flex h-screen bg-gray-100">
+    <!-- MOBILE OVERLAY BACKDROP -->
+    <div id="mobile-overlay" onclick="toggleSidebar()"
+        class="fixed inset-0 bg-black/50 z-40 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
 
-        <div class="hidden md:flex md:flex-col md:w-64 bg-gray-900 text-gray-300">
-            <div class="flex items-center justify-center h-20 border-b border-gray-700">
-                <span class="text-2xl font-black text-white uppercase tracking-wider">DAZEON ADMIN</span>
+    <div class="flex h-screen bg-[#050505]">
+
+        <!-- SIDEBAR -->
+        <div id="sidebar"
+            class="fixed inset-y-0 left-0 z-50 w-64 bg-[#121212] border-r border-white/5 transform -translate-x-full transition-transform duration-300 md:relative md:translate-x-0 md:flex md:flex-col">
+            <div class="flex items-center justify-between px-6 h-24 border-b border-white/5">
+                <span
+                    class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#d946ef] to-[#8b5cf6] uppercase tracking-wider">DAZEON</span>
+                <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
             </div>
-            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
+
+            <nav class="flex-1 px-4 space-y-2 overflow-y-auto custom-scrollbar pt-4">
+                <!-- Dashboard -->
                 <a href="dashboard.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
-                    <i class="fas fa-tachometer-alt w-6 text-lg"></i><span class="ml-4">Dashboard</span>
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all duration-300 group">
+                    <i class="fas fa-home text-lg w-8 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-medium tracking-wide">Dashboard</span>
                 </a>
+
+                <!-- Produk -->
                 <a href="manage_products.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
-                    <i class="fas fa-tshirt w-6 text-lg"></i><span class="ml-4">Produk</span>
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all duration-300 group">
+                    <i class="fas fa-tshirt text-lg w-8 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-medium tracking-wide">Produk</span>
                 </a>
+
+                <!-- Pesanan (ACTIVE) -->
                 <a href="manage_orders.html"
-                    class="flex items-center px-4 py-3 rounded-lg bg-gray-700 text-white font-semibold"> <i
-                        class="fas fa-box-open w-6 text-lg"></i><span class="ml-4">Pesanan</span>
+                    class="relative flex items-center px-4 py-3 rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20 shadow-[0_0_15px_rgba(139,92,246,0.2)] group">
+                    <div class="absolute inset-0 bg-brand-500/5 blur-md rounded-xl"></div>
+                    <i class="fas fa-receipt text-lg w-8 relative z-10 drop-shadow-[0_0_8px_rgba(139,92,246,0.5)]"></i>
+                    <span class="font-bold tracking-wide relative z-10">Pesanan</span>
                 </a>
+
+                <!-- Pelanggan -->
                 <a href="manage_users.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
-                    <i class="fas fa-users w-6 text-lg"></i><span class="ml-4">Pengguna</span>
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all duration-300 group">
+                    <i class="fas fa-users text-lg w-8 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-medium tracking-wide">Pelanggan</span>
                 </a>
-                <a href="reports.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
-                    <i class="fas fa-chart-line w-6 text-lg"></i><span class="ml-4">Laporan</span>
+
+                <!-- Helpdesk -->
+                <a href="helpdesk.html"
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all duration-300 group">
+                    <i class="fas fa-headset text-lg w-8 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-medium tracking-wide">Helpdesk</span>
                 </a>
+
+                <!-- Logout -->
                 <a href="../login.html"
-                    class="flex items-center px-4 py-3 rounded-lg text-red-400 hover:bg-red-600 hover:text-white transition-colors duration-200">
-                    <i class="fas fa-sign-out-alt w-6 text-lg"></i><span class="ml-4">Logout</span>
+                    class="flex items-center px-4 py-3 rounded-xl text-red-500/70 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300 mt-10 group border border-transparent hover:border-red-500/20">
+                    <i class="fas fa-sign-out-alt text-lg w-8 group-hover:translate-x-1 transition-transform"></i>
+                    <span class="font-medium tracking-wide">Logout</span>
                 </a>
             </nav>
         </div>
 
         <div class="flex-1 flex flex-col overflow-hidden">
-            <header class="flex justify-between items-center h-20 px-6 bg-white border-b border-gray-200 shadow-sm">
-                <h1 class="text-2xl font-semibold text-gray-800">Manajemen Pesanan</h1>
-                <span class="text-gray-700 hidden sm:block">Halo, <strong id="user-name">Admin</strong>!</span>
+            <header
+                class="flex justify-between items-center h-20 px-6 bg-[#121212]/80 backdrop-blur-md border-b border-white/5 sticky top-0 z-10">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()"
+                        class="md:hidden text-white p-2 hover:bg-white/10 rounded-lg transition">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h1 class="text-xl md:text-2xl font-bold text-white tracking-wide">Kelola Pesanan</h1>
+                </div>
+                <span
+                    class="text-gray-400 hidden sm:block bg-[#0a0a0a] px-4 py-2 rounded-full border border-white/5">Halo,
+                    <strong id="user-name" class="text-brand-400">Admin</strong>!</span>
             </header>
 
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
-                <div class="container mx-auto">
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-[#050505] p-6">
+                <div class="container mx-auto max-w-7xl">
 
-                    <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+                    <div class="glass p-4 rounded-2xl mb-6">
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                             <input type="text" id="search-input" placeholder="Cari Order ID / Nama..."
-                                class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900">
+                                class="px-4 py-3 bg-[#0a0a0a] border border-white/10 rounded-xl text-gray-300 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 placeholder-gray-600">
                             <select id="status-filter"
-                                class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900">
-                                <option value="">Semua Status</option>
-                                <option value="menunggu_pembayaran">Menunggu Pembayaran</option>
-                                <option value="dikemas">Perlu Dikemas</option>
-                                <option value="diproses">Diproses</option>
-                                <option value="dikirim">Dikirim</option>
-                                <option value="selesai">Selesai</option>
-                                <option value="dibatalkan">Dibatalkan</option>
+                                class="px-4 py-3 bg-[#0a0a0a] border border-white/10 rounded-xl text-gray-300 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500">
+                                <option value="" class="bg-[#121212]">Semua Status</option>
+                                <option value="menunggu_pembayaran" class="bg-[#121212]">Menunggu Pembayaran</option>
+                                <option value="dikemas" class="bg-[#121212]">Perlu Dikemas</option>
+                                <option value="diproses" class="bg-[#121212]">Diproses</option>
+                                <option value="dikirim" class="bg-[#121212]">Dikirim</option>
+                                <option value="selesai" class="bg-[#121212]">Selesai</option>
+                                <option value="dibatalkan" class="bg-[#121212]">Dibatalkan</option>
                             </select>
                             <input type="date" id="date-start" title="Tanggal Mulai"
-                                class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900">
+                                class="px-4 py-3 bg-[#0a0a0a] border border-white/10 rounded-xl text-gray-300 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500">
                             <input type="date" id="date-end" title="Tanggal Akhir"
-                                class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900">
+                                class="px-4 py-3 bg-[#0a0a0a] border border-white/10 rounded-xl text-gray-300 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500">
                         </div>
                         <div class="text-right mt-4">
                             <button onclick="loadOrders()"
-                                class="px-6 py-2 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-700">Filter</button>
+                                class="px-6 py-2.5 bg-brand-600 text-white text-sm font-bold rounded-xl hover:bg-brand-500 transition shadow-lg shadow-brand-600/20">Filter</button>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="glass rounded-2xl overflow-hidden">
                         <div class="overflow-x-auto">
-                            <table class="w-full min-w-[768px] divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
+                            <table class="w-full min-w-[768px] divide-y divide-white/5">
+                                <thead class="bg-white/5">
                                     <tr>
                                         <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Order ID</th>
                                         <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Tanggal</th>
                                         <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Pelanggan</th>
                                         <th
-                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Total</th>
                                         <th
-                                            class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Status</th>
                                         <th
-                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody id="orders-table-body" class="bg-white divide-y divide-gray-200">
+                                <tbody id="orders-table-body" class="divide-y divide-white/5 bg-[#0a0a0a]/50">
                                     <tr>
                                         <td colspan="6" class="px-6 py-10 text-center">
                                             <div class="flex flex-col items-center justify-center">
-                                                <i class="fas fa-circle-notch fa-spin text-3xl text-gray-300 mb-4"></i>
+                                                <i class="fas fa-circle-notch fa-spin text-3xl text-brand-500 mb-4"></i>
                                                 <p class="text-gray-500">Memuat pesanan...</p>
                                             </div>
                                         </td>
@@ -150,242 +287,224 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center text-sm">
-                            <div id="pagination-info">Menampilkan <span class="font-semibold">-</span> pesanan</div>
+                        <div
+                            class="px-6 py-4 border-t border-white/5 flex justify-between items-center text-sm bg-[#0a0a0a]/30">
+                            <div id="pagination-info" class="text-gray-400">Menampilkan <span
+                                    class="font-semibold text-white">-</span> pesanan</div>
                             <div class="flex space-x-1">
                                 <button
-                                    class="px-3 py-1 border border-gray-300 rounded-md text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50"
+                                    class="px-3 py-1 border border-white/10 rounded-lg text-gray-400 bg-transparent hover:bg-white/5 disabled:opacity-50 transition"
                                     disabled>&laquo; Prev</button>
                                 <button
-                                    class="px-3 py-1 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50">Next
+                                    class="px-3 py-1 border border-white/10 rounded-lg text-gray-200 bg-transparent hover:bg-white/5 transition">Next
                                     &raquo;</button>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </main>
         </div>
-    </div>
 
+        <div id="shipping-modal"
+            class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center">
+        </div>
 
+        <script>
+            // 1. Load Orders
+            async function loadOrders() {
+                const tbody = document.getElementById('orders-table-body');
+                const searchVal = document.getElementById('search-input').value.toLowerCase();
+                const statusFilter = document.getElementById('status-filter').value;
+                const textPagination = document.getElementById('pagination-info');
 
+                // --- FETCH DATA ---
+                let query = window.db
+                    .from('orders')
+                    .select('*')
+                    .order('created_at', { ascending: false });
 
-    <script>
-        // 1. Load Orders
-        async function loadOrders() {
-            const tbody = document.getElementById('orders-table-body');
-            const searchVal = document.getElementById('search-input').value.toLowerCase();
-            const statusFilter = document.getElementById('status-filter').value;
-            const textPagination = document.getElementById('pagination-info');
-
-            // --- FETCH DATA ---
-            let query = window.db
-                .from('orders')
-                .select('*')
-                .order('created_at', { ascending: false });
-
-            // Apply Filters
-            if (statusFilter) {
-                query = query.eq('status', statusFilter);
-            }
-
-            const { data: orders, error } = await query;
-
-            if (error) {
-                console.error(error);
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-red-500">Gagal memuat pesanan: ${error.message}</td></tr>`;
-                return;
-            }
-
-            // Client-side Search (Name or ID)
-            const filteredOrders = orders.filter(o => {
-                const idMatch = String(o.id).toLowerCase().includes(searchVal);
-                const nameMatch = (o.customer_name || '').toLowerCase().includes(searchVal);
-                return idMatch || nameMatch;
-            });
-
-            if (filteredOrders.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6">Tidak ada pesanan ditemukan.</td></tr>`;
-                textPagination.innerHTML = 'Menampilkan <span class="font-semibold">0</span> pesanan';
-                return;
-            }
-
-            // Update Pagination Text
-            textPagination.innerHTML = `Menampilkan <span class="font-semibold">1</span> - <span class="font-semibold">${filteredOrders.length}</span> dari <span class="font-semibold">${orders.length}</span> pesanan`;
-
-            // Render Rows
-            tbody.innerHTML = '';
-            filteredOrders.forEach(order => {
-                const dateStr = new Date(order.created_at).toLocaleDateString("id-ID", {
-                    day: 'numeric', month: 'short', year: 'numeric'
-                });
-                const totalStr = "Rp" + (order.total_amount || 0).toLocaleString('id-ID');
-
-                // Extract Name from shipping_address JSON if available
-                let customerName = 'Tanpa Nama';
-                if (order.shipping_address) {
-                    try {
-                        const addr = typeof order.shipping_address === 'string' ? JSON.parse(order.shipping_address) : order.shipping_address;
-                        customerName = addr.name || addr.penerima || customerName;
-                    } catch (e) { console.error("Error parse address", e); }
+                // Apply Filters (Server-side is better for large data, but we can do client-side for flexibility if data is small)
+                // Let's try Server-side filter for status if selected
+                if (statusFilter) {
+                    query = query.eq('status', statusFilter);
                 }
 
-                // Badge Color
-                let badgeClass = 'bg-gray-100 text-gray-800';
-                if (order.status === 'menunggu_pembayaran') badgeClass = 'bg-yellow-100 text-yellow-800';
-                else if (order.status === 'diproses' || order.status === 'dikemas') badgeClass = 'bg-blue-100 text-blue-800';
-                else if (order.status === 'dikirim') badgeClass = 'bg-purple-100 text-purple-800';
-                else if (order.status === 'selesai') badgeClass = 'bg-green-100 text-green-800';
-                else if (order.status === 'dibatalkan') badgeClass = 'bg-red-100 text-red-800';
+                const { data: orders, error } = await query;
 
-                // Action Buttons Logic
-                let actions = `
-                    <a href="order-detail.html?id=${order.id}" class="text-blue-600 hover:text-blue-900 mx-1" title="Lihat Detail"><i class="fas fa-eye"></i></a>
+                if (error) {
+                    console.error(error);
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-red-500">Gagal memuat pesanan: ${error.message}</td></tr>`;
+                    return;
+                }
+
+                // Client-side Search (Name or ID)
+                const filteredOrders = orders.filter(o => {
+                    const idMatch = String(o.id).toLowerCase().includes(searchVal);
+                    const nameMatch = (o.customer_name || '').toLowerCase().includes(searchVal);
+                    return idMatch || nameMatch;
+                });
+
+                if (filteredOrders.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6">Tidak ada pesanan ditemukan.</td></tr>`;
+                    textPagination.innerHTML = 'Menampilkan <span class="font-semibold">0</span> pesanan';
+                    return;
+                }
+
+                // Update Pagination Text
+                textPagination.innerHTML = `Menampilkan <span class="font-semibold">1</span> - <span class="font-semibold">${filteredOrders.length}</span> dari <span class="font-semibold">${orders.length}</span> pesanan`;
+
+                // Render Rows
+                tbody.innerHTML = '';
+                filteredOrders.forEach((order, index) => {
+                    const dateStr = new Date(order.created_at).toLocaleDateString("id-ID", {
+                        day: 'numeric', month: 'short', year: 'numeric'
+                    });
+                    const totalStr = "Rp" + (order.total_amount || 0).toLocaleString('id-ID');
+
+                    // Extract Name from shipping_address JSON if available
+                    let customerName = 'Tanpa Nama';
+                    if (order.shipping_address) {
+                        try {
+                            const addr = typeof order.shipping_address === 'string' ? JSON.parse(order.shipping_address) : order.shipping_address;
+                            customerName = addr.name || addr.penerima || customerName;
+                        } catch (e) { console.error("Error parse address", e); }
+                    }
+
+                    // Badge Color
+                    let badgeClass = 'bg-gray-100 text-gray-400 border-gray-600';
+                    if (order.status === 'menunggu_pembayaran') badgeClass = 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+                    else if (order.status === 'diproses' || order.status === 'dikemas') badgeClass = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+                    else if (order.status === 'dikirim') badgeClass = 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+                    else if (order.status === 'selesai') badgeClass = 'bg-green-500/10 text-green-400 border-green-500/20';
+                    else if (order.status === 'dibatalkan') badgeClass = 'bg-red-500/10 text-red-400 border-red-500/20';
+
+                    // Action Buttons Logic
+                    let actions = `
+                    <a onclick="window.location.href='order-detail.html?id=${order.id}'" class="text-blue-400 hover:text-blue-300 mx-1 transition p-2 hover:bg-white/5 rounded-full" title="Lihat Detail"><i class="fas fa-eye"></i></a>
                 `;
 
-                if (order.status === 'menunggu_pembayaran') {
-                    // Manual confirm if needed, but usually Midtrans handles this.
-                    // But admin can override.
-                    actions += `<button onclick="updateStatus('${order.id}', 'dikemas')" class="text-green-600 hover:text-green-900 mx-1" title="Terima / Proses"><i class="fas fa-box"></i></button>`;
-                } else if (order.status === 'diproses' || order.status === 'dikemas') {
-                    actions += `<button onclick="updateStatus('${order.id}', 'dikirim')" class="text-purple-600 hover:text-purple-900 mx-1" title="Kirim Barang"><i class="fas fa-truck"></i></button>`;
-                } else if (order.status === 'dikirim') {
-                    actions += `<button onclick="updateStatus('${order.id}', 'selesai')" class="text-green-600 hover:text-green-900 mx-1" title="Selesai"><i class="fas fa-check-double"></i></button>`;
-                }
+                    if (order.status === 'menunggu_pembayaran') {
+                        actions += `<button onclick="updateStatus('${order.id}', 'dikemas')" class="text-green-400 hover:text-green-300 mx-1 transition p-2 hover:bg-white/5 rounded-full" title="Terima / Proses"><i class="fas fa-box"></i></button>`;
+                    } else if (order.status === 'diproses' || order.status === 'dikemas') {
+                        actions += `<button onclick="updateStatus('${order.id}', 'dikirim')" class="text-purple-400 hover:text-purple-300 mx-1 transition p-2 hover:bg-white/5 rounded-full" title="Kirim Barang"><i class="fas fa-truck"></i></button>`;
+                    } else if (order.status === 'dikirim') {
+                        actions += `<button onclick="updateStatus('${order.id}', 'selesai')" class="text-green-400 hover:text-green-300 mx-1 transition p-2 hover:bg-white/5 rounded-full" title="Selesai"><i class="fas fa-check-double"></i></button>`;
+                    }
 
-                const row = `
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="px-6 py-4 text-sm font-medium text-indigo-600 hover:underline cursor-pointer">
+                    const row = `
+                    <tr class="hover:bg-white/5 transition border-b border-white/5 last:border-0 animate-enter" style="animation-delay: ${index * 50}ms">
+                         <td onclick="window.location.href='order-detail.html?id=${order.id}'" class="px-6 py-4 text-sm font-medium text-brand-400 hover:underline cursor-pointer tracking-wider">
                             ${String(order.id).slice(0, 8).toUpperCase()}...
                         </td>
-                        <td class="px-6 py-4 text-sm text-gray-500">${dateStr}</td>
-                        <td class="px-6 py-4 text-sm text-gray-700 font-medium">${customerName}</td>
-                        <td class="px-6 py-4 text-sm text-gray-900 font-semibold text-right">${totalStr}</td>
+                        <td class="px-6 py-4 text-sm text-gray-400">${dateStr}</td>
+                        <td class="px-6 py-4 text-sm text-gray-200 font-medium">${customerName}</td>
+                        <td class="px-6 py-4 text-sm text-white font-bold text-right tracking-wide">${totalStr}</td>
                         <td class="px-6 py-4 text-center">
-                            <span class="pill ${badgeClass}">${formatStatus(order.status)}</span>
+                            <span class="pill border ${badgeClass}">${formatStatus(order.status)}</span>
                         </td>
                         <td class="px-6 py-4 text-right text-sm font-medium">
                             ${actions}
                         </td>
                     </tr>
                 `;
-                tbody.insertAdjacentHTML('beforeend', row);
-            });
-        }
-
-        // 2. Update Status
-        async function updateStatus(orderId, newStatus) {
-            let trackingNumber = null;
-
-            // Jika status 'dikirim', minta input resi
-            if (newStatus === 'dikirim') {
-                const { value: resi } = await Swal.fire({
-                    title: 'Masukkan Nomor Resi',
-                    input: 'text',
-                    inputLabel: 'Nomor Resi / Tracking Number',
-                    inputPlaceholder: 'Contoh: JNE123456789',
-                    showCancelButton: true,
-                    confirmButtonText: 'Kirim',
-                    cancelButtonText: 'Batal',
-                    inputValidator: (value) => {
-                        if (!value) {
-                            return 'Nomor resi harus diisi!'
-                        }
-                    }
+                    tbody.insertAdjacentHTML('beforeend', row);
                 });
+            }
 
-                if (!resi) return; // User cancel
-                trackingNumber = resi;
-            } else {
-                // Konfirmasi biasa untuk status lain
+            // 2. Update Status
+            async function updateStatus(orderId, newStatus) {
                 const result = await Swal.fire({
                     title: 'Konfirmasi',
                     text: `Ubah status pesanan ${orderId} menjadi '${newStatus}'?`,
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonText: 'Ya, Ubah',
-                    cancelButtonText: 'Batal'
+                    cancelButtonText: 'Batal',
+                    background: '#121212',
+                    color: '#fff',
+                    confirmButtonColor: '#7c3aed',
+                    cancelButtonColor: '#d33'
                 });
+
                 if (!result.isConfirmed) return;
+
+                const { error } = await window.db
+                    .from('orders')
+                    .update({ status: newStatus })
+                    .eq('id', orderId);
+
+                if (error) {
+                    Swal.fire({
+                        title: 'Gagal',
+                        text: 'Gagal update status: ' + error.message,
+                        icon: 'error',
+                        background: '#121212',
+                        color: '#fff',
+                        confirmButtonColor: '#d33'
+                    });
+                } else {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: 'Status berhasil diperbarui!',
+                        timer: 1500,
+                        background: '#121212',
+                        color: '#fff',
+                        showConfirmButton: false
+                    });
+                    loadOrders(); // Refresh table
+                }
             }
 
-            // Prepare Update Data
-            const updateData = { status: newStatus };
-            if (trackingNumber) {
-                updateData.resi_number = trackingNumber;
+            // Helper: Format Status Text
+            function formatStatus(s) {
+                if (s === 'diproses') return 'Sedang Dikemas';
+                if (s === 'dikemas') return 'Sedang Dikemas';
+                return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
             }
 
-            const { error } = await window.db
-                .from('orders')
-                .update(updateData)
-                .eq('id', orderId);
+            // 3. Realtime Subscription
+            function initRealtime() {
+                const channel = window.db.channel('realtime-boss-orders')
+                    .on(
+                        'postgres_changes',
+                        { event: '*', schema: 'public', table: 'orders' },
+                        (payload) => {
+                            console.log('Realtime update:', payload);
 
-            if (error) {
-                Swal.fire('Gagal', 'Gagal update status: ' + error.message, 'error');
-            } else {
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil',
-                    text: trackingNumber
-                        ? `Status 'Dikirim' dengan Resi ${trackingNumber} berhasil disimpan!`
-                        : 'Status berhasil diperbarui!',
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-                loadOrders(); // Refresh table
+                            // Notification for new/updated orders
+                            const eventType = payload.eventType;
+                            const msg = eventType === 'INSERT' ? 'Pesanan Baru Masuk!' : 'Data Pesanan Diperbarui!';
+
+                            const Toast = Swal.mixin({
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 3000,
+                                timerProgressBar: true,
+                                didOpen: (toast) => {
+                                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                                }
+                            })
+
+                            Toast.fire({
+                                icon: 'info',
+                                title: msg
+                            });
+
+                            loadOrders();
+                        }
+                    )
+                    .subscribe();
             }
-        }
 
-        // Helper: Format Status Text
-        function formatStatus(s) {
-            if (s === 'diproses') return 'Sedang Dikemas';
-            if (s === 'dikemas') return 'Sedang Dikemas';
-            return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-        }
-
-        // 3. Realtime Subscription
-        function initRealtime() {
-            const channel = window.db.channel('realtime-orders')
-                .on(
-                    'postgres_changes',
-                    { event: '*', schema: 'public', table: 'orders' },
-                    (payload) => {
-                        console.log('Realtime update:', payload);
-
-                        // Notification for new/updated orders
-                        const eventType = payload.eventType;
-                        const msg = eventType === 'INSERT' ? 'Pesanan Baru Masuk!' : 'Data Pesanan Diperbarui!';
-
-                        const Toast = Swal.mixin({
-                            toast: true,
-                            position: 'top-end',
-                            showConfirmButton: false,
-                            timer: 3000,
-                            timerProgressBar: true,
-                            didOpen: (toast) => {
-                                toast.addEventListener('mouseenter', Swal.stopTimer)
-                                toast.addEventListener('mouseleave', Swal.resumeTimer)
-                            }
-                        })
-
-                        Toast.fire({
-                            icon: 'info',
-                            title: msg
-                        });
-
-                        loadOrders(); // Reload data
-                    }
-                )
-                .subscribe();
-        }
-
-        // Init
-        document.addEventListener('DOMContentLoaded', () => {
-            loadOrders();
-            initRealtime();
-        });
-    </script>
+            // Init
+            document.addEventListener('DOMContentLoaded', () => {
+                loadOrders();
+                initRealtime();
+            });
+        </script>
 </body>
 
 </html>

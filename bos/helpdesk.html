@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor Helpdesk - Dazeon Bos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] }, colors: { brand: { 400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', accent: '#d946ef' } } } }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #050505;
+            color: #fff;
+        }
+
+        .chat-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        .active-ticket {
+            background: rgba(139, 92, 246, 0.1);
+            border-left: 4px solid #8b5cf6;
+        }
+
+        .bubble-admin {
+            background: #7c3aed;
+            color: white;
+            margin-left: auto;
+            border-radius: 12px 12px 2px 12px;
+        }
+
+        .bubble-user {
+            background: #1f2937;
+            color: #e5e7eb;
+            margin-right: auto;
+            border-radius: 12px 12px 12px 2px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../config.js"></script>
+    <script src="../auth_check.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => checkAuth(['bos']));
+
+        // MOBILE SIDEBAR TOGGLE
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            if (overlay.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-[#050505] font-sans h-screen flex overflow-hidden">
+
+    <!-- MOBILE OVERLAY BACKDROP -->
+    <div id="mobile-overlay" onclick="toggleSidebar()"
+        class="fixed inset-0 bg-black/50 z-40 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+
+    <!-- SIDEBAR -->
+    <div id="sidebar"
+        class="fixed inset-y-0 left-0 z-50 w-64 bg-[#121212] border-r border-white/5 transform -translate-x-full transition-transform duration-300 md:relative md:translate-x-0 md:flex md:flex-col">
+        <div class="flex items-center justify-between px-6 h-20 border-b border-white/5">
+            <span
+                class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-brand-accent uppercase tracking-wider">DAZEON</span>
+            <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-white">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto custom-scrollbar">
+            <a href="boss_dashboard.html"
+                class="flex items-center px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200">
+                <i class="fas fa-chart-pie w-6 text-lg"></i>
+                <span class="ml-4">Ringkasan Bisnis</span>
+            </a>
+            <a href="reports.html"
+                class="flex items-center px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200">
+                <i class="fas fa-chart-line w-6 text-lg"></i>
+                <span class="ml-4">Laporan Detail</span>
+            </a>
+            <a href="manage_users.html"
+                class="flex items-center px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200">
+                <i class="fas fa-users-cog w-6 text-lg"></i>
+                <span class="ml-4">Kelola Staf</span>
+            </a>
+            <a href="manage_products.html"
+                class="flex items-center px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200">
+                <i class="fas fa-tshirt w-6 text-lg"></i>
+                <span class="ml-4">Produk</span>
+            </a>
+            <a href="boss_manage_orders.html"
+                class="flex items-center px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200">
+                <i class="fas fa-receipt w-6 text-lg"></i>
+                <span class="ml-4">Pesanan</span>
+            </a>
+            <a href="helpdesk.html"
+                class="flex items-center px-4 py-3 rounded-xl bg-brand-600/10 text-brand-400 border border-brand-500/20 font-semibold shadow-[0_0_15px_rgba(139,92,246,0.2)]">
+                <i class="fas fa-headset w-6 text-lg"></i><span class="ml-4">Helpdesk</span>
+            </a>
+            <a href="../login.html"
+                class="flex items-center px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors duration-200 mt-auto border border-transparent hover:border-red-500/20">
+                <i class="fas fa-sign-out-alt w-6 text-lg"></i>
+                <span class="ml-4">Logout</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- MAIN CHAT INTERFACE -->
+    <main class="flex-1 flex flex-col md:flex-row h-full relative">
+
+        <!-- LEFT: TICKET LIST -->
+        <div class="w-full md:w-80 lg:w-96 bg-[#0a0a0a] border-r border-white/5 flex flex-col h-full">
+            <div class="p-4 border-b border-white/5 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleSidebar()"
+                        class="md:hidden text-white p-1 hover:bg-white/10 rounded-lg transition">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 class="font-bold text-white">Monitor Active Chats</h2>
+                </div>
+                <div class="flex gap-2 text-xs">
+                    <span class="px-2 py-1 bg-yellow-500/10 text-yellow-400 rounded-full border border-yellow-500/20"><i
+                            class="fas fa-eye"></i> View Only</span>
+                </div>
+            </div>
+            <div id="ticket-list" class="flex-1 overflow-y-auto chat-scroll p-2 space-y-1">
+                <p class="text-center text-gray-600 text-xs py-10">Memuat...</p>
+            </div>
+        </div>
+
+        <!-- RIGHT: CHAT ROOM -->
+        <div class="flex-1 flex flex-col h-full bg-[#050505] relative">
+
+            <!-- HEADER -->
+            <div id="chat-header"
+                class="h-16 border-b border-white/5 flex items-center justify-between px-6 bg-[#121212]/50 backdrop-blur">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center font-bold text-white shadow-lg"
+                        id="header-avatar">?</div>
+                    <div>
+                        <h3 class="font-bold text-white leading-tight" id="header-name">Pilih Chat</h3>
+                        <p class="text-xs text-gray-400" id="header-subject">...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MESSAGES -->
+            <div id="messages-area" class="flex-1 overflow-y-auto chat-scroll p-6 space-y-4">
+                <div class="h-full flex flex-col items-center justify-center text-gray-600 opacity-50">
+                    <i class="fas fa-user-secret text-6xl mb-4"></i>
+                    <p>Pilih percakapan untuk memantau.</p>
+                </div>
+            </div>
+
+            <!-- READ ONLY NOTICE -->
+            <div class="p-4 bg-[#121212] border-t border-white/5 text-center text-xs text-gray-500">
+                <i class="fas fa-lock"></i> Mode Monitor: Anda tidak dapat membalas pesan.
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const client = window.db || window.supabase;
+        let activeTicketId = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            loadTicketList();
+            initListRealtime();
+        });
+
+        // --- TICKET LIST LOGIC ---
+        function escapeQuotes(str) {
+            if (!str) return '';
+            return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '\\"').replace(/\n/g, ' ');
+        }
+
+        async function loadTicketList() {
+            const listObj = document.getElementById('ticket-list');
+
+            const { data: tickets, error } = await client
+                .from('helpdesk_tickets')
+                .select('*')
+                .order('updated_at', { ascending: false });
+
+            if (!tickets || tickets.length === 0) {
+                listObj.innerHTML = '<p class="text-center text-gray-600 text-xs py-4">Tidak ada pesan aktif.</p>';
+                return;
+            }
+
+            // Fetch Profiles for Avatars
+            const userIds = [...new Set(tickets.map(t => t.user_id))];
+            const { data: profiles } = await client
+                .from('profiles')
+                .select('id, name, email, avatar_url')
+                .in('id', userIds);
+
+            const profilesMap = {};
+            if (profiles) {
+                profiles.forEach(p => profilesMap[p.id] = p);
+            }
+
+            listObj.innerHTML = tickets.map(t => {
+                const profile = profilesMap[t.user_id] || {};
+                const displayName = profile.name || t.user_name || 'User';
+
+                const initial = displayName.charAt(0).toUpperCase();
+                const time = new Date(t.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                const isActive = activeTicketId === t.id ? 'active-ticket' : 'hover:bg-white/5';
+                const statusBadge = t.status === 'closed' ? '<span class="text-[9px] px-1 bg-red-500/20 text-red-400 rounded">Closed</span>' : '<span class="text-[9px] px-1 bg-green-500/20 text-green-400 rounded">Open</span>';
+
+                const safeName = escapeQuotes(displayName);
+                const safeSubject = escapeQuotes(t.subject || '');
+
+                // Avatar Logic
+                let avatarHtml = '';
+                let avatarSrc = null;
+                const rawAvatar = profile.avatar_url;
+
+                if (rawAvatar) {
+                    if (rawAvatar.startsWith('http')) {
+                        avatarSrc = rawAvatar;
+                    } else {
+                        avatarSrc = `https://rkpkfgenzpfynypeceto.supabase.co/storage/v1/object/public/product-images/${rawAvatar}`;
+                    }
+                }
+
+                if (avatarSrc) {
+                    avatarHtml = `<img src="${avatarSrc}" class="w-10 h-10 rounded-full object-cover border border-white/10 flex-shrink-0">`;
+                } else {
+                    avatarHtml = `
+                     <div class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 font-bold flex-shrink-0 border border-white/10">
+                        ${initial}
+                     </div>`;
+                }
+
+                const safeAvatar = avatarSrc ? `'${avatarSrc}'` : 'null';
+
+                return `
+                <div onclick="openChat(${t.id}, '${safeName}', '${safeSubject}', ${safeAvatar})" class="p-3 rounded-lg cursor-pointer transition flex items-start gap-3 ${isActive}">
+                    ${avatarHtml}
+                    <div class="flex-1 min-w-0">
+                        <div class="flex justify-between items-center mb-1">
+                            <h4 class="font-bold text-gray-200 text-sm truncate">${displayName}</h4>
+                            <span class="text-[10px] text-gray-500">${time}</span>
+                        </div>
+                        <div class="flex justify-between mb-1">
+                             <p class="text-xs text-gray-400 truncate w-3/4">${t.subject}</p>
+                             ${statusBadge}
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // --- OPEN CHAT LOGIC ---
+        window.openChat = async function (ticketId, name, subject, avatarSrc) {
+            activeTicketId = ticketId;
+            loadTicketList(); // Refresh highlight
+
+            // UI Header
+            document.getElementById('header-name').innerText = name || 'User';
+            document.getElementById('header-subject').innerText = subject;
+
+            const headerAvatar = document.getElementById('header-avatar');
+            if (avatarSrc) {
+                headerAvatar.innerHTML = `<img src="${avatarSrc}" class="w-full h-full rounded-full object-cover">`;
+                headerAvatar.classList.remove('bg-gray-800'); // Remove bg if image exists
+                headerAvatar.classList.remove('text-white');
+            } else {
+                headerAvatar.innerText = name ? name.charAt(0).toUpperCase() : '?';
+                headerAvatar.innerHTML = name ? name.charAt(0).toUpperCase() : '?';
+                headerAvatar.classList.add('bg-gray-800');
+                headerAvatar.classList.add('text-white');
+            }
+
+            // Load Messages
+            await loadMessages(ticketId);
+
+            // Init Chat Realtime (Specific Ticket)
+            initChatRealtime(ticketId);
+        }
+
+        async function loadMessages(ticketId) {
+            const area = document.getElementById('messages-area');
+            area.innerHTML = '';
+
+            const { data: msgs } = await client
+                .from('helpdesk_messages')
+                .select('*')
+                .eq('ticket_id', ticketId)
+                .order('created_at', { ascending: true });
+
+            if (msgs) msgs.forEach(m => renderBubble(m));
+            scrollToBottom();
+        }
+
+        function renderBubble(msg) {
+            const area = document.getElementById('messages-area');
+            const isAdmin = msg.sender_role === 'admin';
+
+            let content = `<p class="whitespace-pre-wrap leading-relaxed">${msg.message}</p>`;
+
+            if (msg.is_image) {
+                content = `
+                    <div class="mb-1 rounded-lg overflow-hidden border border-white/10 cursor-pointer" onclick="window.open('${msg.message}', '_blank')">
+                        <img src="${msg.message}" class="max-w-[200px] max-h-[200px] object-cover hover:scale-105 transition">
+                    </div>
+                `;
+            }
+
+            const html = `
+            <div class="flex ${isAdmin ? 'justify-end' : 'justify-start'} mb-3">
+                <div class="max-w-[75%] px-4 py-2 text-sm shadow-md ${isAdmin ? 'bubble-admin' : 'bubble-user'}">
+                    ${content}
+                    <p class="text-[9px] opacity-60 text-right mt-1">${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                </div>
+            </div>`;
+            area.insertAdjacentHTML('beforeend', html);
+        }
+
+        function scrollToBottom() {
+            const area = document.getElementById('messages-area');
+            area.scrollTop = area.scrollHeight;
+        }
+
+        // --- REALTIME ---
+        function initListRealtime() {
+            client.channel('bos_list')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'helpdesk_tickets' }, () => {
+                    loadTicketList();
+                })
+                .subscribe();
+        }
+
+        let chatChannel = null;
+        function initChatRealtime(ticketId) {
+            if (chatChannel) client.removeChannel(chatChannel);
+
+            chatChannel = client.channel(`view_chat:${ticketId}`)
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'helpdesk_messages',
+                    filter: `ticket_id=eq.${ticketId}`
+                }, (payload) => {
+                    renderBubble(payload.new);
+                    scrollToBottom();
+                })
+                .subscribe();
+        }
+
+    </script>
+</body>
+
+</html>

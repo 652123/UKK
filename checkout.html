@@ -12,25 +12,72 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap"
+    <!-- Combine Poppins and Outfit imports -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&family=Poppins:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.classList.add('loaded'); // Trigger transition
+        });
+
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: { sans: ['Poppins', 'sans-serif'] },
-                    colors: { brand: '#1a1a1a' }
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            accent: '#d946ef',
+                        }
+                    },
+                    animation: {
+                        'shine': 'shine 1.5s infinite',
+                    },
+                    keyframes: {
+                        'shine': {
+                            '0%': { transform: 'skewX(-15deg) translateX(-150%)' },
+                            '50%': { transform: 'skewX(-15deg) translateX(150%)' },
+                            '100%': { transform: 'skewX(-15deg) translateX(150%)' },
+                        }
+                    }
                 }
             }
         }
     </script>
     <style>
+        /* Page Transition Root */
+        body {
+            opacity: 0;
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body.loaded {
+            opacity: 1;
+        }
+
+        /* Typography Utilities */
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        .font-heading {
+            font-family: 'Outfit', sans-serif;
+        }
+
         /* Custom Radio Button Styling */
         .courier-radio:checked+div {
-            border-color: #1a1a1a;
-            background-color: #f9fafb;
+            border-color: #8b5cf6;
+            background-color: rgba(139, 92, 246, 0.1);
             position: relative;
         }
 
@@ -41,24 +88,26 @@
             position: absolute;
             top: 10px;
             right: 10px;
-            color: #1a1a1a;
+            color: #8b5cf6;
         }
     </style>
 </head>
 
-<body class="bg-gray-50 font-sans">
+<body class="bg-[#050505] font-sans text-gray-100 selection:bg-brand-500 selection:text-white">
 
-    <header class="bg-white shadow-sm sticky top-0 z-40">
+    <header class="bg-[#121212]/80 backdrop-blur-md sticky top-0 z-40 border-b border-white/5">
         <div class="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            <a href="index.html" class="text-2xl font-black text-gray-900 uppercase tracking-wider">DAZEON</a>
-            <a href="cart.html" class="text-sm font-medium text-gray-600 hover:text-gray-900 flex items-center">
+            <a href="index.html"
+                class="text-2xl font-black text-white uppercase tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-brand-400 to-brand-accent">DAZEON</a>
+            <a href="cart.html" id="back-button"
+                class="text-sm font-medium text-gray-400 hover:text-white flex items-center transition">
                 <i class="fas fa-chevron-left mr-2"></i> Kembali
             </a>
         </div>
     </header>
 
     <main class="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-10">
-        <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-8">Pengiriman & Pembayaran</h1>
+        <h1 class="text-2xl md:text-3xl font-bold text-white mb-8 tracking-wide">Pengiriman & Pembayaran</h1>
 
         <div id="message-area" class="hidden p-4 rounded-lg mb-6"></div>
 
@@ -67,169 +116,326 @@
 
                 <div class="lg:col-span-2 space-y-6">
 
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    <!-- ALAMAT PENGIRIMAN -->
+                    <div class="bg-[#121212] p-6 rounded-2xl shadow-xl border border-white/5 relative overflow-hidden">
+                        <div
+                            class="absolute top-0 right-0 w-32 h-32 bg-brand-500/5 rounded-full blur-3xl pointer-events-none">
+                        </div>
+                        <h2 class="text-lg font-bold text-white mb-6 flex items-center relative z-10">
                             <span
-                                class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mr-3 text-sm">1</span>
+                                class="w-8 h-8 bg-brand-500/10 text-brand-400 rounded-full flex items-center justify-center mr-3 text-sm border border-brand-500/20">1</span>
                             Alamat Pengiriman
                         </h2>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Nama
-                                    Penerima</label>
-                                <input type="text" id="name" required
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all">
+                        <div class="grid gap-6 relative z-10">
+                            <!-- Row 1: Name & Phone -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label
+                                        class="block text-xs font-bold text-gray-500 uppercase mb-2 tracking-wider ml-1">Nama
+                                        Penerima</label>
+                                    <div class="relative group">
+                                        <div
+                                            class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                            <i
+                                                class="fas fa-user text-gray-500 group-focus-within:text-brand-400 transition-colors"></i>
+                                        </div>
+                                        <input type="text" id="name" required
+                                            class="w-full pl-11 pr-4 py-3.5 bg-[#0a0a0a] border border-white/10 rounded-xl focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 text-white placeholder-gray-600 outline-none transition-all shadow-sm group-hover:border-white/20"
+                                            placeholder="Nama Lengkap">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-xs font-bold text-gray-500 uppercase mb-2 tracking-wider ml-1">Nomor
+                                        Telepon</label>
+                                    <div class="relative group">
+                                        <div
+                                            class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                            <i
+                                                class="fas fa-phone text-gray-500 group-focus-within:text-brand-400 transition-colors"></i>
+                                        </div>
+                                        <input type="tel" id="phone" required
+                                            class="w-full pl-11 pr-4 py-3.5 bg-[#0a0a0a] border border-white/10 rounded-xl focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 text-white placeholder-gray-600 outline-none transition-all shadow-sm group-hover:border-white/20"
+                                            placeholder="08xxxxxxxxxx">
+                                    </div>
+                                </div>
                             </div>
+
+                            <!-- Row 2: Address -->
                             <div>
-                                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Nomor
-                                    Telepon</label>
-                                <input type="tel" id="phone" required
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all">
-                            </div>
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Alamat
+                                <label
+                                    class="block text-xs font-bold text-gray-500 uppercase mb-2 tracking-wider ml-1">Alamat
                                     Lengkap</label>
-                                <textarea id="address" rows="2" required placeholder="Nama Jalan, No. Rumah, RT/RW"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all"></textarea>
+                                <div class="relative group">
+                                    <div class="absolute top-4 left-4 pointer-events-none">
+                                        <i
+                                            class="fas fa-map-marker-alt text-gray-500 group-focus-within:text-brand-400 transition-colors"></i>
+                                    </div>
+                                    <textarea id="address" rows="2" required
+                                        class="w-full pl-11 pr-4 py-3.5 bg-[#0a0a0a] border border-white/10 rounded-xl focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 text-white placeholder-gray-600 outline-none transition-all shadow-sm resize-none group-hover:border-white/20"
+                                        placeholder="Nama Jalan, No. Rumah, RT/RW, Patokan"></textarea>
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Kota /
-                                    Kabupaten</label>
-                                <input type="text" id="city" required
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all">
+
+                            <!-- Row 3: Province, City, Postal -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <label
+                                        class="block text-xs font-bold text-gray-500 uppercase mb-2 tracking-wider ml-1">Provinsi</label>
+                                    <div class="relative group">
+                                        <div
+                                            class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                            <i
+                                                class="fas fa-map text-gray-500 group-focus-within:text-brand-400 transition-colors"></i>
+                                        </div>
+                                        <select id="province" required onchange="updateShippingEstimate()"
+                                            class="w-full pl-11 pr-10 py-3.5 bg-[#0a0a0a] border border-white/10 rounded-xl focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 text-white outline-none transition-all shadow-sm appearance-none cursor-pointer hover:bg-[#111]">
+                                            <option value="" disabled selected>Pilih Provinsi</option>
+                                            <option value="Jawa Timur">Jawa Timur</option>
+                                            <option value="Jawa Tengah">Jawa Tengah</option>
+                                            <option value="DI Yogyakarta">DI Yogyakarta</option>
+                                            <option value="Jawa Barat">Jawa Barat</option>
+                                            <option value="DKI Jakarta">DKI Jakarta</option>
+                                            <option value="Bali">Bali</option>
+                                            <option value="Luar Jawa">Luar Pulau Jawa</option>
+                                        </select>
+                                        <div
+                                            class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                                            <i class="fas fa-chevron-down text-xs text-gray-500"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-xs font-bold text-gray-500 uppercase mb-2 tracking-wider ml-1">Kota
+                                        / Kabupaten</label>
+                                    <div class="relative group">
+                                        <div
+                                            class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                            <i
+                                                class="fas fa-city text-gray-500 group-focus-within:text-brand-400 transition-colors"></i>
+                                        </div>
+                                        <input type="text" id="city" required
+                                            class="w-full pl-11 pr-4 py-3.5 bg-[#0a0a0a] border border-white/10 rounded-xl focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 text-white placeholder-gray-600 outline-none transition-all shadow-sm group-hover:border-white/20"
+                                            placeholder="Contoh: Mojokerto">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-xs font-bold text-gray-500 uppercase mb-2 tracking-wider ml-1">Kode
+                                        Pos</label>
+                                    <div class="relative group">
+                                        <div
+                                            class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                            <i
+                                                class="fas fa-mail-bulk text-gray-500 group-focus-within:text-brand-400 transition-colors"></i>
+                                        </div>
+                                        <input type="text" id="postal_code" required
+                                            class="w-full pl-11 pr-4 py-3.5 bg-[#0a0a0a] border border-white/10 rounded-xl focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 text-white placeholder-gray-600 outline-none transition-all shadow-sm group-hover:border-white/20"
+                                            placeholder="61xxx">
+                                    </div>
+                                </div>
                             </div>
+
+                            <!-- Row 4: Notes -->
                             <div>
-                                <label class="block text-xs font-semibold text-gray-500 uppercase mb-1">Kode Pos</label>
-                                <input type="text" id="postal_code" required
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand focus:border-brand outline-none transition-all">
+                                <label
+                                    class="block text-xs font-bold text-gray-500 uppercase mb-2 tracking-wider ml-1">Catatan
+                                    Pesanan (Opsional)</label>
+                                <div class="relative group">
+                                    <div class="absolute top-4 left-4 pointer-events-none">
+                                        <i
+                                            class="fas fa-sticky-note text-gray-500 group-focus-within:text-brand-400 transition-colors"></i>
+                                    </div>
+                                    <textarea id="notes" rows="2"
+                                        class="w-full pl-11 pr-4 py-3.5 bg-[#0a0a0a] border border-white/10 rounded-xl focus:ring-2 focus:ring-brand-500/50 focus:border-brand-500 text-white placeholder-gray-600 outline-none transition-all shadow-sm resize-none group-hover:border-white/20"
+                                        placeholder="Pesan khusus untuk penjual..."></textarea>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    <!-- PILIH KURIR -->
+                    <div class="bg-[#121212] p-6 rounded-2xl shadow-xl border border-white/5">
+                        <h2 class="text-lg font-bold text-white mb-6 flex items-center">
                             <span
-                                class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mr-3 text-sm">2</span>
+                                class="w-8 h-8 bg-brand-500/10 text-brand-400 rounded-full flex items-center justify-center mr-3 text-sm border border-brand-500/20">2</span>
                             Pilih Kurir Pengiriman
                         </h2>
 
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4" id="courier-options">
 
-                            <label class="cursor-pointer relative">
-                                <input type="radio" name="shipping" value="JNE" data-cost="15000"
-                                    class="courier-radio sr-only" checked onchange="updateTotal()">
+                            <label class="cursor-pointer relative group">
+                                <input type="radio" name="shipping" value="JNE" class="courier-radio sr-only" checked>
                                 <div
-                                    class="border-2 border-gray-200 rounded-xl p-4 hover:border-gray-400 transition-all text-center h-full flex flex-col justify-center items-center">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/92/New_Logo_JNE.png"
-                                        alt="JNE" class="h-8 mb-2 object-contain">
-                                    <p class="font-bold text-gray-800">Reguler</p>
-                                    <p class="text-sm text-gray-500">2-3 Hari</p>
-                                    <p class="text-brand font-bold mt-1">Rp15.000</p>
+                                    class="border border-white/10 bg-[#0a0a0a] rounded-xl p-4 group-hover:border-brand-500/50 transition-all text-center h-full flex flex-col justify-center items-center relative overflow-hidden">
+                                    <div class="h-10 mb-1 flex items-center justify-center w-full">
+                                        <h3 class="text-2xl font-black italic tracking-widest text-white">JNE</h3>
+                                    </div>
+                                    <p class="font-bold text-gray-200">Reguler</p>
+                                    <p class="text-xs text-gray-500">2-3 Hari</p>
+                                    <p id="courier-price-JNE" class="text-brand-400 font-bold mt-1">Rp-</p>
                                 </div>
                             </label>
 
-                            <label class="cursor-pointer relative">
-                                <input type="radio" name="shipping" value="JNT" data-cost="16000"
-                                    class="courier-radio sr-only" onchange="updateTotal()">
+                            <label class="cursor-pointer relative group">
+                                <input type="radio" name="shipping" value="JNT" class="courier-radio sr-only">
                                 <div
-                                    class="border-2 border-gray-200 rounded-xl p-4 hover:border-gray-400 transition-all text-center h-full flex flex-col justify-center items-center">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/3/35/Logo_J%26T_Red.png"
-                                        alt="J&T" class="h-6 mb-4 object-contain">
-                                    <p class="font-bold text-gray-800">Express</p>
-                                    <p class="text-sm text-gray-500">1-2 Hari</p>
-                                    <p class="text-brand font-bold mt-1">Rp16.000</p>
+                                    class="border border-white/10 bg-[#0a0a0a] rounded-xl p-4 group-hover:border-brand-500/50 transition-all text-center h-full flex flex-col justify-center items-center relative overflow-hidden">
+                                    <div class="h-10 mb-1 flex items-center justify-center w-full">
+                                        <h3 class="text-2xl font-bold text-red-500 bg-white px-2 rounded">J&T</h3>
+                                    </div>
+                                    <p class="font-bold text-gray-200">Express</p>
+                                    <p class="text-xs text-gray-500">1-2 Hari</p>
+                                    <p id="courier-price-JNT" class="text-brand-400 font-bold mt-1">Rp-</p>
                                 </div>
                             </label>
 
-                            <label class="cursor-pointer relative">
-                                <input type="radio" name="shipping" value="SICEPAT" data-cost="14000"
-                                    class="courier-radio sr-only" onchange="updateTotal()">
+                            <label class="cursor-pointer relative group">
+                                <input type="radio" name="shipping" value="SICEPAT" class="courier-radio sr-only">
                                 <div
-                                    class="border-2 border-gray-200 rounded-xl p-4 hover:border-gray-400 transition-all text-center h-full flex flex-col justify-center items-center">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/9c/SiCepat_Express_logo.png"
-                                        alt="SiCepat" class="h-6 mb-4 object-contain">
-                                    <p class="font-bold text-gray-800">SiUntung</p>
-                                    <p class="text-sm text-gray-500">2-4 Hari</p>
-                                    <p class="text-brand font-bold mt-1">Rp14.000</p>
+                                    class="border border-white/10 bg-[#0a0a0a] rounded-xl p-4 group-hover:border-brand-500/50 transition-all text-center h-full flex flex-col justify-center items-center relative overflow-hidden">
+                                    <div class="h-10 mb-1 flex items-center justify-center w-full">
+                                        <h3 class="text-xl font-bold italic text-white"><span
+                                                class="text-red-500">Si</span>Cepat</h3>
+                                    </div>
+                                    <p class="font-bold text-gray-200">Hemat</p>
+                                    <p class="text-xs text-gray-500">2-4 Hari</p>
+                                    <p id="courier-price-SICEPAT" class="text-brand-400 font-bold mt-1">Rp-</p>
                                 </div>
                             </label>
 
                         </div>
                     </div>
 
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                        <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                    <!-- METODE PEMBAYARAN -->
+                    <div class="bg-[#121212] p-6 rounded-2xl shadow-xl border border-white/5 relative overflow-hidden">
+                        <div
+                            class="absolute top-0 right-0 w-40 h-40 bg-brand-500/5 rounded-full blur-3xl pointer-events-none">
+                        </div>
+                        <h2 class="text-lg font-bold text-white mb-6 flex items-center relative z-10">
                             <span
-                                class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center mr-3 text-sm">3</span>
+                                class="w-8 h-8 bg-brand-500/10 text-brand-400 rounded-full flex items-center justify-center mr-3 text-sm border border-brand-500/20">3</span>
                             Metode Pembayaran
                         </h2>
 
-                        <div class="border rounded-lg overflow-hidden">
-                            <label class="flex items-center p-4 bg-gray-50 border-b cursor-pointer">
-                                <input type="radio" name="payment" value="midtrans" checked
-                                    class="w-5 h-5 text-brand focus:ring-brand">
-                                <div class="ml-4 flex-1">
-                                    <span class="block font-bold text-gray-800">Midtrans Payment Gateway</span>
-                                    <span class="text-xs text-gray-500">Gopay, ShopeePay, Dana, Transfer Bank, Kartu
-                                        Kredit</span>
+                        <!-- Premium Midtrans Card -->
+                        <div class="relative group cursor-pointer">
+                            <input type="radio" name="payment" value="midtrans" checked class="peer sr-only">
+
+                            <div
+                                class="relative p-5 rounded-xl border border-brand-500/50 bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] peer-checked:ring-2 peer-checked:ring-brand-500 peer-checked:shadow-[0_0_20px_rgba(124,58,237,0.15)] peer-checked:[&_.radio-outer]:border-brand-500 peer-checked:[&_.radio-inner]:scale-100 transition-all duration-300">
+
+                                <!-- Header: Radio + Title + Badge -->
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="flex items-center gap-4">
+                                        <div
+                                            class="radio-outer w-6 h-6 rounded-full border-2 border-gray-600 flex items-center justify-center bg-[#0a0a0a] group-hover:border-brand-400 transition">
+                                            <div
+                                                class="radio-inner w-3 h-3 rounded-full bg-brand-500 scale-0 transition-transform duration-200">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-white text-lg tracking-wide">Midtrans Payment
+                                                Gateway</h3>
+                                            <p class="text-xs text-gray-400 mt-1">Verifikasi Otomatis & Real-time</p>
+                                        </div>
+                                    </div>
+                                    <span
+                                        class="bg-brand-500/10 text-brand-300 text-[10px] font-bold px-2 py-1 rounded-full border border-brand-500/20 uppercase tracking-wider animate-pulse">
+                                        Rekomendasi
+                                    </span>
                                 </div>
-                                <div class="flex space-x-2">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Gopay_logo.svg/2560px-Gopay_logo.svg.png"
-                                        class="h-4">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Bank_Central_Asia.svg/1200px-Bank_Central_Asia.svg.png"
-                                        class="h-4">
+
+                                <!-- Divider -->
+                                <div class="h-px w-full bg-white/5 mb-4"></div>
+
+                                <!-- Logos Grid -->
+                                <div
+                                    class="grid grid-cols-2 md:grid-cols-4 gap-3 items-center opacity-80 group-hover:opacity-100 transition-opacity">
+                                    <div class="bg-white p-1.5 rounded-lg flex items-center justify-center h-8">
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Bank_Central_Asia.svg/1200px-Bank_Central_Asia.svg.png"
+                                            class="h-full object-contain">
+                                    </div>
+                                    <div class="bg-white p-1.5 rounded-lg flex items-center justify-center h-8">
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Bank_Mandiri_logo_2016.svg/1200px-Bank_Mandiri_logo_2016.svg.png"
+                                            class="h-full object-contain">
+                                    </div>
+                                    <div class="bg-white p-1.5 rounded-lg flex items-center justify-center h-8">
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/BANK_BRI_logo.svg/1200px-BANK_BRI_logo.svg.png"
+                                            class="h-full object-contain">
+                                    </div>
+                                    <div class="bg-white p-1.5 rounded-lg flex items-center justify-center h-8">
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Gopay_logo.svg/2560px-Gopay_logo.svg.png"
+                                            class="h-full object-contain">
+                                    </div>
+                                    <div
+                                        class="bg-white p-1.5 rounded-lg flex items-center justify-center h-8 md:hidden">
+                                        <img src="https://upload.wikimedia.org/wikipedia/commons/f/fe/Shopee.svg"
+                                            class="h-full object-contain">
+                                    </div>
+                                    <div
+                                        class="bg-[#0a0a0a] border border-white/10 p-1.5 rounded-lg flex items-center justify-center h-8 col-span-1 md:col-span-4 text-[10px] text-gray-500">
+                                        + Lainnya (QRIS, Kartu Kredit, Alfamart)
+                                    </div>
                                 </div>
-                            </label>
-                            <label class="flex items-center p-4 hover:bg-gray-50 cursor-pointer">
-                                <input type="radio" name="payment" value="cod"
-                                    class="w-5 h-5 text-brand focus:ring-brand">
-                                <div class="ml-4">
-                                    <span class="block font-bold text-gray-800">COD (Bayar di Tempat)</span>
-                                    <span class="text-xs text-gray-500">Bayar tunai saat kurir datang</span>
+
+                                <!-- Security Footer -->
+                                <div class="mt-4 flex items-center gap-2 text-[10px] text-gray-500">
+                                    <i class="fas fa-shield-alt text-brand-400"></i>
+                                    <span>Pembayaran dijamin aman 100% oleh Midtrans</span>
                                 </div>
-                            </label>
+
+                            </div>
                         </div>
                     </div>
 
                 </div>
 
+                <!-- SUMMARY -->
                 <div class="lg:col-span-1">
-                    <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-100 sticky top-24">
-                        <h2 class="text-xl font-bold text-gray-900 mb-4">Rincian Pembayaran</h2>
+                    <div class="bg-[#121212] p-6 rounded-2xl shadow-xl border border-white/5 sticky top-24">
+                        <h2 class="text-xl font-bold text-white mb-6">Rincian Pembayaran</h2>
 
-                        <div id="summary-items-container" class="space-y-3 mb-6 max-h-48 overflow-y-auto pr-2">
-                            <p id="summary-loading" class="text-center text-gray-500 text-sm">Memuat item...</p>
+                        <div id="summary-items-container"
+                            class="space-y-3 mb-6 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                            <p id="summary-loading" class="text-center text-gray-500 text-sm animate-pulse">Memuat
+                                item...</p>
                         </div>
 
-                        <div class="space-y-3 text-sm border-t border-gray-100 pt-4">
-                            <div class="flex justify-between text-gray-600">
+                        <div class="space-y-3 text-sm border-t border-white/10 pt-4">
+                            <div class="flex justify-between text-gray-400">
                                 <span>Total Harga Barang</span>
-                                <span id="subtotal" class="font-medium text-gray-900">Rp0</span>
+                                <span id="subtotal" class="font-medium text-gray-200">Rp0</span>
                             </div>
-                            <div class="flex justify-between text-gray-600">
+                            <div class="flex justify-between text-gray-400">
                                 <span>Total Ongkos Kirim</span>
-                                <span id="shipping-cost" class="font-medium text-gray-900">Rp15.000</span>
+                                <span id="shipping-cost" class="font-medium text-gray-200">Rp0</span>
                             </div>
-                            <div class="flex justify-between text-gray-600">
+                            <div class="flex justify-between text-gray-400">
                                 <span>Biaya Layanan</span>
-                                <span class="font-medium text-gray-900">Rp1.000</span>
+                                <span class="font-medium text-gray-200">Rp1.000</span>
                             </div>
                         </div>
 
-                        <div class="border-t border-dashed border-gray-300 my-4"></div>
+                        <div class="border-t border-dashed border-white/20 my-6"></div>
 
                         <div class="flex justify-between items-end">
-                            <span class="text-gray-900 font-bold">Total Tagihan</span>
-                            <span id="total-price" class="text-2xl font-black text-brand">Rp0</span>
+                            <span class="text-white font-bold">Total Tagihan</span>
+                            <span id="total-price" class="text-2xl font-black text-brand-400">Rp0</span>
                         </div>
 
                         <button id="place-order-button" type="submit"
-                            class="w-full mt-6 bg-brand text-white font-bold py-4 rounded-xl shadow-lg hover:bg-gray-800 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                            Bayar Sekarang <i class="fas fa-arrow-right ml-2"></i>
+                            class="w-full mt-8 bg-gradient-to-r from-brand-600 to-brand-accent text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-[0_0_30px_rgba(139,92,246,0.4)] transition-all duration-300 transform hover:-translate-y-1 disabled:bg-gray-800 disabled:from-gray-800 disabled:to-gray-800 disabled:text-gray-500 disabled:cursor-not-allowed group relative overflow-hidden">
+                            <div
+                                class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:animate-shine">
+                            </div>
+                            <span>Bayar Sekarang</span> <i
+                                class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
                         </button>
 
-                        <p class="text-xs text-center text-gray-400 mt-4">
-                            <i class="fas fa-lock mr-1"></i> Pembayaran Aman & Terenkripsi
+                        <p class="text-[10px] text-center text-gray-500 mt-4 uppercase tracking-wider">
+                            <i class="fas fa-lock mr-1 text-brand-400"></i> Pembayaran Aman & Terenkripsi
                         </p>
                     </div>
                 </div>
@@ -238,9 +444,22 @@
     </main>
 
     <!-- Midtrans Snap.js (Sandbox for Dev/Testing) -->
-    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="Mid-client-yYNCIMXONi2EHzhe"></script>
+    <!-- Dynamic Midtrans Snap Loader -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.MIDTRANS_CLIENT_KEY && window.MIDTRANS_CLIENT_KEY !== '__MIDTRANS_CLIENT_KEY__') {
+                const script = document.createElement('script');
+                script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
+                // script.src = 'https://app.midtrans.com/snap/snap.js'; // Production URL
+                script.setAttribute('data-client-key', window.MIDTRANS_CLIENT_KEY);
+                document.body.appendChild(script);
+            } else {
+                console.error("Midtrans Client Key not found in config.js");
+            }
+        });
+    </script>
     <script src="config.js"></script>
-    <script src="checkout.js?v=1.1"></script>
+    <script src="checkout.js?v=2.0"></script>
 
 </body>
 

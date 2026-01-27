@@ -12,17 +12,63 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <script>
-        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] } } } }
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            accent: '#d946ef',
+                        }
+                    },
+                    animation: {
+                        'gradient': 'gradient 8s linear infinite',
+                    },
+                    keyframes: {
+                        'gradient': {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            },
+                        }
+                    }
+                }
+            }
+        }
     </script>
-    <style>
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .glass {
+                @apply bg-[#121212] border border-white/5 backdrop-blur-md;
+            }
+            .text-glow {
+                text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+            }
         }
-
-        .no-scrollbar {
-            scrollbar-width: none;
+        /* Custom Scrollbar for Dark Theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
-
+        ::-webkit-scrollbar-track {
+            background: #050505; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555; 
+        }
         .pill {
             padding: 0.25rem 0.75rem;
             display: inline-flex;
@@ -40,102 +86,137 @@
         document.addEventListener('DOMContentLoaded', () => {
             checkAuth(['bos']);
         });
+
+        // MOBILE SIDEBAR TOGGLE
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            if (overlay.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        }
     </script>
 </head>
 
-<body class="bg-gray-100 font-sans">
+<body class="bg-[#050505] font-sans text-gray-100 selection:bg-brand-500 selection:text-white">
 
-    <div class="flex h-screen bg-gray-100">
+    <!-- MOBILE OVERLAY BACKDROP -->
+    <div id="mobile-overlay" onclick="toggleSidebar()"
+        class="fixed inset-0 bg-black/50 z-40 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
 
-        <div class="hidden md:flex md:flex-col md:w-64 bg-gray-900 text-gray-300">
-            <div class="flex items-center justify-center h-20 border-b border-gray-700">
-                <span class="text-2xl font-black text-white uppercase tracking-wider">DAZEON ADMIN</span>
+    <div class="flex h-screen bg-[#050505]">
+
+        <!-- SIDEBAR -->
+        <div id="sidebar"
+            class="fixed inset-y-0 left-0 z-50 w-64 bg-[#121212] border-r border-white/5 transform -translate-x-full transition-transform duration-300 md:relative md:translate-x-0 md:flex md:flex-col">
+            <div class="flex items-center justify-between px-6 h-20 border-b border-white/5">
+                <span
+                    class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-brand-accent uppercase tracking-wider">DAZEON</span>
+                <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
             </div>
-            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
+            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto custom-scrollbar">
                 <a href="boss_dashboard.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200">
                     <i class="fas fa-chart-pie w-6 text-lg"></i><span class="ml-4">Ringkasan Bisnis</span>
                 </a>
                 <a href="reports.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200">
                     <i class="fas fa-chart-line w-6 text-lg"></i><span class="ml-4">Laporan Detail</span>
                 </a>
                 <a href="manage_users.html"
-                    class="flex items-center px-4 py-3 rounded-lg bg-gray-700 text-white font-semibold"> <i
-                        class="fas fa-users-cog w-6 text-lg"></i><span class="ml-4">Kelola Staf</span>
+                    class="flex items-center px-4 py-3 rounded-xl bg-brand-600/10 text-brand-400 border border-brand-500/20 font-semibold shadow-[0_0_15px_rgba(139,92,246,0.2)]">
+                    <i class="fas fa-users-cog w-6 text-lg"></i><span class="ml-4">Kelola Staf</span>
                 </a>
                 <a href="manage_products.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200">
                     <i class="fas fa-tshirt w-6 text-lg"></i><span class="ml-4">Produk</span>
                 </a>
                 <a href="boss_manage_orders.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200">
                     <i class="fas fa-receipt w-6 text-lg"></i><span class="ml-4">Pesanan</span>
                 </a>
+                <a href="helpdesk.html"
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200">
+                    <i class="fas fa-headset w-6 text-lg"></i><span class="ml-4">Helpdesk</span>
+                </a>
                 <a href="../login.html"
-                    class="flex items-center px-4 py-3 rounded-lg text-red-400 hover:bg-red-600 hover:text-white transition-colors duration-200 mt-auto">
+                    class="flex items-center px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors duration-200 mt-auto border border-transparent hover:border-red-500/20">
                     <i class="fas fa-sign-out-alt w-6 text-lg"></i><span class="ml-4">Logout</span>
                 </a>
             </nav>
         </div>
 
         <div class="flex-1 flex flex-col overflow-hidden">
-            <header class="flex justify-between items-center h-20 px-6 bg-white border-b border-gray-200 shadow-sm">
-                <h1 class="text-2xl font-semibold text-gray-800">Kelola Staf & Pengguna</h1>
-                <span class="text-gray-700 hidden sm:block">Halo, <strong id="user-name">Bos</strong>!</span>
+            <header
+                class="flex justify-between items-center h-20 px-6 bg-[#121212]/80 backdrop-blur-md border-b border-white/5 sticky top-0 z-10">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()"
+                        class="md:hidden text-white p-2 hover:bg-white/10 rounded-lg transition">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h1 class="text-xl md:text-2xl font-bold text-white tracking-wide">Kelola Staf & Pengguna</h1>
+                </div>
+                <span
+                    class="text-gray-400 hidden sm:block bg-[#0a0a0a] px-4 py-2 rounded-full border border-white/5">Halo,
+                    <strong id="user-name" class="text-brand-400">Bos</strong>!</span>
             </header>
 
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
-                <div class="container mx-auto">
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-[#050505] p-6">
+                <div class="container mx-auto max-w-7xl">
 
                     <div class="flex flex-col sm:flex-row justify-between items-center mb-6 space-y-4 sm:space-y-0">
                         <a href="add_user.html"
-                            class="w-full sm:w-auto bg-gray-900 text-white font-semibold px-6 py-2.5 rounded-lg text-sm hover:bg-gray-700 transition-colors duration-200 inline-flex items-center justify-center">
-                            <i class="fas fa-user-plus mr-2"></i> Tambah Staf Baru (Admin/Karyawan)
+                            class="w-full sm:w-auto bg-brand-600 text-white font-bold px-6 py-3 rounded-xl text-sm hover:bg-brand-500 transition-colors duration-200 inline-flex items-center justify-center shadow-lg shadow-brand-600/20">
+                            <i class="fas fa-user-plus mr-2"></i> Tambah Staf Baru
                         </a>
                         <div class="w-full sm:w-auto flex space-x-4">
                             <input type="text" id="search-input" onkeyup="loadUsers()" placeholder="Cari pengguna..."
-                                class="w-full sm:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm">
+                                class="w-full sm:w-64 px-4 py-3 bg-[#121212] border border-white/10 rounded-xl focus:outline-none focus:ring-1 focus:ring-brand-500 text-sm text-gray-300 placeholder-gray-600">
                             <select id="role-filter" onchange="loadUsers()"
-                                class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm">
-                                <option value="">Semua Peran</option>
-                                <option value="admin">Admin</option>
-                                <option value="pembeli">Pembeli</option>
-                                <option value="bos">Bos</option>
+                                class="px-4 py-3 bg-[#121212] border border-white/10 rounded-xl focus:outline-none focus:ring-1 focus:ring-brand-500 text-sm text-gray-300">
+                                <option value="" class="bg-[#121212]">Semua Peran</option>
+                                <option value="admin" class="bg-[#121212]">Admin</option>
+                                <option value="pembeli" class="bg-[#121212]">Pembeli</option>
+                                <option value="bos" class="bg-[#121212]">Bos</option>
                             </select>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="glass rounded-2xl overflow-hidden">
                         <div class="overflow-x-auto">
-                            <table class="w-full min-w-[768px] divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
+                            <table class="w-full min-w-[768px] divide-y divide-white/5">
+                                <thead class="bg-white/5">
                                     <tr>
                                         <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             No</th>
                                         <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Nama</th>
                                         <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Email</th>
                                         <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Peran</th>
                                         <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Tanggal Daftar</th>
                                         <th
-                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody id="user-table-body" class="bg-white divide-y divide-gray-200">
+                                <tbody id="user-table-body" class="bg-[#0a0a0a]/50 divide-y divide-white/5">
                                     <tr>
                                         <td colspan="6" class="px-6 py-10 text-center">
                                             <div class="flex flex-col items-center justify-center">
-                                                <i class="fas fa-circle-notch fa-spin text-3xl text-gray-300 mb-4"></i>
+                                                <i class="fas fa-circle-notch fa-spin text-3xl text-brand-500 mb-4"></i>
                                                 <p class="text-gray-500">Memuat data pengguna...</p>
                                             </div>
                                         </td>
@@ -143,15 +224,17 @@
                                 </tbody>
                             </table>
                         </div>
-                        <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center text-sm">
-                            <div id="pagination-info">Menampilkan <span class="font-semibold">-</span> pengguna</div>
+                        <div
+                            class="px-6 py-4 border-t border-white/5 flex justify-between items-center text-sm bg-[#0a0a0a]/30">
+                            <div id="pagination-info" class="text-gray-400">Menampilkan <span
+                                    class="font-semibold text-white">-</span> pengguna</div>
                             <div class="flex space-x-1">
                                 <button
-                                    class="px-3 py-1 border border-gray-300 rounded-md text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50"
+                                    class="px-3 py-1 border border-white/10 rounded-lg text-gray-400 bg-transparent hover:bg-white/5 disabled:opacity-50 transition"
                                     disabled>&laquo; Prev</button>
                                 <button
-                                    class="px-3 py-1 border border-gray-300 rounded-md text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50"
-                                    disabled>Next &raquo;</button>
+                                    class="px-3 py-1 border border-white/10 rounded-lg text-gray-200 bg-transparent hover:bg-white/5 transition">Next
+                                    &raquo;</button>
                             </div>
                         </div>
                     </div>
@@ -159,80 +242,79 @@
                 </div>
             </main>
         </div>
-    </div>
 
-    <script>
-        // 1. Load Data
-        // 1. Load Data
-        async function loadUsers() {
-            const tbody = document.getElementById('user-table-body');
-            const search = document.getElementById('search-input').value.toLowerCase();
-            const filterRole = document.getElementById('role-filter').value;
+        <script>
+            // 1. Load Data
+            // 1. Load Data
+            async function loadUsers() {
+                const tbody = document.getElementById('user-table-body');
+                const search = document.getElementById('search-input').value.toLowerCase();
+                const filterRole = document.getElementById('role-filter').value;
 
-            // Fetch users from profiles
-            const { data: users, error } = await window.db
-                .from('profiles')
-                .select('*')
-                .order('role', { ascending: true });
+                // Fetch users from profiles
+                const { data: users, error } = await window.db
+                    .from('profiles')
+                    .select('*')
+                    .order('role', { ascending: true });
 
-            if (error) {
-                console.error(error);
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
-                return;
-            }
+                if (error) {
+                    console.error(error);
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-red-500">Gagal memuat data: ${error.message}</td></tr>`;
+                    return;
+                }
 
-            // Client-side filtering
-            const filteredUsers = users.filter(u => {
-                const matchSearch = (u.name && u.name.toLowerCase().includes(search)) ||
-                    (u.email && u.email.toLowerCase().includes(search));
-                const matchRole = filterRole ? u.role === filterRole : true;
-                return matchSearch && matchRole;
-            });
+                // Client-side filtering
+                const filteredUsers = users.filter(u => {
+                    const matchSearch = (u.name && u.name.toLowerCase().includes(search)) ||
+                        (u.email && u.email.toLowerCase().includes(search));
+                    const matchRole = filterRole ? u.role === filterRole : true;
+                    return matchSearch && matchRole;
+                });
 
-            if (!filteredUsers || filteredUsers.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6">Tidak ada pengguna yang cocok.</td></tr>`;
-                document.getElementById('pagination-info').innerText = 'Menampilkan 0 pengguna';
-                return;
-            }
+                if (!filteredUsers || filteredUsers.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6">Tidak ada pengguna yang cocok.</td></tr>`;
+                    document.getElementById('pagination-info').innerText = 'Menampilkan 0 pengguna';
+                    return;
+                }
 
-            // Update Pagination Info
-            // Since we load all at once for now:
-            document.getElementById('pagination-info').innerHTML = `Menampilkan <span class="font-semibold">1</span> - <span class="font-semibold">${filteredUsers.length}</span> dari <span class="font-semibold">${users.length}</span> pengguna`;
+                // Update Pagination Info
+                // Since we load all at once for now:
+                document.getElementById('pagination-info').innerHTML = `Menampilkan <span class="font-semibold">1</span> - <span class="font-semibold">${filteredUsers.length}</span> dari <span class="font-semibold">${users.length}</span> pengguna`;
 
-            tbody.innerHTML = '';
-            filteredUsers.forEach((u, index) => {
-                // Determine badge style
-                let roleBadge = '';
-                if (u.role === 'bos') roleBadge = '<span class="pill bg-yellow-100 text-yellow-800 font-bold">Bos</span>';
-                else if (u.role === 'admin') roleBadge = '<span class="pill bg-red-100 text-red-800 font-bold">Admin</span>';
-                else roleBadge = '<span class="pill bg-blue-100 text-blue-800">Pembeli</span>';
+                tbody.innerHTML = '';
+                filteredUsers.forEach((u, index) => {
+                    // Determine badge style
+                    let roleBadge = '';
+                    if (u.role === 'bos') roleBadge = '<span class="pill bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 font-bold tracking-wide">Bos</span>';
+                    else if (u.role === 'admin') roleBadge = '<span class="pill bg-red-500/10 text-red-400 border border-red-500/20 font-bold tracking-wide">Admin</span>';
+                    else roleBadge = '<span class="pill bg-blue-500/10 text-blue-400 border border-blue-500/20">Pembeli</span>';
 
-                // Format Date
-                const dateStr = u.updated_at ? new Date(u.updated_at).toLocaleDateString() : '-';
+                    // Format Date - use created_at for registration date
+                    const dateStr = u.created_at ? new Date(u.created_at).toLocaleDateString('id-ID') : '-';
 
-                // Email fallback
-                const emailDisplay = u.email || '<span class="text-gray-400 italic">Belum terdata</span>';
+                    // Email fallback
+                    const emailDisplay = u.email || '<span class="text-gray-600 italic">Belum terdata</span>';
 
-                // Controls
-                let controls = '';
-                if (u.role === 'bos') {
-                    controls = '<span class="text-xs text-gray-400">Akun Utama</span>';
-                } else {
-                    controls = `
-                        <button onclick="updateRole('${u.id}', '${u.role}')" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Ubah Role">
+                    // Controls
+                    let controls = '';
+                    if (u.role === 'bos') {
+                        controls = '<span class="text-xs text-gray-500">Akun Utama</span>';
+                    } else {
+                        controls = `
+                        <button onclick="updateRole('${u.id}', '${u.role}')" class="text-brand-400 hover:text-brand-300 mr-3 p-2 hover:bg-white/10 rounded-full transition" title="Ubah Role">
                             <i class="fas fa-user-tag"></i>
                         </button>
-                        <button onclick="deleteUser('${u.id}', '${u.name}')" class="text-red-600 hover:text-red-900" title="Hapus User">
+                        <button onclick="deleteUser('${u.id}', '${u.name}')" class="text-red-500 hover:text-red-400 p-2 hover:bg-white/10 rounded-full transition" title="Hapus User">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                      `;
-                }
+                    }
 
-                const row = `
-                    <tr class="hover:bg-gray-50 transition">
+                    const row = `
+                    <tr class="hover:bg-white/5 transition border-b border-white/5 last:border-0">
                         <td class="px-6 py-4 text-sm font-medium text-gray-500">${index + 1}</td>
-                        <td class="px-6 py-4 text-sm font-medium text-gray-900">${u.name || 'Tanpa Nama'}</td>
-                        <td class="px-6 py-4 text-sm text-gray-700">${emailDisplay}</td>
+                        <td class="px-6 py-4 text-sm font-medium text-gray-200">${u.name || 'Tanpa Nama'}</td>
+                        <td class="px-6 py-4 text-sm text-gray-400">${emailDisplay}</td>
                         <td class="px-6 py-4">${roleBadge}</td>
                         <td class="px-6 py-4 text-sm text-gray-500">${dateStr}</td>
                         <td class="px-6 py-4 text-right text-sm font-medium">
@@ -240,76 +322,110 @@
                         </td>
                     </tr>
                 `;
-                tbody.insertAdjacentHTML('beforeend', row);
-            });
-        }
-
-        // 2. Delete User
-        async function deleteUser(userId, userName) {
-            const result = await Swal.fire({
-                title: '⚠️ PERINGATAN KERAS ⚠️',
-                html: `Anda akan menghapus user "<b>${userName}</b>".<br>Ini akan menghapus seluruh data user tersebut dari database secara permanen.<br><br>Lanjutkan?`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Ya, Hapus Permanen',
-                cancelButtonText: 'Batal'
-            });
-
-            if (result.isConfirmed) {
-                const { error } = await window.db.from('profiles').delete().eq('id', userId);
-
-                if (error) {
-                    Swal.fire('Gagal', 'Gagal hapus: ' + error.message, 'error');
-                } else {
-                    await Swal.fire('Berhasil', 'Data profil pengguna berhasil dihapus.', 'success');
-                    loadUsers();
-                }
+                    tbody.insertAdjacentHTML('beforeend', row);
+                });
             }
-        }
 
-        // 3. Update Role
-        async function updateRole(userId, currentRole) {
-            const { value: newRole } = await Swal.fire({
-                title: 'Ubah Role Pengguna',
-                input: 'select',
-                inputOptions: {
-                    'pembeli': 'Pembeli',
-                    'admin': 'Admin'
-                },
-                inputValue: currentRole,
-                showCancelButton: true,
-                inputValidator: (value) => {
-                    if (!value) {
-                        return 'Anda harus memilih role!'
+            // 2. Delete User
+            async function deleteUser(userId, userName) {
+                const result = await Swal.fire({
+                    title: '⚠️ PERINGATAN KERAS ⚠️',
+                    html: `Anda akan menghapus user "<b>${userName}</b>".<br>Ini akan menghapus seluruh data user tersebut dari database secara permanen.<br><br>Lanjutkan?`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, Hapus Permanen',
+                    cancelButtonText: 'Batal',
+                    background: '#121212',
+                    color: '#fff'
+                });
+
+                if (result.isConfirmed) {
+                    const { error } = await window.db.from('profiles').delete().eq('id', userId);
+
+                    if (error) {
+                        Swal.fire({
+                            title: 'Gagal',
+                            text: 'Gagal hapus: ' + error.message,
+                            icon: 'error',
+                            background: '#121212',
+                            color: '#fff',
+                            confirmButtonColor: '#d33'
+                        });
+                    } else {
+                        await Swal.fire({
+                            title: 'Berhasil',
+                            text: 'Data profil pengguna berhasil dihapus.',
+                            icon: 'success',
+                            background: '#121212',
+                            color: '#fff',
+                            confirmButtonColor: '#7c3aed'
+                        });
+                        loadUsers();
                     }
                 }
-            });
+            }
 
-            if (newRole) {
-                const { error } = await window.db
-                    .from('profiles')
-                    .update({ role: newRole })
-                    .eq('id', userId);
+            // 3. Update Role
+            async function updateRole(userId, currentRole) {
+                const { value: newRole } = await Swal.fire({
+                    title: 'Ubah Role Pengguna',
+                    input: 'select',
+                    inputOptions: {
+                        'pembeli': 'Pembeli',
+                        'admin': 'Admin'
+                    },
+                    inputValue: currentRole,
+                    showCancelButton: true,
+                    background: '#121212',
+                    color: '#fff',
+                    confirmButtonColor: '#7c3aed',
+                    cancelButtonColor: '#d33',
+                    inputValidator: (value) => {
+                        if (!value) {
+                            return 'Anda harus memilih role!'
+                        }
+                    }
+                });
 
-                if (error) {
-                    Swal.fire('Gagal', 'Gagal update role: ' + error.message, 'error');
-                } else {
-                    await Swal.fire('Berhasil', `Berhasil ubah role ke ${newRole}`, 'success');
-                    loadUsers();
+                if (newRole) {
+                    const { error } = await window.db
+                        .from('profiles')
+                        .update({ role: newRole })
+                        .eq('id', userId);
+
+                    if (error) {
+                        Swal.fire({
+                            title: 'Gagal',
+                            text: 'Gagal update role: ' + error.message,
+                            icon: 'error',
+                            background: '#121212',
+                            color: '#fff',
+                            confirmButtonColor: '#d33'
+                        });
+                    } else {
+                        await Swal.fire({
+                            title: 'Berhasil',
+                            text: `Berhasil ubah role ke ${newRole}`,
+                            icon: 'success',
+                            background: '#121212',
+                            color: '#fff',
+                            confirmButtonColor: '#7c3aed'
+                        });
+                        loadUsers();
+                    }
                 }
             }
-        }
 
-        // Init
-        document.addEventListener('DOMContentLoaded', () => {
-            loadUsers();
-        });
+            // Init
+            document.addEventListener('DOMContentLoaded', () => {
+                loadUsers();
+            });
 
-        // CSS Style
-        const style = document.createElement('style');
-        style.textContent = `
+            // CSS Style
+            const style = document.createElement('style');
+            style.textContent = `
             .pill {
                 padding: 0.25rem 0.75rem; /* py-1 px-3 */
                 display: inline-flex;
@@ -319,8 +435,8 @@
                 border-radius: 9999px; /* rounded-full */
             }
         `;
-        document.head.append(style);
-    </script>
+            document.head.append(style);
+        </script>
 </body>
 
 </html>

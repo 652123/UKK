@@ -11,9 +11,15 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <!-- Optimize Connections -->
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap"
+    <link rel="preconnect" href="https://rkpkfgenzpfynypeceto.supabase.co">
+
+    <!-- Combine Poppins and Outfit imports -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&family=Poppins:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
@@ -23,131 +29,398 @@
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Poppins', 'sans-serif'], // Set Poppins sebagai font default
+                        sans: ['Poppins', 'sans-serif'],
+                        heading: ['Outfit', 'sans-serif'],
                     },
+                    colors: {
+                        brand: {
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            accent: '#d946ef',
+                        }
+                    },
+                    animation: {
+                        'gradient': 'gradient 8s linear infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        'gradient': {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            },
+                        },
+                        'float': {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
+                    }
                 }
             }
         }
     </script>
+    <style>
+        /* Page Transition Root */
+        body {
+            opacity: 0;
+            transition: opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body.loaded {
+            opacity: 1;
+        }
+
+        /* Typography Utilities */
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        .font-heading {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.5, 0, 0, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Glassmorphism utility */
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .text-glow {
+            text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+        }
+
+        .stagger-1 {
+            transition-delay: 100ms;
+        }
+
+        .stagger-2 {
+            transition-delay: 200ms;
+        }
+
+        .stagger-3 {
+            transition-delay: 300ms;
+        }
+    </style>
 </head>
 
-<body class="bg-white text-gray-800 font-sans">
+<body class="bg-[#050505] text-gray-100 font-sans selection:bg-brand-500 selection:text-white">
 
     <div id="navbar-container"></div>
     <script src="js/components/navbar.js"></script>
 
     <main>
 
-        <section class="grid grid-cols-1 md:grid-cols-2 min-h-[calc(100vh-80px)]">
-            <div class="flex flex-col justify-center p-8 md:p-16 lg:p-24 bg-gray-900 text-white">
-                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black uppercase leading-tight">
-                    DAZEON COLLECTION
+        <!-- HERO SECTION -->
+        <section class="relative grid grid-cols-1 lg:grid-cols-2 min-h-[calc(100vh-80px)]">
+            <!-- Left: Hero Content -->
+            <div
+                class="flex flex-col justify-center p-8 md:p-12 lg:p-16 xl:p-24 bg-gradient-to-br from-[#050505] via-[#0a0a0a] to-[#121212] text-white order-2 lg:order-1 relative overflow-hidden">
+
+                <!-- Background Accent Glow -->
+                <div
+                    class="absolute top-0 right-0 w-96 h-96 bg-brand-600/10 blur-[100px] rounded-full pointer-events-none">
+                </div>
+
+                <span
+                    class="inline-block text-xs font-bold tracking-[0.3em] text-brand-400 uppercase mb-4 animate-pulse">
+                    ✦ NEW ARRIVAL 2026
+                </span>
+                <h1
+                    class="text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-black uppercase leading-[1.1] tracking-tight text-white drop-shadow-2xl reveal">
+                    Elevate Your
+                    <span
+                        class="block bg-gradient-to-r from-brand-400 via-brand-accent to-brand-500 bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient text-glow">
+                        Everyday Style
+                    </span>
                 </h1>
-                <p class="mt-6 text-lg sm:text-xl text-gray-300 max-w-lg">
-                    T-Shirt premium dengan desain minimalis untuk gaya sehari-hari yang modern dan berani.
+                <p class="mt-6 text-base sm:text-lg text-gray-300 max-w-md leading-relaxed font-light reveal stagger-1">
+                    Definisikan ulang gaya kasualmu dengan koleksi premium yang mengutamakan kenyamanan, kualitas, dan
+                    estetika timeless.
                 </p>
-                <div class="mt-10">
-                    <a href="#" class="inline-block bg-white text-gray-900 font-bold text-lg px-10 py-4 rounded-lg shadow-lg 
-                                      transition-transform transform hover:scale-105 duration-300">
-                        Belanja Sekarang
+                <div class="mt-10 flex flex-col sm:flex-row gap-4 relative z-10">
+                    <a href="#produk"
+                        class="group relative inline-flex items-center justify-center gap-2 bg-white text-black font-bold text-sm px-8 py-4 rounded-xl overflow-hidden
+                                      transition-all duration-300 hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(139,92,246,0.5)]">
+                        <!-- Shine effect -->
+                        <div
+                            class="absolute inset-0 -translate-x-full group-hover:animate-[shine_1.5s_infinite] bg-gradient-to-r from-transparent via-white/50 to-transparent z-10 w-1/2 h-full skew-x-[-15deg]">
+                        </div>
+                        <span class="relative z-20">Belanja Sekarang</span>
+                        <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform relative z-20"></i>
+                    </a>
+                    <a href="#Tentang"
+                        class="inline-flex items-center justify-center gap-2 border border-white/20 text-white font-medium text-sm px-8 py-4 rounded-xl backdrop-blur-sm
+                                      transition-all duration-300 hover:border-brand-400 hover:text-brand-400 hover:bg-brand-500/5">
+                        <span>Kenapa Dazeon?</span>
                     </a>
                 </div>
-            </div>
-            <div class="relative min-h-[400px] md:min-h-0 bg-gray-200">
-                <img src="./foto/foto4.png" alt="Dazeon Collection Merch"
-                    class="absolute inset-0 w-full h-full object-cover">
-            </div>
-        </section>
 
-        <section class="py-20">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-                <h2 class="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-8" id="produk">
-                    Koleksi Kami
-                </h2>
-
-
-
-
-
-            </div>
-            </div>
-
-            <div id="product-list" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 min-h-[400px]">
-                <!-- Produk akan dimuat otomatis oleh main.js -->
-                <div class="col-span-full py-10 flex justify-center">
-                    <i class="fas fa-spinner fa-spin text-4xl text-gray-300"></i>
+                <!-- Trust Badges -->
+                <div class="mt-12 pt-8 border-t border-white/10 reveal stagger-3">
+                    <div class="flex flex-wrap items-center gap-6 text-xs text-gray-400 font-medium">
+                        <div class="flex items-center gap-2">
+                            <i
+                                class="fas fa-shield-alt text-brand-400 text-lg drop-shadow-[0_0_10px_rgba(139,92,246,0.5)]"></i>
+                            <span class="text-gray-300">100% Original</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i
+                                class="fas fa-stopwatch text-brand-400 text-lg drop-shadow-[0_0_10px_rgba(139,92,246,0.5)]"></i>
+                            <span class="text-gray-300">Pengiriman Cepat</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i
+                                class="fas fa-lock text-brand-400 text-lg drop-shadow-[0_0_10px_rgba(139,92,246,0.5)]"></i>
+                            <span class="text-gray-300">Pembayaran Aman</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Load More -->
-            <div class="mt-12 text-center" id="load-more-container">
-                <button onclick="loadMoreProducts()" id="btn-load-more"
-                    class="hidden bg-white border-2 border-black text-black px-8 py-3 rounded-xl font-bold uppercase tracking-wide hover:bg-black hover:text-white transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                    Muat Lebih Banyak
+            <!-- Right: Hero Image -->
+            <div class="relative min-h-[350px] lg:min-h-0 bg-gray-100 order-1 lg:order-2 overflow-hidden">
+                <img src="./foto/foto4.png" alt="Dazeon Collection - Fashion Premium"
+                    class="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 hover:scale-105">
+                <!-- Overlay Gradient -->
+                <div
+                    class="absolute inset-0 bg-gradient-to-t from-[#050505] via-transparent to-transparent lg:bg-gradient-to-l lg:from-[#050505]">
+                </div>
+
+                <!-- Floating Badge -->
+                <div
+                    class="absolute bottom-6 left-6 lg:bottom-8 lg:left-8 bg-white/95 backdrop-blur-sm px-4 py-3 rounded-xl shadow-lg">
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">Best Seller</p>
+                    <p class="text-sm font-bold text-gray-900">Dazeon Basic Tee</p>
+                </div>
+            </div>
+
+            <!-- Scroll Indicator (Desktop Only) -->
+            <div
+                class="hidden lg:flex absolute bottom-8 left-1/2 -translate-x-1/2 flex-col items-center text-gray-400 animate-bounce">
+                <span class="text-xs uppercase tracking-widest mb-2">Scroll</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+        </section>
+
+        <!-- PRODUCT SECTION -->
+        <!-- PRODUCT SECTION -->
+        <section class="py-16 md:py-24 bg-[#050505] relative">
+            <!-- Background Glow -->
+            <div
+                class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-brand-600/20 blur-[100px] pointer-events-none rounded-full opacity-30">
+            </div>
+
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                <!-- Section Header -->
+                <div class="text-center mb-12 reveal" id="produk">
+                    <span
+                        class="inline-block text-xs font-bold tracking-[0.2em] text-brand-400 uppercase mb-3 drop-shadow-lg">Our
+                        Collections</span>
+                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-black text-white mb-4">
+                        Koleksi Terbaru
+                    </h2>
+                    <p class="text-gray-400 max-w-xl mx-auto">
+                        Temukan pilihan fashion terbaik dengan kualitas premium dan desain yang timeless.
+                    </p>
+                </div>
+
+                <!-- Product Grid -->
+                <div id="product-list"
+                    class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 min-h-[400px]">
+                    <!-- Produk akan dimuat otomatis oleh main.js -->
+                    <div class="col-span-full py-16 flex flex-col items-center justify-center">
+                        <div
+                            class="w-12 h-12 border-4 border-white/10 border-t-brand-500 rounded-full animate-spin mb-4">
+                        </div>
+                        <p class="text-gray-500 text-sm">Memuat koleksi...</p>
+                    </div>
+                </div>
+
+                <!-- Load More -->
+                <div class="mt-12 text-center" id="load-more-container">
+                    <button onclick="loadMoreProducts()" id="btn-load-more"
+                        class="hidden inline-flex items-center gap-2 bg-transparent border border-white/20 text-white px-8 py-3.5 rounded-xl font-bold text-sm uppercase tracking-wide hover:bg-white hover:text-black transition-all duration-300 shadow-sm hover:shadow-[0_0_20px_rgba(255,255,255,0.3)] transform hover:-translate-y-0.5">
+                        <span>Muat Lebih Banyak</span>
+                        <i class="fas fa-arrow-down"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- FEATURES SECTION (Redesigned) -->
+        <section class="py-16 lg:py-20 bg-[#0a0a0a] border-t border-white/5">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8" id="Tentang">
+                <div class="text-center mb-16 reveal">
+                    <h2 class="text-3xl md:text-4xl font-black text-white mb-4 tracking-tight">
+                        The Dazeon Standard
+                    </h2>
+                    <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+                        Kami tidak hanya menjual pakaian, kami memberikan pengalaman standar kualitas tinggi yang layak
+                        Anda dapatkan.
+                    </p>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-8">
+                    <!-- Feature 1 -->
+                    <div
+                        class="w-full md:w-[calc(33.333%-2rem)] lg:w-[calc(30%-2rem)] bg-[#121212] p-8 rounded-2xl border border-white/5 hover:border-brand-500/30 hover:shadow-[0_0_30px_rgba(139,92,246,0.1)] hover:-translate-y-2 transition-all duration-300 group reveal stagger-1">
+                        <div
+                            class="w-14 h-14 bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded-xl flex items-center justify-center text-2xl mb-6 shadow-[0_0_20px_rgba(139,92,246,0.2)] group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Material Premium</h3>
+                        <p class="text-gray-500 leading-relaxed group-hover:text-gray-400 transition-colors">
+                            Menggunakan 100% Cotton Combed 24s pilihan yang lembut, menyerap keringat, dan tahan lama
+                            meski dicuci berkali-kali.
+                        </p>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div
+                        class="w-full md:w-[calc(33.333%-2rem)] lg:w-[calc(30%-2rem)] bg-[#121212] p-8 rounded-2xl border border-white/5 hover:border-brand-500/30 hover:shadow-[0_0_30px_rgba(139,92,246,0.1)] hover:-translate-y-2 transition-all duration-300 group reveal stagger-2">
+                        <div
+                            class="w-14 h-14 bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded-xl flex items-center justify-center text-2xl mb-6 shadow-[0_0_20px_rgba(139,92,246,0.2)] group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Pengiriman Kilat</h3>
+                        <p class="text-gray-500 leading-relaxed group-hover:text-gray-400 transition-colors">
+                            Pesanan diproses dalam < 24 jam. Bekerja sama dengan logistik terbaik untuk memastikan
+                                barang sampai tepat waktu. </p>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div
+                        class="w-full md:w-[calc(33.333%-2rem)] lg:w-[calc(30%-2rem)] bg-[#121212] p-8 rounded-2xl border border-white/5 hover:border-brand-500/30 hover:shadow-[0_0_30px_rgba(139,92,246,0.1)] hover:-translate-y-2 transition-all duration-300 group reveal stagger-3">
+                        <div
+                            class="w-14 h-14 bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded-xl flex items-center justify-center text-2xl mb-6 shadow-[0_0_20px_rgba(139,92,246,0.2)] group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-certificate"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Original 100%</h3>
+                        <p class="text-gray-500 leading-relaxed group-hover:text-gray-400 transition-colors">
+                            Jaminan produk asli Dazeon. Kami mendesain dan memproduksi sendiri setiap item untuk
+                            menjaga kualitas dan eksklusivitas brand.
+                        </p>
+                    </div>
+
+                    <!-- Feature 4 (New) -->
+                    <div
+                        class="w-full md:w-[calc(33.333%-2rem)] lg:w-[calc(30%-2rem)] bg-[#121212] p-8 rounded-2xl border border-white/5 hover:border-brand-500/30 hover:shadow-[0_0_30px_rgba(139,92,246,0.1)] hover:-translate-y-2 transition-all duration-300 group reveal stagger-1">
+                        <div
+                            class="w-14 h-14 bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded-xl flex items-center justify-center text-2xl mb-6 shadow-[0_0_20px_rgba(139,92,246,0.2)] group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-heart"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Produk Lokal</h3>
+                        <p class="text-gray-500 leading-relaxed group-hover:text-gray-400 transition-colors">
+                            Bangga buatan Indonesia. Karya anak bangsa dengan standar kualitas internasional yang
+                            mendunia.
+                        </p>
+                    </div>
+
+                    <!-- Feature 5 (New) -->
+                    <div
+                        class="w-full md:w-[calc(33.333%-2rem)] lg:w-[calc(30%-2rem)] bg-[#121212] p-8 rounded-2xl border border-white/5 hover:border-brand-500/30 hover:shadow-[0_0_30px_rgba(139,92,246,0.1)] hover:-translate-y-2 transition-all duration-300 group reveal stagger-2">
+                        <div
+                            class="w-14 h-14 bg-brand-500/10 text-brand-400 border border-brand-500/20 rounded-xl flex items-center justify-center text-2xl mb-6 shadow-[0_0_20px_rgba(139,92,246,0.2)] group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-3">Support 24 Jam</h3>
+                        <p class="text-gray-500 leading-relaxed group-hover:text-gray-400 transition-colors">
+                            Tim support kami siap membantu kapanpun Anda butuh. Respons cepat dan ramah untuk kenyamanan
+                            belanja Anda.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROMO SECTION (Exclusive Offer) -->
+        <!-- CINEMATIC PROMO SECTION (Option 1) -->
+        <section class="relative py-20 lg:py-24 overflow-hidden border-t border-white/5">
+            <!-- Background Image with Overlay -->
+            <div class="absolute inset-0">
+                <img id="dynamic-hero-bg" src="./foto/foto4.png" alt="The Black Series Background"
+                    onerror="this.src='./foto/foto4.png'"
+                    class="w-full h-full object-cover opacity-30 grayscale hover:scale-105 transition-transform duration-[20s]">
+                <div class="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/80 to-transparent"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-[#050505] via-transparent to-[#050505]"></div>
+            </div>
+
+            <div class="relative container mx-auto px-4 text-center z-10 reveal">
+                <span class="text-brand-400 font-bold tracking-[0.5em] text-xs uppercase mb-6 block animate-pulse">THE
+                    DAZEON WAY</span>
+                <h2 class="text-4xl md:text-6xl font-black text-white mb-6 uppercase tracking-tight drop-shadow-2xl">
+                    DAZEON IS STATEMENT
+                </h2>
+                <p class="text-gray-400 text-lg max-w-2xl mx-auto mb-10 font-light leading-relaxed">
+                    Dazeon adalah perpaduan sempurna antara estetika modern dan material premium.
+                    Kami hadir untuk mereka yang percaya bahwa pakaian adalah cerminan karakter.
+                    <span class="block mt-4 text-white font-medium">Bukan sekadar fashion, ini adalah identitas
+                        Anda.</span>
+                </p>
+                <button onclick="document.getElementById('product-list').scrollIntoView({behavior: 'smooth'})"
+                    class="px-12 py-5 bg-white text-black font-bold uppercase tracking-widest text-xs hover:bg-gray-200 transition-all hover:tracking-[0.2em] duration-300">
+                    Lihat Koleksi
                 </button>
             </div>
-
-
-            </div>
         </section>
 
-        <section class="py-20 bg-gray-50">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8" id="Tentang">
-                <h2 class="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-16">
-                    Kenapa Memilih Kami?
+        <!-- CTA SECTION -->
+        <section
+            class="py-20 md:py-28 bg-gradient-to-br from-[#050505] via-[#0a0a0a] to-[#050505] text-white relative overflow-hidden">
+            <!-- Decorative Elements -->
+            <div
+                class="absolute top-0 left-0 w-72 h-72 bg-white/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2">
+            </div>
+            <div
+                class="absolute bottom-0 right-0 w-96 h-96 bg-white/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2">
+            </div>
+
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+                <span class="inline-block text-xs font-bold tracking-[0.2em] text-gray-400 uppercase mb-4">Join The
+                    Movement</span>
+                <h2 class="text-3xl md:text-4xl lg:text-5xl font-black mb-6 leading-tight">
+                    Siap Tampil Beda?
                 </h2>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
-                    <div class="text-center">
-                        <div
-                            class="flex items-center justify-center w-20 h-20 bg-gray-900 text-white rounded-full mx-auto mb-6">
-                            <i class="fas fa-tshirt text-3xl"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-3">Kualitas Premium</h3>
-                        <p class="text-gray-600 max-w-xs mx-auto">
-                            Menggunakan bahan cotton combed 24s yang nyaman, adem, dan tahan lama.
-                        </p>
-                    </div>
-                    <div class="text-center">
-                        <div
-                            class="flex items-center justify-center w-20 h-20 bg-gray-900 text-white rounded-full mx-auto mb-6">
-                            <i class="fas fa-truck-fast text-3xl"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-3">Pengiriman Cepat</h3>
-                        <p class="text-gray-600 max-w-xs mx-auto">
-                            Proses pengiriman cepat dengan berbagai pilihan ekspedisi terpercaya.
-                        </p>
-                    </div>
-                    <div class="text-center">
-                        <div
-                            class="flex items-center justify-center w-20 h-20 bg-gray-900 text-white rounded-full mx-auto mb-6">
-                            <i class="fas fa-credit-card text-3xl"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold text-gray-900 mb-3">Pembayaran Mudah</h3>
-                        <p class="text-gray-600 max-w-xs mx-auto">
-                            Berbagai metode pembayaran aman termasuk Transfer, E-Wallet, dan COD.
-                        </p>
-                    </div>
-                </div>
-            </div>
-            </div>
-        </section>
-
-        <section class="py-20 bg-gray-900 text-white">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
-                <h2 class="text-3xl md:text-4xl font-bold mb-6">Tunggu Apa Lagi?</h2>
-                <p class="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-10">
-                    Dapatkan koleksi terbaru DAZEON sekarang juga dan tampil beda dengan gaya minimalis yang modern.
+                <p class="text-base md:text-lg text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+                    Jangan lewatkan kesempatan untuk mendapatkan koleksi eksklusif DAZEON.
+                    Kualitas premium dengan harga yang bersahabat.
                 </p>
-                <a href="#" class="inline-block bg-white text-gray-900 font-bold text-lg px-10 py-4 rounded-lg shadow-lg 
-                                  transition-transform transform hover:scale-105 duration-300">
-                    Belanja Sekarang
-                </a>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="#produk" class="inline-flex items-center justify-center gap-2 bg-white text-gray-900 font-bold text-sm px-10 py-4 rounded-xl shadow-lg shadow-white/10
+                                      transition-all duration-300 hover:bg-gray-100 hover:scale-105">
+                        <i class="fas fa-shopping-bag"></i>
+                        <span>Belanja Sekarang</span>
+                    </a>
+                    <a href="contact.html" class="inline-flex items-center justify-center gap-2 border-2 border-white/10 text-white font-bold text-sm px-10 py-4 rounded-xl
+                                      transition-all duration-300 hover:border-white hover:bg-white/5">
+                        <i class="fas fa-headset"></i>
+                        <span>Hubungi Kami</span>
+                    </a>
+                </div>
             </div>
         </section>
     </main>
 
-    <footer class="bg-gray-900 text-gray-400 pt-16 pb-8">
+    <footer class="bg-black text-gray-400 pt-16 pb-8 border-t border-white/5">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-2 md:grid-cols-4 gap-10">
 
@@ -184,209 +457,273 @@
                     <ul class="space-y-3 text-sm">
                         <li class="flex items-start">
                             <i class="fas fa-map-marker-alt w-5 pt-1"></i>
-                            <span class="ml-2">Jakarta, Indonesia</span>
+                            <span class="ml-2">Mojokerto, Indonesia</span>
                         </li>
                         <li class="flex items-start">
                             <i class="fas fa-envelope w-5 pt-1"></i>
-                            <span class="ml-2">hello@dazeon.id</span>
+                            <span class="ml-2">dazeonstore@gmail.com</span>
                         </li>
                         <li class="flex items-start">
                             <i class="fas fa-phone w-5 pt-1"></i>
-                            <span class="ml-2">+62 812 3456 7890</span>
+                            <span class="ml-2">+62 857 3656 2978</span>
                         </li>
                     </ul>
                 </div>
             </div>
             <div class="border-t border-gray-700 mt-10 pt-8 text-center">
                 <p class="text-sm text-gray-500">
-                    &copy; 2025 Dazeon Store. All Rights Reserved.
+                    &copy; 2026 Dazeon Store. All Rights Reserved.
                 </p>
             </div>
         </div>
     </footer>
 
-    <div id="auth-modal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog"
-        aria-modal="true">
+    <div id="auth-modal" class="fixed inset-0 z-[9999] hidden" aria-labelledby="modal-title" role="dialog"
+        aria-modal="true" style="z-index: 9999;">
 
-        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 backdrop-blur-sm transition-opacity"
+        <div id="modal-overlay"
+            class="fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-300 opacity-0"
             onclick="closeAuthModal()"></div>
 
         <div class="fixed inset-0 z-10 overflow-y-auto">
             <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
 
-                <div
-                    class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-md border border-gray-100">
+                <div id="modal-panel"
+                    class="relative w-full max-w-md transform transition-all duration-300 opacity-0 scale-95 sm:my-8 z-50">
 
-                    <button onclick="closeAuthModal()"
-                        class="absolute top-4 right-4 text-gray-400 hover:text-gray-900 transition-colors z-20">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-
-                    <div class="flex border-b border-gray-100">
-                        <button id="tab-login" onclick="switchTab('login')"
-                            class="w-1/2 py-4 text-center font-bold text-gray-900 border-b-2 border-gray-900 transition-all">
-                            Masuk
-                        </button>
-                        <button id="tab-register" onclick="switchTab('register')"
-                            class="w-1/2 py-4 text-center font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent transition-all">
-                            Daftar Baru
+                    <!-- Close Button (Outside on Desktop, Inside-ish on Mobile) -->
+                    <div class="absolute top-0 right-0 pt-4 pr-4 sm:-right-10 sm:-top-10 sm:pt-0 sm:pr-0 z-50">
+                        <button onclick="closeAuthModal()"
+                            class="rounded-full bg-black/50 sm:bg-transparent p-2 text-gray-400 hover:text-white transition-colors focus:outline-none">
+                            <i class="fas fa-times text-xl"></i>
                         </button>
                     </div>
 
-                    <div id="modal-message" class="hidden mx-6 mt-4 p-3 rounded-lg text-sm text-center"></div>
+                    <!-- Inner Card -->
+                    <div
+                        class="relative overflow-hidden rounded-2xl bg-[#121212] text-left shadow-2xl border border-white/10">
 
-                    <div class="p-6 sm:p-8">
-
-                        <form id="form-login" class="space-y-5 block">
-                            <div class="text-center mb-6">
-                                <h3 class="text-2xl font-black text-gray-900 uppercase tracking-wider">DAZEON</h3>
-                                <p class="text-xs text-gray-500 mt-1">Welcome back, good looking!</p>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Email</label>
-                                <div class="relative">
-                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i
-                                            class="fas fa-envelope"></i></span>
-                                    <input type="email" id="login-email" required
-                                        class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-all text-sm"
-                                        placeholder="nama@email.com">
-                                </div>
-                            </div>
-
-                            <div>
-                                <div class="flex justify-between items-center mb-1">
-                                    <label class="block text-xs font-bold text-gray-700 uppercase">Password</label>
-                                    <a href="#" onclick="switchTab('forgot'); return false;"
-                                        class="text-xs text-gray-500 hover:text-gray-900">Lupa?</a>
-                                </div>
-                                <div class="relative">
-                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i
-                                            class="fas fa-lock"></i></span>
-                                    <input type="password" id="login-password" required
-                                        class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-all text-sm"
-                                        placeholder="••••••••">
-                                </div>
-                            </div>
-
-                            <button type="submit" id="btn-login-submit"
-                                class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-lg hover:bg-black transform hover:scale-[1.02] transition-all shadow-lg text-sm">
-                                MASUK SEKARANG
+                        <div class="flex border-b border-white/5 bg-[#0a0a0a]">
+                            <button id="tab-login" onclick="switchTab('login')"
+                                class="w-1/2 py-4 text-center font-bold text-white border-b-2 border-brand-500 transition-all bg-white/5">
+                                Masuk
                             </button>
-                        </form>
-
-                        <form id="form-register" class="space-y-5 hidden">
-                            <div class="text-center mb-6">
-                                <h3 class="text-2xl font-black text-gray-900 uppercase tracking-wider">GABUNG</h3>
-                                <p class="text-xs text-gray-500 mt-1">Buat akun dan mulai belanja.</p>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Nama Lengkap</label>
-                                <div class="relative">
-                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i
-                                            class="fas fa-user"></i></span>
-                                    <input type="text" id="reg-name" required
-                                        class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-all text-sm"
-                                        placeholder="Nama Anda">
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Email</label>
-                                <div class="relative">
-                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i
-                                            class="fas fa-envelope"></i></span>
-                                    <input type="email" id="reg-email" required
-                                        class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-all text-sm"
-                                        placeholder="nama@email.com">
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Password</label>
-                                <div class="relative">
-                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i
-                                            class="fas fa-lock"></i></span>
-                                    <input type="password" id="reg-password" required
-                                        class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-all text-sm"
-                                        placeholder="Min. 6 karakter">
-                                </div>
-                            </div>
-
-                            <button type="submit" id="btn-reg-submit"
-                                class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-lg hover:bg-black transform hover:scale-[1.02] transition-all shadow-lg text-sm">
-                                DAFTAR AKUN
+                            <button id="tab-register" onclick="switchTab('register')"
+                                class="w-1/2 py-4 text-center font-medium text-gray-500 hover:text-gray-300 border-b-2 border-transparent transition-all hover:bg-white/5">
+                                Daftar Baru
                             </button>
-                        </form>
+                        </div>
 
-                        <form id="form-forgot" class="space-y-5 hidden">
-                            <div class="text-center mb-6">
-                                <h3 class="text-2xl font-black text-gray-900 uppercase tracking-wider">LUPA PASSWORD
-                                </h3>
-                                <p class="text-xs text-gray-500 mt-1">Masukkan email untuk reset password.</p>
-                            </div>
+                        <div id="modal-message" class="hidden mx-6 mt-4 p-3 rounded-lg text-sm text-center"></div>
 
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Email</label>
-                                <div class="relative">
-                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i
-                                            class="fas fa-envelope"></i></span>
-                                    <input type="email" id="forgot-email" required
-                                        class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none transition-all text-sm"
-                                        placeholder="nama@email.com">
+                        <div class="p-6 sm:p-8">
+
+                            <form id="form-login" class="space-y-5 block">
+                                <div class="text-center mb-6">
+                                    <h3 class="text-2xl font-black text-white uppercase tracking-wider">DAZEON</h3>
+                                    <p class="text-xs text-gray-500 mt-1">Welcome back, good looking!</p>
                                 </div>
-                            </div>
 
-                            <button type="submit" id="btn-forgot-submit"
-                                class="w-full bg-gray-900 text-white font-bold py-3.5 rounded-lg hover:bg-black transform hover:scale-[1.02] transition-all shadow-lg text-sm">
-                                KIRIM LINK RESET
-                            </button>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Email</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500"><i
+                                                class="fas fa-envelope"></i></span>
+                                        <input type="email" id="login-email" required
+                                            class="w-full pl-10 pr-4 py-3 rounded-xl border border-white/10 bg-[#0a0a0a] text-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all text-sm placeholder-gray-600"
+                                            placeholder="nama@email.com">
+                                    </div>
+                                </div>
 
-                            <div class="text-center mt-4">
-                                <a href="#" onclick="switchTab('login')"
-                                    class="text-xs text-blue-600 font-bold hover:underline">Kembali ke Login</a>
-                            </div>
-                        </form>
+                                <div>
+                                    <div class="flex justify-between items-center mb-1">
+                                        <label class="block text-xs font-bold text-gray-400 uppercase">Password</label>
+                                        <a href="#" onclick="switchTab('forgot'); return false;"
+                                            class="text-xs text-brand-400 hover:text-brand-300">Lupa?</a>
+                                    </div>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500"><i
+                                                class="fas fa-lock"></i></span>
+                                        <input type="password" id="login-password" required
+                                            class="w-full pl-10 pr-4 py-3 rounded-xl border border-white/10 bg-[#0a0a0a] text-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all text-sm placeholder-gray-600"
+                                            placeholder="••••••••">
+                                    </div>
+                                </div>
 
+                                <button type="submit" id="btn-login-submit"
+                                    class="w-full bg-white text-black font-bold py-3.5 rounded-xl hover:bg-gray-200 transform hover:scale-[1.02] transition-all shadow-lg hover:shadow-white/10 text-sm">
+                                    MASUK SEKARANG
+                                </button>
+                            </form>
+
+                            <form id="form-register" class="space-y-5 hidden">
+                                <div class="text-center mb-6">
+                                    <h3 class="text-2xl font-black text-white uppercase tracking-wider">GABUNG</h3>
+                                    <p class="text-xs text-gray-500 mt-1">Buat akun dan mulai belanja.</p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Nama
+                                        Lengkap</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500"><i
+                                                class="fas fa-user"></i></span>
+                                        <input type="text" id="reg-name" required
+                                            class="w-full pl-10 pr-4 py-3 rounded-xl border border-white/10 bg-[#0a0a0a] text-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all text-sm placeholder-gray-600"
+                                            placeholder="Nama Anda">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Email</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500"><i
+                                                class="fas fa-envelope"></i></span>
+                                        <input type="email" id="reg-email" required
+                                            class="w-full pl-10 pr-4 py-3 rounded-xl border border-white/10 bg-[#0a0a0a] text-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all text-sm placeholder-gray-600"
+                                            placeholder="nama@email.com">
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Password</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500"><i
+                                                class="fas fa-lock"></i></span>
+                                        <input type="password" id="reg-password" required
+                                            class="w-full pl-10 pr-4 py-3 rounded-xl border border-white/10 bg-[#0a0a0a] text-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all text-sm placeholder-gray-600"
+                                            placeholder="Min. 6 karakter">
+                                    </div>
+                                </div>
+
+                                <button type="submit" id="btn-reg-submit"
+                                    class="w-full bg-white text-black font-bold py-3.5 rounded-xl hover:bg-gray-200 transform hover:scale-[1.02] transition-all shadow-lg hover:shadow-white/10 text-sm">
+                                    DAFTAR AKUN
+                                </button>
+                            </form>
+
+                            <form id="form-forgot" class="space-y-5 hidden">
+                                <div class="text-center mb-6">
+                                    <h3 class="text-2xl font-black text-white uppercase tracking-wider">LUPA PASSWORD
+                                    </h3>
+                                    <p class="text-xs text-gray-500 mt-1">Masukkan email untuk reset password.</p>
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-400 uppercase mb-1">Email</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500"><i
+                                                class="fas fa-envelope"></i></span>
+                                        <input type="email" id="forgot-email" required
+                                            class="w-full pl-10 pr-4 py-3 rounded-xl border border-white/10 bg-[#0a0a0a] text-white focus:border-brand-500 focus:ring-1 focus:ring-brand-500 outline-none transition-all text-sm placeholder-gray-600"
+                                            placeholder="nama@email.com">
+                                    </div>
+                                </div>
+
+                                <button type="submit" id="btn-forgot-submit"
+                                    class="w-full bg-white text-black font-bold py-3.5 rounded-xl hover:bg-gray-200 transform hover:scale-[1.02] transition-all shadow-lg hover:shadow-white/10 text-sm">
+                                    KIRIM LINK RESET
+                                </button>
+
+                                <div class="text-center mt-4">
+                                    <a href="#" onclick="switchTab('login')"
+                                        class="text-xs text-brand-400 font-bold hover:underline">Kembali ke Login</a>
+                                </div>
+                            </form>
+
+                        </div>
+                        <!-- End Inner Card -->
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
 
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script src="config.js"></script>
-    <script src="auth_check.js"></script>
-    <script src="main.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            checkAuth([], true); // Public page check
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+        <script src="config.js"></script>
+        <script src="auth_check.js"></script>
+        <script src="main.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                // Page Transition Trigger
+                document.body.classList.add('loaded');
 
-            // Cek jika ada parameter ?login=true dari redirect cart
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('login') === 'true') {
-                // Hapus param dari URL agar tidak muncul terus saat refresh
-                window.history.replaceState({}, document.title, window.location.pathname);
+                checkAuth([], true); // Public page check
 
-                // Beri sedikit delay agar aesthetic
-                setTimeout(() => {
-                    openAuthModal('login');
-                    // Opsional: Tampilkan pesan
-                    const msgEl = document.getElementById('modal-message');
-                    if (msgEl) {
-                        msgEl.innerText = "Silakan login untuk melihat keranjang.";
-                        msgEl.classList.remove('hidden', 'text-green-600', 'bg-green-50');
-                        msgEl.classList.add('text-blue-600', 'bg-blue-50');
-                        msgEl.style.display = 'block';
+                // Cek jika ada parameter ?login=true dari redirect cart
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('login') === 'true') {
+                    // Hapus param dari URL agar tidak muncul terus saat refresh
+                    window.history.replaceState({}, document.title, window.location.pathname);
+
+                    // Beri sedikit delay agar aesthetic
+                    setTimeout(() => {
+                        openAuthModal('login');
+                        // Opsional: Tampilkan pesan
+                        const msgEl = document.getElementById('modal-message');
+                        if (msgEl) {
+                            msgEl.innerText = "Silakan login untuk melihat keranjang.";
+                            msgEl.classList.remove('hidden', 'text-green-600', 'bg-green-50');
+                            msgEl.classList.add('text-blue-300', 'bg-blue-500/10', 'border', 'border-blue-500/20');
+                            msgEl.style.display = 'block';
+                        }
+                    }, 500);
+                }
+            });
+
+            // Scroll Reveal Script
+            document.addEventListener('DOMContentLoaded', () => {
+                const observerOptions = {
+                    threshold: 0.1,
+                    rootMargin: "0px 0px -50px 0px"
+                };
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('active');
+                            observer.unobserve(entry.target); // Only animate once
+                        }
+                    });
+                }, observerOptions);
+
+                const revealElements = document.querySelectorAll('.reveal');
+                revealElements.forEach(el => observer.observe(el));
+
+                // NEW: Load Dynamic Banner
+                loadDynamicBanner();
+            });
+
+            async function loadDynamicBanner() {
+                if (!window.db) return;
+                try {
+                    const { data, error } = await window.db
+                        .from('site_settings')
+                        .select('value')
+                        .eq('key', 'hero_banner_image')
+                        .single();
+
+                    if (data && data.value) {
+                        const img = document.getElementById('dynamic-hero-bg');
+                        if (img) {
+                            let src = data.value;
+                            // Handle potential simple filename vs full URL
+                            if (!src.startsWith('http') && !src.startsWith('./') && !src.startsWith('/')) {
+                                // Assuming it was uploaded to product-images/banners (as per manage_content.html fallback logic if we used filename only)
+                                // Actually manage_content.html saves FULL URL.
+                                // But just in case user manually edits DB with filename only.
+                                src = `https://rkpkfgenzpfynypeceto.supabase.co/storage/v1/object/public/product-images/${data.value}`;
+                            }
+                            img.src = src;
+                        }
                     }
-                }, 500);
+                } catch (e) {
+                    console.warn('Failed to load dynamic banner:', e);
+                }
             }
-        });
-    </script>
+        </script>
 </body>
 
 </html>

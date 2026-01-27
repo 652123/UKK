@@ -17,10 +17,24 @@ if (!client) {
 // --- 2. LOGIKA AUTH MODAL (LOGIN & REGISTER) ---
 
 // Fungsi Buka Modal (Bisa dipanggil dari HTML: onclick="openAuthModal('register')")
+// Fungsi Buka Modal (Bisa dipanggil dari HTML: onclick="openAuthModal('register')")
 window.openAuthModal = function (tab = 'login') {
     const modal = document.getElementById('auth-modal');
+    const overlay = document.getElementById('modal-overlay');
+    const panel = document.getElementById('modal-panel');
+
     if (modal) {
         modal.classList.remove('hidden');
+
+        // Force Reflow
+        void modal.offsetWidth;
+
+        if (overlay) overlay.classList.remove('opacity-0');
+        if (panel) {
+            panel.classList.remove('opacity-0', 'scale-95');
+            panel.classList.add('scale-100');
+        }
+
         window.switchTab(tab);
     }
 }
@@ -28,9 +42,23 @@ window.openAuthModal = function (tab = 'login') {
 // Fungsi Tutup Modal
 window.closeAuthModal = function () {
     const modal = document.getElementById('auth-modal');
+    const overlay = document.getElementById('modal-overlay');
+    const panel = document.getElementById('modal-panel');
     const msg = document.getElementById('modal-message');
-    if (modal) modal.classList.add('hidden');
-    if (msg) msg.classList.add('hidden');
+
+    if (modal) {
+        if (overlay) overlay.classList.add('opacity-0');
+        if (panel) {
+            panel.classList.add('opacity-0', 'scale-95');
+            panel.classList.remove('scale-100');
+        }
+
+        // Wait for transition (300ms)
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            if (msg) msg.classList.add('hidden');
+        }, 300);
+    }
 }
 
 // Fungsi Ganti Tab (Masuk <-> Daftar)
@@ -77,20 +105,22 @@ window.switchTab = function (tab) {
     }
 }
 
-// Fungsi Helper Menampilkan Pesan dengan SweetAlert2
+// Fungsi Helper Menampilkan Pesan Inline di Modal
 function showModalMessage(type, text) {
-    const swalType = type === 'error' ? 'error' : 'success';
-    const title = type === 'error' ? 'Oops...' : 'Berhasil!';
+    const msgEl = document.getElementById('modal-message');
+    if (!msgEl) return;
 
-    Swal.fire({
-        icon: swalType,
-        title: title,
-        text: text,
-        confirmButtonColor: '#111827', // Gray-900
-        timer: type === 'success' ? 2000 : undefined,
-        timerProgressBar: type === 'success',
-        showConfirmButton: type === 'error' // Auto close for success
-    });
+    msgEl.classList.remove('hidden', 'text-red-400', 'bg-red-500/10', 'border-red-500/20', 'text-green-400', 'bg-green-500/10', 'border-green-500/20', 'border');
+
+    if (type === 'error') {
+        msgEl.classList.add('text-red-400', 'bg-red-500/10', 'border', 'border-red-500/20');
+    } else {
+        msgEl.classList.add('text-green-400', 'bg-green-500/10', 'border', 'border-green-500/20');
+    }
+
+    msgEl.innerText = text;
+    msgEl.classList.remove('hidden');
+    msgEl.style.display = 'block';
 }
 
 
@@ -117,29 +147,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (error) throw error;
 
                 // 2. Cek Role User
-                const { data: profile } = await client.from('profiles').select('role').eq('id', data.user.id).single();
+                // 2. Cek Role User (Optional: Bisa skip jika hanya butuh redirect)
+                // const { data: profile } = await client.from('profiles').select('role').eq('id', data.user.id).single();
 
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'Login Berhasil!',
-                    text: 'Mengalihkan ke halaman utama...',
-                    timer: 1500,
-                    showConfirmButton: false
-                });
+                showModalMessage('success', 'Login Berhasil! Mengalihkan...');
 
-                const role = profile ? profile.role : 'pembeli';
-                if (role === 'bos') window.location.href = 'bos/boss_dashboard.html';
-                else if (role === 'admin') window.location.href = 'admin/dashboard.html';
-                else location.reload(); // Refresh halaman untuk user biasa
+                setTimeout(async () => {
+                    const { data: profile } = await client.from('profiles').select('role').eq('id', data.user.id).single();
+                    const role = profile ? profile.role : 'pembeli';
 
+                    if (role === 'bos') window.location.href = 'bos/boss_dashboard.html';
+                    else if (role === 'admin') window.location.href = 'admin/dashboard.html';
+                    else location.reload();
+                }, 1000);
 
             } catch (err) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Login Gagal',
-                    text: err.message,
-                    confirmButtonColor: '#111827'
-                });
+                showModalMessage('error', err.message || 'Login Gagal');
                 btn.disabled = false;
                 btn.innerText = originalText;
             }
@@ -164,7 +187,7 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 // Daftar ke Supabase
                 // Data 'name' akan otomatis masuk ke tabel 'profiles' lewat Trigger SQL
-                const { error } = await client.auth.signUp({
+                const { data, error } = await client.auth.signUp({
                     email,
                     password,
                     options: { data: { name } }
@@ -172,13 +195,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (error) throw error;
 
-                showModalMessage('success', 'Berhasil! Silakan Login.');
-                regForm.reset();
+                if (data.session) {
+                    // Auto Login Handling
+                    showModalMessage('success', 'Registrasi Berhasil! Anda telah masuk otomatis.');
+                    regForm.reset();
 
-                // Pindah ke tab Login setelah 1.5 detik
-                setTimeout(() => {
-                    window.switchTab('login');
-                }, 1500);
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    // Email Verification Required
+                    showModalMessage('success', 'Registrasi Berhasil! Silakan cek email untuk verifikasi.');
+                    regForm.reset();
+
+                    setTimeout(() => {
+                        window.switchTab('login');
+                    }, 2000);
+                }
 
             } catch (err) {
                 showModalMessage('error', err.message);
@@ -200,12 +233,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 const email = document.getElementById('forgot-email').value;
 
                 try {
-                    const { error } = await client.auth.resetPasswordForEmail(email, {
-                        redirectTo: window.location.origin + '/reset-password.html',
-                    });
-                    if (error) throw error;
+                    // SIMULASI ALUR (Untuk UKK/Demo)
+                    // Tidak mengirim email beneran, tapi pura-pura sukses dan langsung redirect
 
-                    showModalMessage('success', 'Link reset password telah dikirim ke email Anda.');
+                    await new Promise(r => setTimeout(r, 1500)); // Fake loading 1.5s
+
+                    // const { error } = await client.auth.resetPasswordForEmail(...) <-- HAPUS REAL LOGIC
+
+                    showModalMessage('success', ' [SIMULASI] Link reset telah dikirim! Mengalihkan...');
+
+                    setTimeout(() => {
+                        window.location.href = 'reset-password.html'; // Direct redirect tanpa email
+                    }, 1500);
+
                     forgotForm.reset();
 
                 } catch (err) {
@@ -256,11 +296,24 @@ async function loadProducts(reset = false) {
 
     // Default loader for first load
     if (reset) {
-        container.innerHTML = `
-        <div class="col-span-full py-20 flex flex-col items-center justify-center">
-            <i class="fas fa-circle-notch fa-spin text-4xl text-gray-300 mb-4"></i>
-            <p class="text-gray-500 font-medium">Memuat koleksi...</p>
-        </div>`;
+        let skeletonHTML = '';
+        for (let i = 0; i < 4; i++) {
+            skeletonHTML += `
+            <div class="product-skeleton bg-[#121212] rounded-xl overflow-hidden border border-white/5 shadow-sm animate-pulse">
+                <div class="aspect-[4/5] bg-white/5 relative overflow-hidden">
+                    <div class="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-[-15deg]"></div>
+                </div>
+                <div class="p-5 space-y-3">
+                    <div class="h-3 w-1/4 bg-white/10 rounded-full"></div>
+                    <div class="h-4 w-3/4 bg-white/10 rounded-full"></div>
+                    <div class="pt-2 flex justify-between items-center">
+                        <div class="h-4 w-1/3 bg-white/10 rounded-full"></div>
+                        <div class="h-8 w-8 bg-white/10 rounded-lg"></div>
+                    </div>
+                </div>
+            </div>`;
+        }
+        container.innerHTML = skeletonHTML;
     }
 
     // Cek Search Param
@@ -322,12 +375,12 @@ async function loadProducts(reset = false) {
 
         if (products.length === 0 && reset) {
             container.innerHTML = `
-                <div class="col-span-full py-16 text-center bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                    <div class="text-5xl mb-4 opacity-30">🔍</div>
-                    <p class="text-gray-500 font-medium">
+                <div class="col-span-full py-16 text-center bg-[#121212] rounded-xl border border-dashed border-white/10">
+                    <div class="text-5xl mb-4 opacity-30 grayscale">🔍</div>
+                    <p class="text-gray-400 font-medium">
                         ${searchQuery ? `Tidak ada produk "${searchQuery}"` : 'Produk tidak ditemukan.'}
                     </p>
-                    ${searchQuery || currentCategory !== 'ALL' ? `<button onclick="resetFilters()" class="mt-4 text-brand font-bold hover:underline">Reset Filter</button>` : ''}
+                    ${searchQuery || currentCategory !== 'ALL' ? `<button onclick="resetFilters()" class="mt-4 text-indigo-400 font-bold hover:text-indigo-300 hover:underline">Reset Filter</button>` : ''}
                 </div>`;
             return;
         }
@@ -356,38 +409,42 @@ async function loadProducts(reset = false) {
                 stockClasses = 'opacity-75 grayscale';
             }
 
+            const safeName = product.name.replace(/'/g, "\\'");
             const productCard = `
-                <div class="product-card group relative bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 border border-gray-100 overflow-hidden ${stockClasses}">
-                    ${stockOverlay}
-                    <a href="product-detail.html?id=${product.id}" class="block overflow-hidden relative aspect-[4/5]">
-                        <img src="${imgUrl}" 
-                            alt="${product.name}" 
-                            class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                            onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 300%22%3E%3Crect fill=%22%23f3f4f6%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 fill=%22%239ca3af%22 font-size=%2216%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENo Image%3C/text%3E%3C/svg%3E'">
-                    </a>
-                    
-                    <div class="p-4">
-                        <div class="mb-2">
-                            <span class="inline-block px-2 py-1 text-[10px] font-semibold tracking-wider text-gray-500 uppercase bg-gray-50 rounded-sm">
-                                ${product.category || 'UMUM'}
-                            </span>
+                    <div onclick="window.location.href='product-detail.html?id=${product.id}'" 
+                        class="product-card group relative bg-[#121212] rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.5)] hover:shadow-[0_8px_30px_rgba(99,102,241,0.2)] hover:-translate-y-1 transition-all duration-300 border border-white/5 overflow-hidden ${stockClasses} cursor-pointer">
+                        ${stockOverlay}
+                        
+                        <div class="block overflow-hidden relative aspect-[4/5] bg-[#0a0a0a]">
+                            <img src="${imgUrl}" 
+                                loading="lazy"
+                                alt="${safeName}" 
+                                class="w-full h-full object-cover object-center transition-transform duration-700"
+                                onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 300 300%22%3E%3Crect fill=%22%231a1a1a%22 width=%22300%22 height=%22300%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 fill=%22%234b5563%22 font-size=%2216%22 text-anchor=%22middle%22 dy=%22.3em%22%3ENo Image%3C/text%3E%3C/svg%3E'">
                         </div>
-                        <h3 class="text-sm font-bold text-gray-900 group-hover:text-black transition-colors mb-1 line-clamp-2 min-h-[2.5rem]">
-                            <a href="product-detail.html?id=${product.id}">${product.name}</a>
-                        </h3>
-                        <div class="flex items-center justify-between mt-3">
-                            <p class="text-base font-bold text-gray-900">
-                                Rp ${parseInt(product.price).toLocaleString('id-ID')}
-                            </p>
-                            <button onclick="addToCart('${product.name}', ${product.price}, ${product.stock}, ${product.id})" 
-                                class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-900 hover:bg-black hover:text-white transition-all transform hover:scale-110 focus:outline-none ${product.stock <= 0 ? 'hidden' : ''}"
-                                aria-label="Tambah ke Keranjang">
-                                <i class="fas fa-plus text-xs"></i>
-                            </button>
+                        
+                        <div class="p-5">
+                            <div class="mb-3">
+                                <span class="inline-block px-2.5 py-1 text-[10px] font-bold tracking-wider text-indigo-300 uppercase bg-indigo-500/10 border border-indigo-500/20 rounded-md">
+                                    ${product.category || 'UMUM'}
+                                </span>
+                            </div>
+                            <h3 class="text-base font-bold text-white group-hover:text-indigo-400 transition-colors mb-2 line-clamp-2 min-h-[3rem]">
+                                ${product.name}
+                            </h3>
+                            <div class="flex items-center justify-between mt-4 border-t border-white/5 pt-4">
+                                <p class="text-lg font-bold text-white">
+                                    Rp ${parseInt(product.price).toLocaleString('id-ID')}
+                                </p>
+                                <button onclick="event.stopPropagation(); addToCart('${safeName}', ${product.price}, ${product.stock}, ${product.id})" 
+                                    class="w-10 h-10 flex items-center justify-center rounded-xl bg-white text-black hover:bg-indigo-600 hover:text-white transition-all transform hover:scale-110 active:scale-95 shadow-lg focus:outline-none ${product.stock <= 0 ? 'hidden' : ''}"
+                                    aria-label="Tambah ke Keranjang">
+                                    <i class="fas fa-shopping-bag text-sm"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            `;
+                `;
             container.insertAdjacentHTML('beforeend', productCard);
         });
 
@@ -514,7 +571,9 @@ window.addToCart = async function (productName, price, stock, productId) {
             title: 'Login Diperlukan',
             text: 'Silakan login terlebih dahulu untuk berbelanja.',
             confirmButtonText: 'Login Sekarang',
-            confirmButtonColor: '#111827'
+            confirmButtonColor: '#111827',
+            background: '#121212',
+            color: '#fff'
         }).then((result) => {
             if (result.isConfirmed) {
                 window.openAuthModal('login');

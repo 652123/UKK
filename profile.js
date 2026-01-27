@@ -1,8 +1,20 @@
 document.addEventListener('DOMContentLoaded', async () => {
+
+    // Wait for window.db
+    let retries = 0;
+    while (!window.db && retries < 20) {
+        await new Promise(r => setTimeout(r, 100));
+        retries++;
+    }
+    if (!window.db) {
+        Swal.fire('Error', 'Gagal memuat konfigurasi database.', 'error');
+        return;
+    }
+
     // 1. Cek Sesi
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await window.db.auth.getSession();
     if (!session) {
-        window.location.href = 'login.html';
+        window.location.href = 'index.html?login=true';
         return;
     }
 
@@ -53,15 +65,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         btn.innerText = 'Updating...';
 
         try {
-            const { error } = await supabase.auth.updateUser({ password: passInput });
+            const { error } = await window.db.auth.updateUser({ password: passInput });
 
             if (error) throw error;
 
-            Swal.fire('Sukses', 'Password berhasil diubah!', 'success');
+            Swal.fire({ title: 'Sukses', text: 'Password berhasil diubah!', icon: 'success', background: '#121212', color: '#fff' });
             document.getElementById('password-form').reset();
 
         } catch (err) {
-            Swal.fire('Gagal', err.message, 'error');
+            Swal.fire({ title: 'Gagal', text: err.message, icon: 'error', background: '#121212', color: '#fff' });
         } finally {
             btn.disabled = false;
             btn.innerText = 'Update Password';
@@ -70,7 +82,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     async function loadProfile() {
         try {
-            const { data, error } = await supabase
+            const { data, error } = await window.db
                 .from('profiles')
                 .select('*')
                 .eq('id', userId)
@@ -82,6 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.getElementById('name').value = data.name || '';
                 document.getElementById('phone').value = data.phone || '';
                 document.getElementById('address').value = data.address || '';
+                document.getElementById('province').value = data.province || '';
                 document.getElementById('city').value = data.city || '';
                 document.getElementById('postal_code').value = data.postal_code || '';
 
@@ -92,7 +105,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         avatarImg.src = data.avatar_url;
                     } else {
                         // Assume stored in 'product-images' bucket for simplicity as per plan
-                        const { data: imgData } = supabase.storage.from('product-images').getPublicUrl(data.avatar_url);
+                        const { data: imgData } = window.db.storage.from('product-images').getPublicUrl(data.avatar_url);
                         avatarImg.src = imgData.publicUrl;
                     }
                 }
@@ -100,7 +113,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         } catch (error) {
             console.error('Error loading profile:', error);
-            Swal.fire('Error', 'Gagal memuat profil.', 'error');
+            Swal.fire({ title: 'Error', text: 'Gagal memuat profil.', icon: 'error', background: '#121212', color: '#fff' });
         }
     }
 
@@ -115,13 +128,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             name: document.getElementById('name').value,
             phone: document.getElementById('phone').value,
             address: document.getElementById('address').value,
+            province: document.getElementById('province').value,
             city: document.getElementById('city').value,
             postal_code: document.getElementById('postal_code').value,
             updated_at: new Date()
         };
 
         try {
-            const { error } = await supabase
+            const { error } = await window.db
                 .from('profiles')
                 .upsert(updates);
 
@@ -132,12 +146,14 @@ document.addEventListener('DOMContentLoaded', async () => {
                 title: 'Berhasil',
                 text: 'Profil berhasil diperbarui!',
                 timer: 1500,
-                showConfirmButton: false
+                showConfirmButton: false,
+                background: '#121212',
+                color: '#fff'
             });
 
         } catch (error) {
             console.error('Error updating profile:', error);
-            Swal.fire('Error', error.message, 'error');
+            Swal.fire({ title: 'Error', text: error.message, icon: 'error', background: '#121212', color: '#fff' });
         } finally {
             btn.disabled = false;
             btn.innerHTML = originalText;
@@ -147,11 +163,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     async function uploadAvatar(file) {
         // Validate
         if (!file.type.match('image.*')) {
-            Swal.fire('Error', 'Mohon upload file gambar.', 'error');
+            Swal.fire({ title: 'Error', text: 'Mohon upload file gambar.', icon: 'error', background: '#121212', color: '#fff' });
             return;
         }
         if (file.size > 2 * 1024 * 1024) { // 2MB
-            Swal.fire('Error', 'Ukuran maksimal file 2MB.', 'error');
+            Swal.fire({ title: 'Error', text: 'Ukuran maksimal file 2MB.', icon: 'error', background: '#121212', color: '#fff' });
             return;
         }
 
@@ -165,14 +181,14 @@ document.addEventListener('DOMContentLoaded', async () => {
             const fileName = `avatars/${userId}-${Date.now()}.${fileExt}`;
 
             // Upload to Bucket
-            const { error: uploadError } = await supabase.storage
+            const { error: uploadError } = await window.db.storage
                 .from('product-images') // Reusing existing bucket
                 .upload(fileName, file, { upsert: true });
 
             if (uploadError) throw uploadError;
 
             // Update Profile
-            const { error: updateError } = await supabase
+            const { error: updateError } = await window.db
                 .from('profiles')
                 .update({ avatar_url: fileName })
                 .eq('id', userId);
@@ -180,19 +196,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (updateError) throw updateError;
 
             // Update UI
-            const { data } = supabase.storage.from('product-images').getPublicUrl(fileName);
+            const { data } = window.db.storage.from('product-images').getPublicUrl(fileName);
             avatarImg.src = data.publicUrl;
 
             Swal.fire({
                 icon: 'success',
                 title: 'Foto Profil Diupdate',
                 timer: 1500,
-                showConfirmButton: false
+                showConfirmButton: false,
+                background: '#121212',
+                color: '#fff'
             });
 
         } catch (err) {
             console.error('Upload Error:', err);
-            Swal.fire('Gagal', 'Gagal upload foto: ' + err.message, 'error');
+            Swal.fire({ title: 'Gagal', text: 'Gagal upload foto: ' + err.message, icon: 'error', background: '#121212', color: '#fff' });
             avatarImg.src = oldSrc; // Revert on error
         } finally {
             avatarImg.style.opacity = '1';

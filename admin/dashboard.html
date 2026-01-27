@@ -4,27 +4,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Dazeon Admin</title>
+    <title>Dashboard Admin - Dazeon Admin</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] } } } }
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            accent: '#d946ef',
+                        }
+                    },
+                    animation: {
+                        'gradient': 'gradient 8s linear infinite',
+                    },
+                }
+            }
+        }
     </script>
-    <style>
-        /* Sembunyikan scrollbar default */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .glass {
+                @apply bg-[#121212] border border-white/5 backdrop-blur-md;
+            }
         }
+        
+        body { opacity: 0; transition: opacity 0.5s ease; }
+        body.loaded { opacity: 1; }
 
-        .no-scrollbar {
-            scrollbar-width: none;
+        /* Animation Keyframes */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
+        .animate-enter {
+            animation: fadeInUp 0.5s ease-out forwards;
+            opacity: 0;
+        }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-400 { animation-delay: 400ms; }
+
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        
+        .stat-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -32,434 +75,401 @@
     <script src="../auth_check.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            document.body.classList.add('loaded');
             checkAuth(['admin']);
+            initUnreadBadge();
         });
+
+        // UNREAD BADGE LOGIC
+        function initUnreadBadge() {
+            const client = window.db || window.supabase;
+            // Listen to NEW messages from users
+            client.channel('global_unread')
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'helpdesk_messages',
+                    filter: "sender_role=eq.user"
+                }, (payload) => {
+                    showUnreadBadge();
+                    // Optional: Play Sound
+                    // new Audio('assets/sound.mp3').play().catch(()=>{});
+                })
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'helpdesk_tickets'
+                }, () => {
+                    showUnreadBadge();
+                })
+                .subscribe();
+        }
+
+        function showUnreadBadge() {
+            // Find sidebar link
+            const links = document.querySelectorAll('a[href="helpdesk.html"]');
+            links.forEach(link => {
+                if (!link.querySelector('.unread-dot')) {
+                    link.insertAdjacentHTML('beforeend', '<span class="unread-dot ml-auto w-2 h-2 rounded-full bg-red-500 shadow-[0_0_10px_red]"></span>');
+                }
+            });
+            // Update Title
+            document.title = '(1) New Message';
+        }
+
+        // MOBILE SIDEBAR TOGGLE
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+
+            sidebar.classList.toggle('-translate-x-full');
+
+            if (overlay.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        }
     </script>
 </head>
 
-<body class="bg-gray-100 font-sans">
+<body class="bg-[#050505] font-sans text-gray-100 selection:bg-brand-500 selection:text-white">
 
-    <div class="flex h-screen bg-gray-100">
+    <!-- MOBILE OVERLAY BACKDROP -->
+    <div id="mobile-overlay" onclick="toggleSidebar()"
+        class="fixed inset-0 bg-black/50 z-40 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
 
-        <div class="hidden md:flex md:flex-col md:w-64 bg-gray-900 text-gray-300">
-            <div class="flex items-center justify-center h-20 border-b border-gray-700">
-                <span class="text-2xl font-black text-white uppercase tracking-wider">DAZEON ADMIN</span>
+    <div class="flex h-screen bg-[#050505]">
+
+        <!-- SIDEBAR (Admin) -->
+        <div id="sidebar"
+            class="fixed inset-y-0 left-0 z-50 w-64 bg-[#121212] border-r border-white/5 transform -translate-x-full transition-transform duration-300 md:relative md:translate-x-0 md:flex md:flex-col">
+            <div class="flex items-center justify-between px-6 h-24 border-b border-white/5">
+                <span
+                    class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#d946ef] to-[#8b5cf6] uppercase tracking-wider">DAZEON</span>
+                <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
             </div>
 
-            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
+            <nav class="flex-1 px-4 space-y-2 overflow-y-auto custom-scrollbar pt-4">
+                <!-- Dashboard (Active) -->
                 <a href="dashboard.html"
-                    class="flex items-center px-4 py-3 rounded-lg bg-gray-700 text-white font-semibold">
-                    <i class="fas fa-tachometer-alt w-6 text-lg"></i>
-                    <span class="ml-4">Dashboard</span>
-                </a>
-                <a href="manage_products.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
-                    <i class="fas fa-tshirt w-6 text-lg"></i>
-                    <span class="ml-4">Produk</span>
-                </a>
-                <a href="manage_orders.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
-                    <i class="fas fa-box-open w-6 text-lg"></i>
-                    <span class="ml-4">Pesanan</span>
+                    class="relative flex items-center px-4 py-3 rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20 shadow-[0_0_15px_rgba(139,92,246,0.2)] group">
+                    <div class="absolute inset-0 bg-brand-500/5 blur-md rounded-xl"></div>
+                    <i class="fas fa-home text-lg w-8 relative z-10 drop-shadow-[0_0_8px_rgba(139,92,246,0.5)]"></i>
+                    <span class="font-bold tracking-wide relative z-10">Dashboard</span>
                 </a>
 
+                <!-- Produk -->
+                <a href="manage_products.html"
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all duration-300 group">
+                    <i class="fas fa-tshirt text-lg w-8 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-medium tracking-wide">Produk</span>
+                </a>
+
+                <!-- Pesanan -->
+                <a href="manage_orders.html"
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all duration-300 group">
+                    <i class="fas fa-receipt text-lg w-8 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-medium tracking-wide">Pesanan</span>
+                </a>
+
+                <!-- Pelanggan -->
                 <a href="manage_users.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
-                    <i class="fas fa-users w-6 text-lg"></i>
-                    <span class="ml-4">Pengguna</span>
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all duration-300 group">
+                    <i class="fas fa-users text-lg w-8 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-medium tracking-wide">Pelanggan</span>
                 </a>
-                <a href="reports.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
-                    <i class="fas fa-chart-line w-6 text-lg"></i>
-                    <span class="ml-4">Laporan</span>
+
+                <!-- Helpdesk -->
+                <a href="helpdesk.html"
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all duration-300 group">
+                    <i class="fas fa-headset text-lg w-8 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-medium tracking-wide">Helpdesk</span>
                 </a>
+
+                <!-- Logout -->
                 <a href="../login.html"
-                    class="flex items-center px-4 py-3 rounded-lg text-red-400 hover:bg-red-600 hover:text-white transition-colors duration-200">
-                    <i class="fas fa-sign-out-alt w-6 text-lg"></i>
-                    <span class="ml-4">Logout</span>
+                    class="flex items-center px-4 py-3 rounded-xl text-red-500/70 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300 mt-10 group border border-transparent hover:border-red-500/20">
+                    <i class="fas fa-sign-out-alt text-lg w-8 group-hover:translate-x-1 transition-transform"></i>
+                    <span class="font-medium tracking-wide">Logout</span>
                 </a>
             </nav>
         </div>
 
         <div class="flex-1 flex flex-col overflow-hidden">
 
-            <header class="flex justify-between items-center h-20 px-6 bg-white border-b border-gray-200 shadow-sm">
-                <div class="flex items-center">
-                    <button class="md:hidden text-gray-600 mr-4 focus:outline-none">
-                        <i class="fas fa-bars text-2xl"></i>
+            <header
+                class="flex justify-between items-center h-20 px-6 bg-[#121212]/80 backdrop-blur-md border-b border-white/5 sticky top-0 z-10">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()"
+                        class="md:hidden text-white p-2 hover:bg-white/10 rounded-lg transition">
+                        <i class="fas fa-bars text-xl"></i>
                     </button>
-                    <h1 class="text-2xl font-semibold text-gray-800">
-                        Dashboard
-                    </h1>
+                    <h1 class="text-xl md:text-2xl font-bold text-white tracking-wide">Admin Dashboard</h1>
                 </div>
-                <div class="flex items-center space-x-4">
-                    <span class="text-gray-700 hidden sm:block">Halo, <strong
-                            id="user-name">Admin/Karyawan</strong>!</span>
-                    <button class="text-gray-500 hover:text-gray-700 focus:outline-none">
-                        <i class="fas fa-bell text-xl"></i>
-                    </button>
-                </div>
+                <span
+                    class="text-gray-400 hidden sm:block bg-[#0a0a0a] px-4 py-2 rounded-full border border-white/5">Halo,
+                    <strong id="user-name" class="text-brand-400">Admin</strong>!</span>
             </header>
 
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
-                <div class="container mx-auto">
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-[#050505] p-6">
+                <div class="container mx-auto max-w-7xl">
 
+                    <!-- OPERATIONAL STATS -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 
                         <div
-                            class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between hover:shadow-lg transition-shadow duration-300">
-                            <div>
-                                <div class="text-sm font-medium text-gray-500 uppercase tracking-wider">Pesanan Hari Ini
+                            class="stat-card bg-gradient-to-br from-indigo-500 to-indigo-600 text-white p-6 rounded-xl shadow-lg animate-enter delay-100">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="text-lg font-semibold uppercase tracking-wider">Total Produk</h3>
+                                    <p class="text-xs opacity-80">(Inventory)</p>
                                 </div>
-                                <div class="text-3xl font-bold text-gray-900 mt-1" id="orders-today">-</div>
+                                <i class="fas fa-boxes text-4xl opacity-50"></i>
                             </div>
-                            <div class="text-blue-500">
-                                <i class="fas fa-calendar-day text-4xl opacity-70"></i>
+                            <div class="text-4xl font-bold">
+                                <span id="stat-products">-</span>
                             </div>
                         </div>
 
                         <div
-                            class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between hover:shadow-lg transition-shadow duration-300">
-                            <div>
-                                <div class="text-sm font-medium text-gray-500 uppercase tracking-wider">Perlu Diproses
+                            class="stat-card bg-gradient-to-br from-rose-500 to-rose-600 text-white p-6 rounded-xl shadow-lg animate-enter delay-200">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="text-lg font-semibold uppercase tracking-wider">Perlu Restock</h3>
+                                    <p class="text-xs opacity-80">(Stok < 10)</p>
                                 </div>
-                                <div class="text-3xl font-bold text-yellow-600 mt-1" id="orders-pending">-</div>
+                                <i class="fas fa-exclamation-triangle text-4xl opacity-50"></i>
                             </div>
-                            <div class="text-yellow-500">
-                                <i class="fas fa-hourglass-half text-4xl opacity-70"></i>
+                            <div class="text-4xl font-bold">
+                                <span id="stat-low-stock">-</span>
                             </div>
                         </div>
 
                         <div
-                            class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between hover:shadow-lg transition-shadow duration-300">
-                            <div>
-                                <div class="text-sm font-medium text-gray-500 uppercase tracking-wider">Stok Menipis
+                            class="stat-card bg-gradient-to-br from-amber-500 to-amber-600 text-white p-6 rounded-xl shadow-lg animate-enter delay-300">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="text-lg font-semibold uppercase tracking-wider">Pesanan Aktif</h3>
+                                    <p class="text-xs opacity-80">(Diproses/Dikirim)</p>
                                 </div>
-                                <div class="text-3xl font-bold text-red-600 mt-1" id="low-stock-count">-</div>
+                                <i class="fas fa-shipping-fast text-4xl opacity-50"></i>
                             </div>
-                            <div class="text-red-500">
-                                <i class="fas fa-exclamation-triangle text-4xl opacity-70"></i>
+                            <div class="text-4xl font-bold">
+                                <span id="stat-active-orders">-</span>
                             </div>
                         </div>
 
                         <div
-                            class="bg-white p-6 rounded-lg shadow-md flex items-center justify-between hover:shadow-lg transition-shadow duration-300">
-                            <div>
-                                <div class="text-sm font-medium text-gray-500 uppercase tracking-wider">Produk Aktif
+                            class="stat-card bg-gradient-to-br from-violet-500 to-violet-600 text-white p-6 rounded-xl shadow-lg animate-enter delay-400">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h3 class="text-lg font-semibold uppercase tracking-wider">Pelanggan</h3>
+                                    <p class="text-xs opacity-80">(Total User)</p>
                                 </div>
-                                <div class="text-3xl font-bold text-gray-900 mt-1" id="total-products">-</div>
+                                <i class="fas fa-users text-4xl opacity-50"></i>
                             </div>
-                            <div class="text-green-500">
-                                <i class="fas fa-tshirt text-4xl opacity-70"></i>
+                            <div class="text-4xl font-bold">
+                                <span id="stat-customers">-</span>
+                                ```
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
+                    <!-- ACTIVITY CHART (No Money) -->
+                    <div class="glass p-6 rounded-2xl mb-8 relative overflow-hidden group">
+                        <div class="flex justify-between items-center mb-6 relative z-10">
+                            <h3 class="text-xl font-bold text-white flex items-center gap-2">
+                                <i class="fas fa-chart-bar text-brand-400"></i> Aktivitas Pesanan (Harian)
+                            </h3>
+                        </div>
+                        <div class="h-80 w-full relative z-10">
+                            <canvas id="orderChart"></canvas>
+                        </div>
+                    </div>
 
-                            <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-md">
-                                <h3 class="text-xl font-semibold text-gray-800 mb-4">Grafik Penjualan (7 Hari Terakhir)
-                                </h3>
-                                <div class="h-64 bg-gray-200 flex items-center justify-center text-gray-500 rounded-md">
-                                    [Placeholder untuk Grafik Penjualan]
-                                </div>
-                            </div>
-
-                            <div class="bg-white p-6 rounded-lg shadow-md">
-                                <h3 class="text-xl font-semibold text-gray-800 mb-4">Produk Terlaris</h3>
-                                <ul class="divide-y divide-gray-200 max-h-64 overflow-y-auto no-scrollbar">
-
-                                    <li class="py-3 flex items-center justify-between">
-                                        <div class="flex items-center min-w-0">
-                                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect fill='%23f0f0f0' width='40' height='40'/%3E%3Ctext x='50%25' y='50%25' fill='%23888' font-size='12' text-anchor='middle' dy='.3em'%3EYK%3C/text%3E%3C/svg%3E"
-                                                class="w-10 h-10 rounded-md mr-3 flex-shrink-0">
-                                            <span class="font-medium text-gray-900 text-sm truncate">YUKEN - Regular
-                                                Fit</span>
-                                        </div>
-                                        <span class="text-gray-600 font-semibold text-sm ml-2">50x</span>
-                                    </li>
-                                    <li class="py-3 flex items-center justify-between">
-                                        <div class="flex items-center min-w-0">
-                                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect fill='%23f0f0f0' width='40' height='40'/%3E%3Ctext x='50%25' y='50%25' fill='%23888' font-size='12' text-anchor='middle' dy='.3em'%3ESK%3C/text%3E%3C/svg%3E"
-                                                class="w-10 h-10 rounded-md mr-3 flex-shrink-0">
-                                            <span class="font-medium text-gray-900 text-sm truncate">SASAKI -
-                                                Oversize</span>
-                                        </div>
-                                        <span class="text-gray-600 font-semibold text-sm ml-2">35x</span>
-                                    </li>
-                                    <li class="py-3 flex items-center justify-between">
-                                        <div class="flex items-center min-w-0">
-                                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect fill='%23f0f0f0' width='40' height='40'/%3E%3Ctext x='50%25' y='50%25' fill='%23888' font-size='12' text-anchor='middle' dy='.3em'%3EJG%3C/text%3E%3C/svg%3E"
-                                                class="w-10 h-10 rounded-md mr-3 flex-shrink-0">
-                                            <span class="font-medium text-gray-900 text-sm truncate">JONGGUN - Regular
-                                                Fit</span>
-                                        </div>
-                                        <span class="text-gray-600 font-semibold text-sm ml-2">28x</span>
-                                    </li>
-                                    <li class="py-3 text-center">
-                                        <a href="reports.html"
-                                            class="text-sm font-medium text-blue-600 hover:underline">Lihat Laporan
-                                            Lengkap</a>
-                                    </li>
-                                </ul>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- LOW STOCK TABLE -->
+                        <div class="glass p-6 rounded-2xl">
+                            <h3
+                                class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 border-b border-white/5 pb-3">
+                                Stok Menipis
+                            </h3>
+                            <ul class="divide-y divide-white/5 max-h-80 overflow-y-auto custom-scrollbar"
+                                id="low-stock-list">
+                                <li class="py-3 text-center text-gray-500 text-xs">Memuat data...</li>
+                            </ul>
+                            <div class="mt-4 text-center">
+                                <a href="manage_products.html"
+                                    class="text-xs text-brand-400 hover:text-white transition">Lihat Semua Produk
+                                    &rarr;</a>
                             </div>
                         </div>
 
-                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Aktivitas Terbaru</h3>
-                        <ul class="divide-y divide-gray-200" id="recent-activities">
-                            <li class="py-4 text-center text-gray-500">Memuat aktivitas...</li>
-                        </ul>
+                        <!-- RECENT ORDERS -->
+                        <div class="glass p-6 rounded-2xl">
+                            <h3
+                                class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4 border-b border-white/5 pb-3">
+                                Pesanan Terbaru
+                            </h3>
+                            <ul id="recent-orders-list"
+                                class="divide-y divide-white/5 max-h-80 overflow-y-auto custom-scrollbar">
+                                <li class="py-3 text-center text-gray-500 text-xs">Memuat data...</li>
+                            </ul>
+                            <div class="mt-4 text-center">
+                                <a href="manage_orders.html"
+                                    class="text-xs text-brand-400 hover:text-white transition">Kelola Pesanan &rarr;</a>
+                            </div>
+                        </div>
                     </div>
-                    <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                        <h3 class="text-xl font-semibold text-gray-800">Pesanan Terbaru Perlu Tindakan</h3>
-                        <a href="manage_orders.html" class="text-sm font-medium text-blue-600 hover:underline">Lihat
-                            Semua</a>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full min-w-[640px] divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Order ID</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Pelanggan</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Tanggal</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Total</th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Status</th>
-                                    <th
-                                        class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200" id="latest-orders-table">
-                                <tr>
-                                    <td colspan="6" class="px-6 py-10 text-center text-gray-500">Memuat pesanan...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+
                 </div>
-
+            </main>
         </div>
-        </main>
-    </div>
 
     </div>
+
+
     <script>
-        // Use global db or supabase from config.js
         const client = window.db || window.supabase;
+        let orderChartCtx = document.getElementById('orderChart').getContext('2d');
+        let orderChart = null;
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Auth check handled in head
             const user = JSON.parse(localStorage.getItem('user_session') || '{}');
             if (user && user.user_metadata && user.user_metadata.full_name) {
                 document.getElementById('user-name').innerText = user.user_metadata.full_name;
             }
-
-            loadDashboardData();
-            initRealtimeDashboard();
+            loadAdminData();
         });
 
-        async function loadDashboardData() {
+        async function loadAdminData() {
             loadStats();
+            loadOrderChart();
+            loadLowStock();
             loadRecentOrders();
-            loadRecentActivities(); // Simulated for now or fetched if you have an activity log
         }
 
         async function loadStats() {
-            // 1. Orders Today
-            const today = new Date().toISOString().split('T')[0];
-            const { count: countToday } = await client
+            // 1. Total Products
+            const { count: products } = await client.from('products').select('*', { count: 'exact', head: true });
+            document.getElementById('stat-products').innerText = products || 0;
+
+            // 2. Low Stock (< 10)
+            const { count: lowStock } = await client.from('products').select('*', { count: 'exact', head: true }).lt('stock', 10);
+            document.getElementById('stat-low-stock').innerText = lowStock || 0;
+
+            // 3. Active Orders (not cancelled, not finished)
+            const { count: activeOrders } = await client.from('orders').select('*', { count: 'exact', head: true }).in('status', ['menunggu_pembayaran', 'dibayar', 'diproses', 'dikirim']);
+            document.getElementById('stat-active-orders').innerText = activeOrders || 0;
+
+            // 4. Customers
+            const { count: customers } = await client.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'pembeli');
+            document.getElementById('stat-customers').innerText = customers || 0;
+        }
+
+        async function loadOrderChart() {
+            const now = new Date();
+            const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+            // Count orders per day
+            const { data: orders } = await client
                 .from('orders')
-                .select('*', { count: 'exact', head: true })
-                .gte('created_at', today);
+                .select('created_at')
+                .gte('created_at', firstDayOfMonth);
 
-            document.getElementById('orders-today').innerText = countToday || 0;
+            // Group by date
+            const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+            const labels = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+            const data = new Array(daysInMonth).fill(0);
 
-            // 2. Pending (Status: menunggu_pembayaran, diproses)
-            const { count: countPending } = await client
-                .from('orders')
-                .select('*', { count: 'exact', head: true })
-                .in('status', ['menunggu_pembayaran', 'diproses']);
+            if (orders) {
+                orders.forEach(o => {
+                    const d = new Date(o.created_at).getDate();
+                    data[d - 1] += 1; // Just count
+                });
+            }
 
-            document.getElementById('orders-pending').innerText = countPending || 0;
+            if (orderChart) orderChart.destroy();
 
-            // 3. Low Stock (< 10)
-            const { count: countLowStock } = await client
-                .from('products')
-                .select('*', { count: 'exact', head: true })
-                .lt('stock', 10);
+            orderChart = new Chart(orderChartCtx, {
+                type: 'bar', // Bar for simple volume
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Jumlah Pesanan',
+                        data: data,
+                        backgroundColor: '#a78bfa', // Brand 400
+                        borderRadius: 4,
+                        barPercentage: 0.6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { stepSize: 1 }, // Integers only
+                            grid: { color: 'rgba(255,255,255,0.05)' }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
 
-            document.getElementById('low-stock-count').innerText = countLowStock || 0;
+        async function loadLowStock() {
+            const list = document.getElementById('low-stock-list');
+            const { data: products } = await client.from('products').select('*').lt('stock', 10).limit(5);
 
-            // 4. Total Products
-            const { count: countProducts } = await client
-                .from('products')
-                .select('*', { count: 'exact', head: true });
+            if (!products || products.length === 0) { list.innerHTML = '<li class="text-center py-2 text-gray-500">Aman. Tidak ada stok menipis.</li>'; return; }
 
-            document.getElementById('total-products').innerText = countProducts || 0;
+            list.innerHTML = '';
+            products.forEach(p => {
+                const html = `
+                    <li class="py-3 flex items-center justify-between hover:bg-white/5 rounded-lg px-2 transition">
+                        <div class="min-w-0">
+                            <span class="font-bold text-gray-300 text-sm block truncate">${p.name}</span>
+                            <span class="text-xs text-red-400">Sisa: ${p.stock}</span>
+                        </div>
+                        <a href="edit_product.html?id=${p.id}" class="text-gray-500 hover:text-white"><i class="fas fa-edit"></i></a>
+                    </li>
+                 `;
+                list.insertAdjacentHTML('beforeend', html);
+            });
         }
 
         async function loadRecentOrders() {
-            const tbody = document.getElementById('latest-orders-table');
+            const list = document.getElementById('recent-orders-list');
+            const { data: orders } = await client.from('orders').select('*').order('created_at', { ascending: false }).limit(5);
 
-            // Get last 5 orders
-            const { data: orders, error } = await client
-                .from('orders')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(5);
+            if (!orders || orders.length === 0) { list.innerHTML = '<li class="text-center py-2">Belum ada pesanan.</li>'; return; }
 
-            if (error) {
-                console.error("Error loading orders", error);
-                return;
-            }
-
-            if (!orders || orders.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-10 text-center text-gray-500">Belum ada pesanan.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = '';
-            orders.forEach(order => {
-                const dateStr = new Date(order.created_at).toLocaleDateString("id-ID", {
-                    day: 'numeric', month: 'short', year: 'numeric'
-                });
-                const totalStr = "Rp" + (order.total_amount || 0).toLocaleString('id-ID');
-
-                let customerName = 'Tanpa Nama';
-                if (order.shipping_address) {
-                    try {
-                        const addr = typeof order.shipping_address === 'string' ? JSON.parse(order.shipping_address) : order.shipping_address;
-                        customerName = addr.name || addr.penerima || customerName;
-                    } catch (e) { }
-                }
-
-                // Badge Logic
-                let badgeClass = 'bg-gray-100 text-gray-800';
-                if (order.status === 'menunggu_pembayaran') badgeClass = 'bg-yellow-100 text-yellow-800';
-                else if (order.status === 'diproses') badgeClass = 'bg-blue-100 text-blue-800';
-                else if (order.status === 'dikirim') badgeClass = 'bg-purple-100 text-purple-800';
-                else if (order.status === 'selesai') badgeClass = 'bg-green-100 text-green-800';
-                else if (order.status === 'dibatalkan') badgeClass = 'bg-red-100 text-red-800';
-
-                const row = `
-                     <tr class="hover:bg-gray-50 transition-colors duration-150">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${String(order.id).slice(0, 8).toUpperCase()}...</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${customerName}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${dateStr}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-semibold">${totalStr}</td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${badgeClass}">
-                                ${formatStatus(order.status)}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a href="manage_orders.html?highlight=${order.id}" class="text-indigo-600 hover:text-indigo-900">Lihat</a>
-                        </td>
-                    </tr>
-                `;
-                tbody.insertAdjacentHTML('beforeend', row);
-            });
-        }
-
-        async function loadRecentActivities() {
-            // Since we don't have an activity_log table, we'll simulate 'New Order' activities from the orders table
-            // and 'New User' activities from profiles (if accessible)
-            // For now, let's just show the latest 3 orders as "Activity"
-            const ul = document.getElementById('recent-activities');
-
-            const { data: activities, error } = await client
-                .from('orders')
-                .select('*')
-                .order('created_at', { ascending: false })
-                .limit(3);
-
-            if (!activities) {
-                ul.innerHTML = '<li class="py-4 text-center text-gray-500">Tidak ada aktivitas baru</li>';
-                return;
-            }
-
-            ul.innerHTML = '';
-            activities.forEach(act => {
-                const timeAgo = getTimeAgo(new Date(act.created_at));
-                let icon = 'fa-shopping-cart';
-                let color = 'text-green-600';
-                let bg = 'bg-green-100';
-                let title = 'Pesanan Baru';
-                let desc = `Pesanan ID #${String(act.id).slice(0, 5)} masuk.`;
-
-                if (act.status === 'dikirim') {
-                    icon = 'fa-truck'; color = 'text-indigo-600'; bg = 'bg-indigo-100';
-                    title = 'Pesanan Dikirim';
-                    desc = `Pesanan #${String(act.id).slice(0, 5)} sedang dikirim.`;
-                }
+            list.innerHTML = '';
+            orders.forEach(o => {
+                let statusColor = 'text-gray-400';
+                if (o.status === 'selesai') statusColor = 'text-green-400';
+                if (o.status === 'diproses') statusColor = 'text-blue-400';
 
                 const html = `
-                    <li class="py-4 flex items-center">
-                        <div class="w-10 h-10 ${bg} ${color} flex items-center justify-center rounded-full mr-4">
-                            <i class="fas ${icon}"></i>
+                    <li onclick="window.location.href='order-detail.html?id=${o.id}'" class="py-3 flex items-center justify-between hover:bg-white/5 rounded-lg px-2 transition cursor-pointer">
+                         <div class="min-w-0">
+                            <span class="font-bold text-white text-sm block">#${o.id}</span>
+                            <span class="text-xs ${statusColor} capitalize">${o.status}</span>
                         </div>
-                        <div>
-                            <p class="text-sm text-gray-800"><strong class="font-semibold">${title}</strong> ${desc}</p>
-                            <p class="text-xs text-gray-500">${timeAgo}</p>
+                         <div class="text-right">
+                            <div class="text-xs text-gray-500">${new Date(o.created_at).toLocaleDateString()}</div>
                         </div>
                     </li>
                  `;
-                ul.insertAdjacentHTML('beforeend', html);
+                list.insertAdjacentHTML('beforeend', html);
             });
         }
-
-        function initRealtimeDashboard() {
-            const channel = client.channel('admin-dashboard')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
-                    // Refresh stats and lists on any order change
-                    loadDashboardData();
-
-                    // Optional Toast
-                    const Toast = Swal.mixin({
-                        toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true
-                    });
-                    Toast.fire({ icon: 'info', title: 'Data Dashboard Diperbarui' });
-                })
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, (payload) => {
-                    // Refresh stats if products change
-                    loadStats();
-                })
-                .subscribe();
-        }
-
-        function formatStatus(s) {
-            if (s === 'diproses') return 'Sedang Dikemas';
-            if (s === 'dikemas') return 'Sedang Dikemas';
-            return s.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-        }
-
-        function getTimeAgo(date) {
-            const seconds = Math.floor((new Date() - date) / 1000);
-            let interval = seconds / 31536000;
-            if (interval > 1) return Math.floor(interval) + " tahun lalu";
-            interval = seconds / 2592000;
-            if (interval > 1) return Math.floor(interval) + " bulan lalu";
-            interval = seconds / 86400;
-            if (interval > 1) return Math.floor(interval) + " hari lalu";
-            interval = seconds / 3600;
-            if (interval > 1) return Math.floor(interval) + " jam lalu";
-            interval = seconds / 60;
-            if (interval > 1) return Math.floor(interval) + " menit lalu";
-            return Math.floor(seconds) + " detik lalu";
-        }
     </script>
-
 </body>
 
 </html>

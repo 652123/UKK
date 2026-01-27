@@ -19,65 +19,94 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
     <script>
-        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] } } } }
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            accent: '#d946ef',
+                        }
+                    },
+                    animation: {
+                        'bounce-slow': 'bounce 2s infinite',
+                    }
+                }
+            }
+        }
     </script>
 </head>
 
-<body class="bg-gray-100 font-sans">
+<body class="bg-[#050505] font-sans text-gray-100 selection:bg-brand-500 selection:text-white">
 
-    <header class="bg-white shadow-sm">
+    <header class="bg-[#121212]/80 backdrop-blur-md sticky top-0 z-40 border-b border-white/5">
         <div class="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 flex justify-center items-center">
-            <a href="index.html" class="text-3xl font-black text-gray-900 uppercase tracking-wider">DAZEON</a>
+            <a href="index.html"
+                class="text-3xl font-black text-white uppercase tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-brand-400 to-brand-accent">DAZEON</a>
         </div>
     </header>
 
     <main class="container mx-auto max-w-3xl px-4 sm:px-6 lg:px-8 py-16 text-center">
 
-        <div class="bg-white p-8 sm:p-12 rounded-lg shadow-lg">
+        <div class="bg-[#121212] p-8 sm:p-12 rounded-2xl shadow-2xl border border-white/5 relative overflow-hidden">
 
             <div
-                class="w-24 h-24 bg-green-100 text-green-600 flex items-center justify-center rounded-full mx-auto animate-bounce">
-                <i class="fas fa-check text-5xl"></i>
+                class="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-brand-500/10 rounded-full blur-3xl pointer-events-none">
             </div>
 
-            <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 mt-8">
+            <div
+                class="w-24 h-24 bg-green-500/10 text-green-400 flex items-center justify-center rounded-full mx-auto animate-bounce-slow border border-green-500/20 shadow-[0_0_20px_rgba(74,222,128,0.2)] relative z-10">
+                <i class="fas fa-check text-5xl drop-shadow-lg"></i>
+            </div>
+
+            <h1 id="page-title"
+                class="text-4xl md:text-5xl font-extrabold text-white mt-8 tracking-tight relative z-10">
                 Pesanan Berhasil!
             </h1>
-            <p class="text-lg text-gray-600 mt-4 max-w-lg mx-auto">
+            <p id="page-desc" class="text-lg text-gray-400 mt-4 max-w-lg mx-auto relative z-10">
                 Terima kasih telah berbelanja. Pesanan Anda telah kami terima dan akan segera diproses.
             </p>
 
-            <div class="text-left bg-gray-50 rounded-lg p-6 mt-10 border border-gray-200">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">Detail Pesanan</h2>
+            <div class="text-left bg-[#0a0a0a] rounded-xl p-6 mt-10 border border-white/10 relative z-10">
+                <h2 class="text-xl font-bold text-gray-200 mb-4 border-b border-white/5 pb-2">Detail Pesanan</h2>
                 <div class="space-y-3">
                     <div class="flex justify-between">
-                        <span class="text-gray-600">Nomor Pesanan:</span>
-                        <span id="order-id" class="font-bold text-gray-900">Memuat...</span>
+                        <span class="text-gray-500 text-sm uppercase tracking-wide">Nomor Pesanan</span>
+                        <span id="order-id" class="font-bold text-white font-mono tracking-widest">Memuat...</span>
                     </div>
                     <div class="flex justify-between">
-                        <span class="text-gray-600">Total Pembayaran:</span>
-                        <span id="total-payment" class="font-bold text-gray-900">Memuat...</span>
+                        <span class="text-gray-500 text-sm uppercase tracking-wide">Total Pembayaran</span>
+                        <span id="total-payment" class="font-bold text-brand-400">Memuat...</span>
                     </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Status Pembayaran:</span>
-                        <span id="status-badge" class="font-medium text-green-600">Berhasil / Menunggu Verifikasi</span>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-500 text-sm uppercase tracking-wide">Status Pembayaran</span>
+                        <span id="status-badge"
+                            class="font-medium text-green-400 bg-green-500/10 px-3 py-1 rounded-lg border border-green-500/20 text-xs">Berhasil
+                            / Menunggu Verifikasi</span>
                     </div>
                 </div>
             </div>
 
-            <div class="text-center mt-8 p-4 bg-blue-50 text-blue-800 rounded-lg">
+            <div
+                class="text-center mt-8 p-4 bg-blue-500/10 text-blue-300 rounded-xl border border-blue-500/20 relative z-10 text-sm">
                 <p>
-                    Jika status pembayaran Anda belum berubah, silakan cek kembali nanti di halaman <b>Pesanan Saya</b>.
+                    <i class="fas fa-info-circle mr-2"></i> Jika status pembayaran Anda belum berubah, silakan cek
+                    kembali nanti di halaman <b class="text-blue-200">Pesanan Saya</b>.
                 </p>
             </div>
 
-            <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+            <div class="mt-10 flex flex-col sm:flex-row justify-center gap-4 relative z-10">
                 <a href="index.html"
-                    class="w-full sm:w-auto px-8 py-3 bg-gray-900 text-white font-semibold rounded-lg shadow-md hover:bg-gray-700 transition-colors">
+                    class="w-full sm:w-auto px-8 py-3 bg-[#1a1a1a] text-white font-semibold rounded-xl hover:bg-white hover:text-black hover:shadow-lg transition-all border border-white/10 hover:border-white">
                     Kembali ke Beranda
                 </a>
                 <a href="my-orders.html"
-                    class="w-full sm:w-auto px-8 py-3 bg-gray-200 text-gray-800 font-semibold rounded-lg hover:bg-gray-300 transition-colors">
+                    class="w-full sm:w-auto px-8 py-3 bg-gradient-to-r from-brand-600 to-brand-accent text-white font-semibold rounded-xl hover:shadow-[0_0_20px_rgba(139,92,246,0.4)] transition-all">
                     Lihat Pesanan Saya
                 </a>
             </div>
@@ -112,11 +141,11 @@
                 console.error('Order ID tidak ditemukan di URL');
                 // Tampilkan pesan user friendly bahwa ID tidak ada, mungkin akses langsung
                 document.querySelector('main').innerHTML = `
-                    <div class="bg-white p-8 rounded-lg shadow-lg">
+                    <div class="bg-[#121212] p-8 rounded-2xl shadow-xl border border-white/5 text-center">
                         <div class="text-yellow-500 mb-4"><i class="fas fa-exclamation-triangle text-5xl"></i></div>
-                        <h1 class="text-2xl font-bold text-gray-900">Data Pesanan Tidak Ditemukan</h1>
-                        <p class="text-gray-600 mt-2">Sepertinya Anda mengakses halaman ini secara langsung atau terjadi kesalahan saat memuat data pesanan.</p>
-                        <a href="my-orders.html" class="inline-block mt-6 px-6 py-3 bg-brand text-white font-bold rounded-lg">Lihat Pesanan Saya</a>
+                        <h1 class="text-2xl font-bold text-white">Data Pesanan Tidak Ditemukan</h1>
+                        <p class="text-gray-400 mt-2">Sepertinya Anda mengakses halaman ini secara langsung atau terjadi kesalahan saat memuat data pesanan.</p>
+                        <a href="my-orders.html" class="inline-block mt-6 px-6 py-3 bg-brand-600 text-white font-bold rounded-xl hover:bg-brand-500 transition">Lihat Pesanan Saya</a>
                     </div>
                 `;
                 return;
@@ -156,11 +185,11 @@
             } catch (error) {
                 console.error('Gagal memuat detail pesanan:', error.message);
                 document.querySelector('main').innerHTML = `
-                    <div class="bg-white p-8 rounded-lg shadow-lg">
-                         <div class="text-red-500 mb-4"><i class="fas fa-times-circle text-5xl"></i></div>
-                        <h1 class="text-2xl font-bold text-gray-900">Gagal Memuat Pesanan</h1>
-                        <p class="text-gray-600 mt-2">${error.message}</p>
-                        <a href="my-orders.html" class="inline-block mt-6 px-6 py-3 bg-gray-800 text-white font-bold rounded-lg">Kembali ke Pesanan Saya</a>
+                    <div class="bg-[#121212] p-8 rounded-2xl shadow-xl border border-white/5 text-center">
+                         <div class="text-red-400 mb-4"><i class="fas fa-times-circle text-5xl"></i></div>
+                        <h1 class="text-2xl font-bold text-white">Gagal Memuat Pesanan</h1>
+                        <p class="text-gray-400 mt-2">${error.message}</p>
+                        <a href="my-orders.html" class="inline-block mt-6 px-6 py-3 bg-white/10 text-white font-bold rounded-xl hover:bg-white/20 transition">Kembali ke Pesanan Saya</a>
                     </div>
                 `;
             }
@@ -175,27 +204,40 @@
 
             const urlParams = new URLSearchParams(window.location.search);
             const orderId = urlParams.get('id');
+            const forcedStatus = urlParams.get('status'); // Check for status param
             const midtransId = localStorage.getItem('last_midtrans_id');
 
+            // --- INSTANT FEEDBACK IF CANCELLED ---
+            if (forcedStatus === 'dibatalkan') {
+                updateStatusBadge('dibatalkan');
+            }
+
             // Hanya cek jika midtransId ada dan sesuai dengan orderId yang sedang dilihat
-            if (midtransId && orderId && midtransId.startsWith(orderId + '-')) {
-                console.log("Checking status for Midtrans ID:", midtransId);
+            // DAN jika status tidak dipaksa 'dibatalkan' (karena kalau batal, tidak perlu cek server)
+            if (forcedStatus !== 'dibatalkan' && midtransId && orderId && midtransId.startsWith(orderId + '-')) {
+                // console.log("Checking status for Midtrans ID:", midtransId);
                 fetch(`http://localhost:3000/api/payment/${midtransId}`)
-                    .then(res => res.json())
+                    .then(res => {
+                        if (!res.ok) throw new Error("Status check unavailable");
+                        return res.json();
+                    })
                     .then(data => {
-                        console.log("Eager Status Result:", data);
+                        // console.log("Eager Status Result:", data);
                         // Jika status settle/capture, beritahu user (UI akan update via Realtime atau reload)
                         if (data.transaction_status === 'settlement' || data.transaction_status === 'capture') {
                             // Opsional: Langsung update UI sebelum Realtime masuk
                             updateStatusBadge('dikemas');
                         }
                     })
-                    .catch(err => console.error("Eager check failed:", err));
+                    .catch(err => {
+                        // Suppress 404 error log to avoid user panic
+                        // console.warn("Eager check skipped:", err.message);
+                    });
             }
 
             // --- Realtime Subscription ---
             if (orderId && client) {
-                console.log(`Subscribing to realtime updates for Order ID: ${orderId}`);
+                // console.log(`Subscribing to realtime updates for Order ID: ${orderId}`);
 
                 const channel = client
                     .channel('public:orders')
@@ -208,7 +250,7 @@
                             filter: `id=eq.${orderId}`
                         },
                         (payload) => {
-                            console.log('Order Updated:', payload);
+                            // console.log('Order Updated:', payload);
                             const newStatus = payload.new.status;
                             updateStatusBadge(newStatus);
 
@@ -218,7 +260,9 @@
                                     toast: true,
                                     position: 'top-end',
                                     showConfirmButton: false,
-                                    timer: 3000
+                                    timer: 3000,
+                                    background: '#121212',
+                                    color: '#fff'
                                 });
                                 Toast.fire({
                                     icon: 'info',
@@ -233,14 +277,14 @@
 
         function updateStatusBadge(status) {
             const statusMap = {
-                'menunggu_pembayaran': { text: 'Menunggu Pembayaran', class: 'text-yellow-600' },
-                'menunggu_verifikasi': { text: 'Menunggu Verifikasi', class: 'text-yellow-600' },
-                'dikemas': { text: 'Sedang Dikemas', class: 'text-blue-600' },
-                'dikirim': { text: 'Sedang Dikirim', class: 'text-blue-600' },
-                'selesai': { text: 'Selesai', class: 'text-green-600' },
-                'dibatalkan': { text: 'Dibatalkan', class: 'text-red-600' },
+                'menunggu_pembayaran': { text: 'Menunggu Pembayaran', class: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20' },
+                'menunggu_verifikasi': { text: 'Menunggu Verifikasi', class: 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20' },
+                'dikemas': { text: 'Sedang Dikemas', class: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
+                'dikirim': { text: 'Sedang Dikirim', class: 'text-blue-400 bg-blue-500/10 border-blue-500/20' },
+                'selesai': { text: 'Selesai', class: 'text-green-400 bg-green-500/10 border-green-500/20' },
+                'dibatalkan': { text: 'Dibatalkan', class: 'text-red-400 bg-red-500/10 border-red-500/20' },
                 // Default fallback
-                'default': { text: status, class: 'text-gray-600' }
+                'default': { text: status, class: 'text-gray-400 bg-gray-500/10 border-gray-500/20' }
             };
             const statusInfo = statusMap[status] || statusMap['default'];
 
@@ -249,12 +293,38 @@
                 // Reset class dasar lalu tambah class baru. 
                 // Karena kita pakai Tailwind classes di HTML, kita replace saja full className
                 // Tapi kita harus ingat class layoutnya (font-medium), jadi kita concat.
-                statusBadgeElem.className = `font-medium ${statusInfo.class}`;
+                statusBadgeElem.className = `font-medium px-3 py-1 rounded-lg border text-xs ${statusInfo.class}`;
                 statusBadgeElem.innerText = statusInfo.text;
+
+                // Update Page Title & Desc based on status
+                const pageTitle = document.getElementById('page-title');
+                const pageDesc = document.getElementById('page-desc');
+
+                if (status === 'menunggu_pembayaran') {
+                    if (pageTitle) {
+                        pageTitle.innerText = "Selesaikan Pembayaran";
+                        pageTitle.classList.remove('text-green-400'); // jaga-jaga
+                        pageTitle.classList.add('text-yellow-400');
+                    }
+                    if (pageDesc) pageDesc.innerText = "Pesanan telah dibuat. Silakan selesaikan pembayaran agar pesanan dapat diproses.";
+                } else if (status === 'dibatalkan') {
+                    if (pageTitle) {
+                        pageTitle.innerText = "Pesanan Dibatalkan";
+                        pageTitle.classList.add('text-red-400');
+                    }
+                    if (pageDesc) pageDesc.innerText = "Pesanan ini telah dibatalkan.";
+                } else {
+                    // Success / Default
+                    if (pageTitle) {
+                        pageTitle.innerText = "Pesanan Berhasil!";
+                        pageTitle.classList.remove('text-yellow-400', 'text-red-400');
+                        pageTitle.classList.add('text-white');
+                    }
+                    if (pageDesc) pageDesc.innerText = "Terima kasih telah berbelanja. Pesanan Anda telah kami terima dan akan segera diproses.";
+                }
             }
         }
     </script>
-
 </body>
 
 </html>

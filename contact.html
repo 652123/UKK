@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Chat - Dazeon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <script>
+        tailwind.config = {
+            theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] }, colors: { brand: { 400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', accent: '#d946ef' } } } }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #050505;
+            background-image: radial-gradient(#1f1f1f 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Chat Card Container */
+        .chat-card {
+            width: 100%;
+            max-width: 480px;
+            /* Mobile width */
+            height: 100vh;
+            max-height: 900px;
+            background: #121212;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        @media (min-width: 640px) {
+            .chat-card {
+                height: 85vh;
+                border-radius: 24px;
+                overflow: hidden;
+            }
+        }
+
+        /* Scrollbar */
+        .chat-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        /* Bubbles */
+        .bubble-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            align-items: flex-end;
+        }
+
+        .bubble-group.me {
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #27272a;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #a1a1aa;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .chat-bubble {
+            max-width: 80%;
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .bubble-user {
+            background: #7c3aed;
+            color: white;
+            border-radius: 18px 18px 4px 18px;
+        }
+
+        .bubble-admin {
+            background: #27272a;
+            color: #e5e7eb;
+            border-radius: 18px 18px 18px 4px;
+        }
+
+        /* Header */
+        .chat-header {
+            background: rgba(24, 24, 27, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 20;
+        }
+
+        /* Input */
+        .chat-input-area {
+            background: rgba(24, 24, 27, 0.95);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 16px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    <script src="auth_check.js"></script>
+</head>
+
+<body class="font-sans h-screen p-0 sm:p-6">
+
+    <div class="chat-card">
+        <!-- HEADER -->
+        <header class="chat-header">
+            <div class="flex items-center gap-3">
+                <a href="index.html"
+                    class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center hover:bg-white/10 transition">
+                    <i class="fas fa-chevron-left text-xs text-white"></i>
+                </a>
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        <div
+                            class="w-9 h-9 rounded-full bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white font-bold text-xs shadow-inner">
+                            CS
+                        </div>
+                        <span
+                            class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-[#18181b] rounded-full"></span>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-white text-sm leading-none">Dazeon Support</h1>
+                        <p class="text-[10px] text-green-400 mt-1 font-medium">Online</p>
+                    </div>
+                </div>
+            </div>
+            <!-- Menu removed as requested -->
+        </header>
+
+        <!-- CONTENT -->
+        <main class="flex-1 relative flex flex-col overflow-hidden bg-[#0d0d0d]">
+
+            <!-- INITIAL CONTEXT PREVIEW -->
+            <div id="context-preview"
+                class="hidden m-3 p-3 bg-[#18181b] border border-white/5 rounded-xl flex gap-3 items-center slide-up relative">
+                <button onclick="closeContext()"
+                    class="absolute top-2 right-2 text-gray-500 hover:text-white bg-black/50 rounded-full w-5 h-5 flex items-center justify-center"><i
+                        class="fas fa-times text-[10px]"></i></button>
+                <img id="ctx-img" src="" class="w-12 h-12 rounded-lg bg-black object-cover border border-white/10">
+                <div>
+                    <p class="text-[9px] text-brand-400 font-bold uppercase tracking-wider mb-0.5">Diskusi Produk</p>
+                    <h4 id="ctx-name" class="text-xs font-bold text-white line-clamp-1">Product</h4>
+                    <p id="ctx-price" class="text-[10px] text-gray-400">Rp0</p>
+                </div>
+            </div>
+
+            <!-- CHAT AREA -->
+            <div id="chat-container" class="flex-1 overflow-y-auto px-4 py-6 chat-scroll scroll-smooth">
+                <div class="text-center py-8">
+                    <p class="text-gray-500 text-xs">Hari Ini</p>
+                </div>
+                <!-- Bubbles injected here -->
+            </div>
+        </main>
+
+        <!-- INPUT AREA -->
+        <div class="chat-input-area z-20">
+            <form id="chat-form" class="flex items-end gap-2">
+                <input type="file" id="img-input" class="hidden" accept="image/*">
+                <button type="button" onclick="document.getElementById('img-input').click()"
+                    class="w-10 h-10 rounded-xl bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white transition flex-shrink-0 flex items-center justify-center">
+                    <i class="fas fa-plus"></i>
+                </button>
+
+                <div
+                    class="flex-1 bg-black/40 border border-white/10 rounded-xl flex items-center px-3 py-2 transition focus-within:border-brand-500/50">
+                    <textarea id="message-input" rows="1"
+                        class="w-full bg-transparent border-none text-white text-xs sm:text-sm focus:outline-none resize-none py-1.5 max-h-32 placeholder-gray-600"
+                        placeholder="Ketik pesan..."></textarea>
+                </div>
+
+                <button type="submit" id="btn-send"
+                    class="w-10 h-10 rounded-xl bg-brand-600 text-white flex items-center justify-center hover:bg-brand-500 transition shadow-lg shadow-brand-600/20 flex-shrink-0">
+                    <i class="fas fa-paper-plane text-xs"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const client = window.db || window.supabase;
+        let currentUserId = null;
+        let currentTicketId = null;
+        let productContext = null; // {id, name, image, price}
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 1. Auth Check
+            await initAuth();
+
+            // 2. Parse Context (URL Params)
+            parseContext();
+
+            // 3. Load or Create ACTIVE Ticket
+            await loadActiveTicket();
+
+            // 4. Init Realtime
+            initRealtime();
+        });
+
+        async function initAuth() {
+            // Wait for DB
+            let retries = 0;
+            while (!window.db && retries < 10) { await new Promise(r => setTimeout(r, 100)); retries++; }
+
+            const { data } = await client.auth.getSession();
+            if (!data.session) {
+                // Save context URL to return after login?
+                window.location.href = 'index.html?login=true'; // Simplification
+                return;
+            }
+            currentUserId = data.session.user.id;
+        }
+
+        function parseContext() {
+            const params = new URLSearchParams(window.location.search);
+            const productId = params.get('product_id');
+            const productName = params.get('product_name');
+            const productPrice = params.get('product_price');
+            const productImage = params.get('product_image');
+
+            if (productId || productName) {
+                // Show context preview
+                const ctxDiv = document.getElementById('context-preview');
+                const imgEl = document.getElementById('ctx-img');
+                const nameEl = document.getElementById('ctx-name');
+                const priceEl = document.getElementById('ctx-price');
+
+                ctxDiv.classList.remove('hidden');
+                nameEl.innerText = productName || 'Produk';
+                priceEl.innerText = productPrice ? `Rp${parseInt(productPrice).toLocaleString('id-ID')}` : '';
+
+                if (productImage) imgEl.src = productImage;
+                else imgEl.src = 'https://via.placeholder.com/100x100?text=IMG';
+
+                productContext = {
+                    id: productId,
+                    name: productName,
+                    price: productPrice,
+                    image: productImage
+                };
+            }
+        }
+
+        function closeContext() {
+            document.getElementById('context-preview').classList.add('hidden');
+            productContext = null;
+        }
+
+        async function loadActiveTicket() {
+            // Cari tiket yang masih OPEN milik user ini
+            // Asumsi: 1 User punya 1 Tiket Open aktif (seperti sesi chat)
+            // Jika tidak ada, kita buat tiket baru saat kirim pesan pertama.
+
+            const { data, error } = await client
+                .from('helpdesk_tickets')
+                .select('id')
+                .eq('user_id', currentUserId)
+                .eq('status', 'open')
+                .order('updated_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+            if (data) {
+                currentTicketId = data.id;
+                await loadMessages(currentTicketId);
+                console.log("Joined Active Ticket:", currentTicketId);
+                initRealtime(); // Only init if ticket exists
+            } else {
+                console.log("No active ticket. Waiting for first message.");
+                // Show Welcome
+                const container = document.getElementById('chat-container');
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full text-gray-500 opacity-60">
+                        <i class="fas fa-comment-dots text-4xl mb-3"></i>
+                        <p class="text-sm">Belum ada chat.</p>
+                        <p class="text-xs">Kirim pesan untuk memulai topik baru.</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function loadMessages(ticketId) {
+            const container = document.getElementById('chat-container');
+            container.innerHTML = ''; // Reset
+
+            const { data: msgs } = await client
+                .from('helpdesk_messages')
+                .select('*')
+                .eq('ticket_id', ticketId)
+                .order('created_at', { ascending: true });
+
+            if (msgs) {
+                msgs.forEach(m => renderBubble(m));
+                scrollToBottom();
+            }
+        }
+
+        function renderBubble(msg) {
+            const container = document.getElementById('chat-container');
+            const isMe = msg.sender_role === 'user';
+
+            let content = `<p class="whitespace-pre-wrap leading-relaxed">${msg.message}</p>`;
+
+            if (msg.is_image) {
+                content = `
+                    <div class="mb-1 rounded-lg overflow-hidden border border-white/10 cursor-pointer" onclick="window.open('${msg.message}', '_blank')">
+                        <img src="${msg.message}" class="max-w-[200px] max-h-[200px] object-cover hover:scale-105 transition">
+                    </div>
+                `;
+            }
+
+            // Avatar logic
+            const avatarHtml = isMe
+                ? `<div class="avatar order-2"><i class="fas fa-user"></i></div>` // User Avatar
+                : `<div class="avatar order-1 bg-brand-600 text-white"><i class="fas fa-headset"></i></div>`; // Admin Avatar
+
+            const bubbleHtml = `
+                <div class="bubble-group ${isMe ? 'me' : ''} reveal">
+                    ${avatarHtml}
+                    <div class="chat-bubble ${isMe ? 'bubble-user order-1' : 'bubble-admin order-2'} shadow-md">
+                        ${content}
+                        <span class="text-[9px] opacity-50 absolute bottom-1 ${isMe ? 'right-2' : 'right-2'} text-gray-300">
+                            ${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', bubbleHtml);
+        }
+
+        // IMAGE UPLOAD HANDLER
+        document.getElementById('img-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // Validate
+            if (file.size > 2 * 1024 * 1024) return Swal.fire('Error', 'Ukuran maksimal 2MB', 'warning');
+
+            // Optimistic UI (Loading)
+            const btn = document.querySelector('button[onclick*="img-input"]');
+            const originalIcon = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            try {
+                // Ensure Ticket Exists
+                if (!currentTicketId) await createTicket('Mengirim gambar...');
+
+                const fileExt = file.name.split('.').pop();
+                const fileName = `chat_attachments/${currentTicketId}-${Date.now()}.${fileExt}`;
+
+                const { error: uploadError } = await client.storage
+                    .from('product-images')
+                    .upload(fileName, file);
+
+                if (uploadError) throw uploadError;
+
+                const { data } = client.storage.from('product-images').getPublicUrl(fileName);
+                const publicUrl = data.publicUrl;
+
+                // Send Image Message
+                await sendMessage(currentTicketId, publicUrl, true);
+
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Gagal', 'Gagal upload gambar.', 'error');
+            } finally {
+                btn.innerHTML = originalIcon;
+                btn.disabled = false;
+                e.target.value = ''; // Reset input
+            }
+        });
+
+        function scrollToBottom() {
+            const container = document.getElementById('chat-container');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        document.getElementById('chat-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('message-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            input.value = ''; // Clear early for responsiveness
+
+            // 1. Ensure Ticket Exists
+            if (!currentTicketId) {
+                await createTicket(text); // Create ticket using first message as context
+            } else {
+                await sendMessage(currentTicketId, text);
+            }
+        });
+
+        // Enter to send
+        document.getElementById('message-input').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('chat-form').requestSubmit();
+            }
+        });
+
+        async function createTicket(initialMessage) {
+            // Get Auth User first (for email)
+            const { data: { user } } = await client.auth.getUser();
+            if (!user) return; // Should be handled by auth check, but safe guard.
+
+            // Get User Name from Profiles (Best Source)
+            let userName = 'User';
+            const { data: profile } = await client.from('profiles').select('name').eq('id', currentUserId).single();
+
+            if (profile && profile.name) {
+                userName = profile.name;
+            } else {
+                // Fallback to Auth Metadata
+                userName = user.user_metadata?.full_name || user.email;
+            }
+
+            // Subject: automatic based on context or message
+            let subject = "Pertanyaan Umum";
+            if (productContext) subject = `Tanya: ${productContext.name}`;
+            else subject = initialMessage.substring(0, 30) + "...";
+
+            // Create Ticket
+            const { data: ticket, error } = await client
+                .from('helpdesk_tickets')
+                .insert({
+                    user_id: currentUserId,
+                    user_name: userName,
+                    user_email: user.email,
+                    subject: subject,
+                    status: 'open',
+                    product_info: productContext // JSONB
+                })
+                .select()
+                .single();
+
+            if (error) {
+                console.error("Create Ticket Failed", error);
+                Swal.fire('Error', 'Gagal mengirim pesan.', 'error');
+                return;
+            }
+
+            currentTicketId = ticket.id;
+            initRealtime(); // Start listening now
+
+            // Send the first message
+            await sendMessage(currentTicketId, initialMessage);
+        }
+
+        async function sendMessage(ticketId, text, isImage = false) {
+            // UI Optimistic Update
+            renderBubble({
+                message: text,
+                sender_role: 'user',
+                is_image: isImage,
+                created_at: new Date().toISOString()
+            });
+            scrollToBottom();
+
+            // Send to DB
+            const { error } = await client
+                .from('helpdesk_messages')
+                .insert({
+                    ticket_id: ticketId,
+                    sender_id: currentUserId,
+                    sender_role: 'user',
+                    message: text,
+                    is_image: isImage
+                });
+
+            if (error) console.error("Send Msg Error", error);
+        }
+
+        // REALTIME
+        let realtimeChannel = null;
+
+        function initRealtime() {
+            if (!currentTicketId) return;
+
+            // Cleanup previous
+            if (realtimeChannel) {
+                client.removeChannel(realtimeChannel);
+            }
+
+            console.log("Subscribing to realtime for ticket:", currentTicketId);
+
+            realtimeChannel = client.channel(`chat:${currentTicketId}`)
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'helpdesk_messages',
+                    filter: `ticket_id=eq.${currentTicketId}`
+                }, (payload) => {
+                    const msg = payload.new;
+                    // Render if not from self (SenderID check)
+                    // Wait, sender_id for user is currentUserId.
+                    // If we open 2 tabs, we want to see our own messages too?
+                    // Usually we optimistically render our own. So skip if sender is self.
+                    if (msg.sender_id !== currentUserId) {
+                        renderBubble(msg);
+                        scrollToBottom();
+                        new Audio('assets/notification.mp3').play().catch(() => { });
+                    }
+                })
+                .subscribe((status) => {
+                    if (status === 'SUBSCRIBED') {
+                        console.log('Realtime connected!');
+                    }
+                });
+        }
+
+        function logoutChat() {
+            window.history.back();
+        }
+
+    </script>
+</body>
+
+</html>

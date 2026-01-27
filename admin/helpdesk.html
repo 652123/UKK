@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Chat Admin - Dazeon</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Outfit', 'sans-serif'] },
+                    colors: { brand: { 400: '#a78bfa', 500: '#8b5cf6', 600: '#7c3aed', accent: '#d946ef' } }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #050505;
+            color: #fff;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        body.loaded {
+            opacity: 1;
+        }
+
+        .chat-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        /* Modern Sidebar Item */
+        .sidebar-item {
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .active-ticket {
+            background: linear-gradient(90deg, rgba(139, 92, 246, 0.1), transparent);
+            border-left: 3px solid #8b5cf6;
+        }
+
+        /* Premium Bubbles */
+        .bubble-admin {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: white;
+            margin-left: auto;
+            border-radius: 18px 18px 4px 18px;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2);
+        }
+
+        .bubble-user {
+            background: #1f2937;
+            color: #e5e7eb;
+            margin-right: auto;
+            border-radius: 18px 18px 18px 4px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Glass Header */
+        .glass-header {
+            background: rgba(18, 18, 18, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-enter {
+            animation: fadeInUp 0.5s ease-out forwards;
+            opacity: 0;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="../config.js"></script>
+    <script src="../auth_check.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.body.classList.add('loaded');
+            checkAuth(['admin']);
+        });
+    </script>
+</head>
+
+<body class="bg-[#050505] font-sans h-screen flex overflow-hidden">
+
+    <!-- MOBILE OVERLAY -->
+    <div id="mobile-overlay" onclick="toggleSidebar()"
+        class="fixed inset-0 bg-black/50 z-40 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+
+    <!-- SIDEBAR -->
+    <div id="sidebar"
+        class="fixed inset-y-0 left-0 z-50 w-64 bg-[#121212] border-r border-white/5 transform -translate-x-full transition-transform duration-300 md:relative md:translate-x-0 md:flex md:flex-col">
+        <div class="flex items-center justify-between px-6 h-24 border-b border-white/5">
+            <span
+                class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#d946ef] to-[#8b5cf6] uppercase tracking-wider">DAZEON</span>
+            <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-white">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <nav class="flex-1 px-4 space-y-2 overflow-y-auto custom-scrollbar pt-4">
+            <!-- Dashboard -->
+            <a href="dashboard.html"
+                class="flex items-center px-4 py-3 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all duration-300 group">
+                <i class="fas fa-home text-lg w-8 group-hover:scale-110 transition-transform"></i>
+                <span class="font-medium tracking-wide">Dashboard</span>
+            </a>
+
+            <!-- Produk -->
+            <a href="manage_products.html"
+                class="flex items-center px-4 py-3 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all duration-300 group">
+                <i class="fas fa-tshirt text-lg w-8 group-hover:scale-110 transition-transform"></i>
+                <span class="font-medium tracking-wide">Produk</span>
+            </a>
+
+            <!-- Pesanan -->
+            <a href="manage_orders.html"
+                class="flex items-center px-4 py-3 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all duration-300 group">
+                <i class="fas fa-receipt text-lg w-8 group-hover:scale-110 transition-transform"></i>
+                <span class="font-medium tracking-wide">Pesanan</span>
+            </a>
+
+            <!-- Pelanggan -->
+            <a href="manage_users.html"
+                class="flex items-center px-4 py-3 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all duration-300 group">
+                <i class="fas fa-users text-lg w-8 group-hover:scale-110 transition-transform"></i>
+                <span class="font-medium tracking-wide">Pelanggan</span>
+            </a>
+
+            <!-- Helpdesk (Active) -->
+            <a href="helpdesk.html"
+                class="relative flex items-center px-4 py-3 rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20 shadow-[0_0_15px_rgba(139,92,246,0.2)] group">
+                <div class="absolute inset-0 bg-brand-500/5 blur-md rounded-xl"></div>
+                <i class="fas fa-headset text-lg w-8 relative z-10 drop-shadow-[0_0_8px_rgba(139,92,246,0.5)]"></i>
+                <span class="font-bold tracking-wide relative z-10">Helpdesk</span>
+            </a>
+
+            <!-- Logout -->
+            <a href="../login.html"
+                class="flex items-center px-4 py-3 rounded-xl text-red-500/70 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300 mt-10 group border border-transparent hover:border-red-500/20">
+                <i class="fas fa-sign-out-alt text-lg w-8 group-hover:translate-x-1 transition-transform"></i>
+                <span class="font-medium tracking-wide">Logout</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- MAIN CHAT INTERFACE -->
+    <main class="flex-1 flex flex-col md:flex-row h-full relative overflow-hidden">
+
+        <!-- LEFT: TICKET LIST -->
+        <div class="w-full md:w-80 lg:w-96 bg-[#0c0c0e] border-r border-white/5 flex flex-col h-full z-10">
+            <div class="p-6 border-b border-white/5 flex justify-between items-center bg-[#09090b]">
+                <div class="flex items-center gap-3">
+                    <button onclick="toggleSidebar()"
+                        class="md:hidden text-white hover:bg-white/10 p-2 rounded-lg transition">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 class="font-bold text-white tracking-wide text-lg">Active Chats</h2>
+                </div>
+                <div class="flex gap-2 text-xs">
+                    <span
+                        class="px-3 py-1 bg-green-500/10 text-green-400 rounded-full animate-pulse border border-green-500/20 font-bold">●
+                        Online</span>
+                </div>
+            </div>
+            <div id="ticket-list" class="flex-1 overflow-y-auto chat-scroll p-4 space-y-2">
+                <!-- Loaded via JS -->
+                <p class="text-center text-gray-600 text-xs py-10">Memuat...</p>
+            </div>
+        </div>
+
+        <!-- RIGHT: CHAT ROOM -->
+        <div
+            class="flex-1 flex flex-col h-full bg-[#050505] relative bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-brand-900/10 via-[#050505] to-[#050505]">
+
+            <!-- HEADER -->
+            <div id="chat-header" class="h-20 glass-header flex items-center justify-between px-8 sticky top-0 z-10">
+                <div class="flex items-center gap-5">
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-brand-500 to-indigo-600 flex items-center justify-center font-bold text-white text-lg shadow-xl ring-2 ring-white/10"
+                        id="header-avatar">?</div>
+                    <div>
+                        <h3 class="font-bold text-white leading-tight text-lg" id="header-name">Pilih Chat</h3>
+                        <p class="text-xs text-brand-300 mt-1 font-medium" id="header-subject">...</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button id="btn-close-ticket" onclick="closeTicket()"
+                        class="hidden px-5 py-2.5 bg-[#18181b] text-gray-300 rounded-xl text-xs hover:bg-red-900/30 hover:text-red-400 transition font-bold border border-white/10 shadow-lg">
+                        <i class="fas fa-check mr-1.5"></i> Selesai
+                    </button>
+                </div>
+            </div>
+
+            <!-- CONTENT WRAPPER (Chat Only) -->
+            <div class="flex-1 flex overflow-hidden relative">
+
+                <!-- MAIN CHAT SCROLL -->
+                <div class="flex-1 flex flex-col relative min-w-0">
+                    <!-- PRODUCT CONTEXT BAR (Hidden) -->
+                    <div id="context-bar"
+                        class="hidden px-8 py-4 bg-[#121212]/60 border-b border-white/5 flex gap-5 items-center backdrop-blur-md">
+                        <img id="ctx-img" src=""
+                            class="w-14 h-14 rounded-xl bg-black object-cover shadow-lg border border-white/10">
+                        <div class="flex-1">
+                            <p class="text-[10px] text-brand-400 font-bold uppercase tracking-widest mb-1">Sedang
+                                Melihat</p>
+                            <p id="ctx-name" class="text-base text-gray-100 font-bold line-clamp-1">Produk</p>
+                        </div>
+                        <p id="ctx-price"
+                            class="text-sm font-mono text-white/90 bg-white/5 px-3 py-1.5 rounded-lg border border-white/5">
+                            Rp0</p>
+                    </div>
+
+                    <!-- MESSAGES -->
+                    <div id="messages-area" class="flex-1 overflow-y-auto chat-scroll p-8 space-y-6">
+                        <div
+                            class="h-full flex flex-col items-center justify-center text-gray-700 opacity-40 select-none">
+                            <i class="fab fa-rocketchat text-8xl mb-6"></i>
+                            <p class="font-bold text-lg">Pilih tiket untuk memulai.</p>
+                        </div>
+                    </div>
+
+                    <!-- INPUT -->
+                    <div id="input-area" class="p-6 bg-[#09090b]/90 border-t border-white/5 hidden backdrop-blur-xl">
+                        <form id="chat-form" class="flex gap-4 max-w-5xl mx-auto">
+                            <input type="text" id="msg-input"
+                                class="flex-1 bg-[#18181b] border border-white/10 rounded-2xl px-6 py-4 text-white focus:ring-1 focus:ring-brand-500 focus:border-brand-500 outline-none transition shadow-inner placeholder-gray-600 text-sm"
+                                placeholder="Ketik pesan balasan...">
+                            <button type="submit"
+                                class="w-14 h-14 bg-gradient-to-br from-brand-600 to-brand-500 hover:scale-105 text-white rounded-2xl shadow-xl flex items-center justify-center transition disabled:opacity-50">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const client = window.db || window.supabase;
+        let activeTicketId = null;
+        let currentAdminId = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { data } = await client.auth.getSession();
+            currentAdminId = data.session?.user.id;
+
+            // initUnreadBadge(); // Removed redundant call
+            loadTicketList();
+
+            // Realtime New Ticket
+            client.channel('admin-tickets')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'helpdesk_tickets' }, () => {
+                    loadTicketList();
+                    new Audio('../assets/notification.mp3').play().catch(() => { });
+                })
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'helpdesk_tickets' }, () => {
+                    loadTicketList();
+                })
+                .subscribe();
+
+            // Realtime Unread
+            client.channel('global_unread')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'helpdesk_messages' }, () => showUnreadBadge())
+                .subscribe();
+        });
+
+        // --- UNREAD BADGE UI ---
+        function showUnreadBadge() {
+            // Add red dot to Helpdesk sidebar item
+            const links = document.querySelectorAll('a[href="helpdesk.html"]');
+            links.forEach(link => {
+                if (!link.querySelector('.unread-dot')) {
+                    link.insertAdjacentHTML('beforeend', '<span class="unread-dot ml-auto w-2 h-2 rounded-full bg-red-500 shadow-[0_0_10px_red]"></span>');
+                }
+            });
+        }
+
+        // MOBILE SIDEBAR TOGGLE
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+
+            sidebar.classList.toggle('-translate-x-full');
+
+            if (overlay.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        }
+
+        // --- HELPER: FORMAT NAME ---
+        function formatName(rawName) {
+            if (!rawName) return 'User';
+            if (rawName.includes('@')) return rawName.split('@')[0]; // Ambil sebelum @
+            return rawName;
+        }
+
+        // --- TICKET LIST LOGIC ---
+        async function loadTicketList() {
+            const listObj = document.getElementById('ticket-list');
+
+            // 1. Fetch Open Tickets
+            const { data: tickets, error } = await client
+                .from('helpdesk_tickets')
+                .select('*')
+                .eq('status', 'open')
+                .order('updated_at', { ascending: false });
+
+            if (!tickets || tickets.length === 0) {
+                listObj.innerHTML = '<p class="text-center text-gray-600 text-xs py-10 italic">Tidak ada pesan baru.</p>';
+                return;
+            }
+
+            // 2. Fetch Profiles for these User IDs (to get real names & emails)
+            const userIds = [...new Set(tickets.map(t => t.user_id))];
+            const { data: profiles } = await client
+                .from('profiles')
+                .select('id, name, email, avatar_url')
+                .in('id', userIds);
+
+            // Map ID -> Profile
+            const profilesMap = {};
+            if (profiles) {
+                profiles.forEach(p => {
+                    profilesMap[p.id] = p; // Store whole object
+                });
+            }
+
+            // 3. Render
+            listObj.innerHTML = tickets.map((t, index) => {
+                const profile = profilesMap[t.user_id] || {};
+                const realName = profile.name || t.user_name || 'User';
+
+                // Avatar Logic
+                let avatarHtml = '';
+                let avatarSrc = null;
+
+                const rawAvatar = profile.avatar_url;
+                if (rawAvatar) {
+                    if (rawAvatar.startsWith('http')) {
+                        avatarSrc = rawAvatar;
+                    } else {
+                        // Assuming stored in 'product-images' bucket based on profile.js convention
+                        avatarSrc = `https://rkpkfgenzpfynypeceto.supabase.co/storage/v1/object/public/product-images/${rawAvatar}`;
+                    }
+                }
+
+                const displayName = formatName(realName);
+                const initial = displayName.charAt(0).toUpperCase();
+
+                if (avatarSrc) {
+                    avatarHtml = `<img src="${avatarSrc}" class="w-12 h-12 rounded-full object-cover border border-white/10 shadow-md group-hover:scale-105 transition">`;
+                } else {
+                    avatarHtml = `
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#27272a] to-black flex items-center justify-center text-white font-bold flex-shrink-0 border border-white/10 shadow-md group-hover:scale-105 transition">
+                        ${initial}
+                    </div>`;
+                }
+
+                const time = new Date(t.updated_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                // If active, update header
+                if (activeTicketId === t.id) {
+                    updateHeader(displayName, t.subject, initial, avatarSrc);
+                }
+
+                const isActive = activeTicketId === t.id ?
+                    'bg-[#18181b] border-brand-500/50 shadow-lg' :
+                    'hover:bg-[#18181b] border-transparent opacity-60 hover:opacity-100';
+
+                return `
+            <div onclick="openChat(${t.id}, '${displayName}', '${t.subject.replace(/'/g, "\\'")}', '${avatarSrc || ''}')" class="group p-4 rounded-2xl cursor-pointer transition-all duration-300 border border-white/5 flex items-start gap-4 ${isActive} animate-enter" style="animation-delay: ${index * 50}ms">
+            ${avatarHtml}
+            <div class="flex-1 min-w-0 pt-0.5">
+                <div class="flex justify-between items-center mb-1">
+                    <h4 class="font-bold text-gray-100 text-sm truncate w-24">${displayName}</h4>
+                    <span class="text-[10px] text-gray-500 font-medium bg-black/30 px-2 py-0.5 rounded-full">${time}</span>
+                </div>
+                <p class="text-xs text-gray-400 truncate font-medium group-hover:text-gray-300 transition">${t.subject}</p>
+            </div>
+        </div>
+        `;
+            }).join('');
+        }
+
+        function updateHeader(name, subject, initial, avatarSrc) {
+            // Header
+            document.getElementById('header-name').innerText = name;
+            document.getElementById('header-subject').innerText = subject;
+
+            const headerAvatar = document.getElementById('header-avatar');
+            if (avatarSrc) {
+                headerAvatar.innerHTML = `<img src="${avatarSrc}" class="w-full h-full rounded-full object-cover">`;
+                headerAvatar.classList.remove('bg-gradient-to-br'); // Remove gradient if image exists
+            } else {
+                headerAvatar.innerHTML = initial;
+                headerAvatar.classList.add('bg-gradient-to-br'); // Restore gradient
+            }
+        }
+
+        // --- OPEN CHAT LOGIC ---
+        window.openChat = async function (ticketId, name, subject, avatarSrc) {
+            activeTicketId = ticketId;
+            const initial = name.charAt(0).toUpperCase();
+
+            // Handle undefined avatarSrc string from onclick
+            const validAvatar = (avatarSrc && avatarSrc !== 'undefined' && avatarSrc !== '') ? avatarSrc : null;
+
+            updateHeader(name, subject, initial, validAvatar);
+            loadTicketList(); // Refresh highlight
+
+            document.getElementById('input-area').classList.remove('hidden');
+            document.getElementById('btn-close-ticket').classList.remove('hidden');
+
+            // Context Bar Logic
+            const { data: ticket } = await client.from('helpdesk_tickets').select('product_info').eq('id', ticketId).single();
+
+            if (ticket?.product_info) {
+                const p = ticket.product_info;
+                document.getElementById('context-bar').classList.remove('hidden');
+                document.getElementById('ctx-name').innerText = p.name;
+                document.getElementById('ctx-price').innerText = p.price ? `Rp${parseInt(p.price).toLocaleString('id-ID')} ` : '';
+                document.getElementById('ctx-img').src = p.image || 'https://via.placeholder.com/50';
+            } else {
+                document.getElementById('context-bar').classList.add('hidden');
+            }
+
+            await loadMessages(ticketId);
+            initChatRealtime(ticketId);
+        }
+
+        async function loadMessages(ticketId) {
+            const area = document.getElementById('messages-area');
+            area.innerHTML = '';
+
+            const { data: msgs } = await client
+                .from('helpdesk_messages')
+                .select('*')
+                .eq('ticket_id', ticketId)
+                .order('created_at', { ascending: true });
+
+            if (msgs) msgs.forEach(m => renderBubble(m));
+            scrollToBottom();
+        }
+
+        function renderBubble(msg) {
+            const area = document.getElementById('messages-area');
+            const isAdmin = msg.sender_role === 'admin';
+
+            let content = `<p class="whitespace-pre-wrap leading-relaxed">${msg.message}</p>`;
+
+            if (msg.is_image) {
+                content = `
+            <div class="mb-1 rounded-lg overflow-hidden border border-white/10 cursor-pointer" onclick="window.open('${msg.message}', '_blank')">
+                <img src="${msg.message}" class="max-w-[200px] max-h-[200px] object-cover hover:scale-105 transition">
+                </div>
+        `;
+            }
+
+            const html = `
+            <div class="flex ${isAdmin ? 'justify-end' : 'justify-start'} mb-3">
+                <div class="max-w-[75%] px-4 py-2 text-sm shadow-md ${isAdmin ? 'bubble-admin' : 'bubble-user'}">
+                    ${content}
+                    <p class="text-[9px] opacity-60 text-right mt-1">${new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                </div>
+            </div>`;
+            area.insertAdjacentHTML('beforeend', html);
+        }
+
+        function scrollToBottom() {
+            const area = document.getElementById('messages-area');
+            area.scrollTop = area.scrollHeight;
+        }
+
+        // --- SEND MESSAGE ---
+        document.getElementById('chat-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('msg-input');
+            const text = input.value.trim();
+            if (!text || !activeTicketId) return;
+
+            input.value = '';
+
+            // Optimistic UI
+            renderBubble({ message: text, sender_role: 'admin', created_at: new Date().toISOString() });
+            scrollToBottom();
+
+            // Insert DB
+            await client.from('helpdesk_messages').insert({
+                ticket_id: activeTicketId,
+                sender_id: currentAdminId, // Admin ID
+                sender_role: 'admin',
+                message: text
+            });
+
+            // Update Ticket Timestamp (to bump to top)
+            await client.from('helpdesk_tickets').update({ updated_at: new Date() }).eq('id', activeTicketId);
+        });
+
+        // --- ACTIONS ---
+        window.closeTicket = async function () {
+            if (!activeTicketId) return;
+            const res = await Swal.fire({
+                title: 'Tutup Tiket?',
+                text: "Tiket akan dipindahkan ke arsip Selesai.",
+                icon: 'question',
+                showCancelButton: true
+            });
+
+            if (res.isConfirmed) {
+                await client.from('helpdesk_tickets').update({ status: 'closed' }).eq('id', activeTicketId);
+                activeTicketId = null;
+                document.getElementById('input-area').classList.add('hidden');
+                document.getElementById('messages-area').innerHTML = '<div class="h-full flex items-center justify-center text-gray-500">Tiket ditutup.</div>';
+                loadTicketList();
+            }
+        }
+
+        // --- REALTIME ---
+        function initListRealtime() {
+            client.channel('admin_list')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'helpdesk_tickets' }, () => {
+                    loadTicketList(); // Reload list on new tickets or status change
+                })
+                .subscribe();
+        }
+
+        let chatChannel = null;
+        function initChatRealtime(ticketId) {
+            if (chatChannel) client.removeChannel(chatChannel);
+
+            chatChannel = client.channel(`chat:${ticketId} `)
+                .on('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                    table: 'helpdesk_messages',
+                    filter: `ticket_id = eq.${ticketId}`
+                }, (payload) => {
+                    const msg = payload.new;
+                    if (msg.sender_role !== 'admin') { // Incoming user message
+                        renderBubble(msg);
+                        scrollToBottom();
+                        // Play sound?
+                    }
+                })
+                .subscribe();
+        }
+
+    </script>
+</body>
+
+</html>

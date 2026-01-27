@@ -7,23 +7,88 @@
     <title>Laporan Detail - Dazeon Admin</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Flatpickr (Modern Date Picker) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://npmcdn.com/flatpickr/dist/themes/dark.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <script>
-        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] } } } }
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Poppins', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            accent: '#d946ef',
+                        }
+                    },
+                    animation: {
+                        'gradient': 'gradient 8s linear infinite',
+                    },
+                    keyframes: {
+                        'gradient': {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            },
+                        }
+                    }
+                }
+            }
+        }
     </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .glass {
+                @apply bg-[#121212] border border-white/5 backdrop-blur-md;
+            }
+            .text-glow {
+                text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+            }
+        }
+        /* Custom Scrollbar for Dark Theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050505; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555; 
+        }
+        
+        /* Animasi sederhana untuk kartu statistik */
+        .stat-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+
     <style>
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-
-        .no-scrollbar {
-            scrollbar-width: none;
-        }
-
         .pill {
             padding: 0.25rem 0.75rem;
             display: inline-flex;
@@ -33,6 +98,12 @@
             border-radius: 9999px;
         }
     </style>
+    <!-- XLSX Library for Excel Export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- jsPDF & AutoTable for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="../config.js"></script>
     <script src="../auth_check.js"></script>
@@ -40,148 +111,253 @@
         document.addEventListener('DOMContentLoaded', () => {
             checkAuth(['bos']);
         });
+
+        // MOBILE SIDEBAR TOGGLE
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            if (overlay.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        }
     </script>
 </head>
 
-<body class="bg-gray-100 font-sans">
+<body class="bg-[#050505] font-sans text-gray-100 selection:bg-brand-500 selection:text-white">
 
-    <div class="flex h-screen bg-gray-100">
+    <!-- MOBILE OVERLAY BACKDROP -->
+    <div id="mobile-overlay" onclick="toggleSidebar()"
+        class="fixed inset-0 bg-black/50 z-40 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
 
-        <div class="hidden md:flex md:flex-col md:w-64 bg-gray-900 text-gray-300">
-            <div class="flex items-center justify-center h-20 border-b border-gray-700">
-                <span class="text-2xl font-black text-white uppercase tracking-wider">DAZEON ADMIN</span>
+    <div class="flex h-screen bg-[#050505]">
+
+        <!-- SIDEBAR -->
+        <div id="sidebar"
+            class="fixed inset-y-0 left-0 z-50 w-64 bg-[#121212] border-r border-white/5 transform -translate-x-full transition-transform duration-300 md:relative md:translate-x-0 md:flex md:flex-col">
+            <div class="flex items-center justify-between px-6 h-20 border-b border-white/5">
+                <span
+                    class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-brand-accent uppercase tracking-wider">DAZEON</span>
+                <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
             </div>
-            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
+            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto custom-scrollbar">
                 <a href="boss_dashboard.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200">
                     <i class="fas fa-chart-pie w-6 text-lg"></i><span class="ml-4">Ringkasan Bisnis</span>
                 </a>
                 <a href="reports.html"
-                    class="flex items-center px-4 py-3 rounded-lg bg-gray-700 text-white font-semibold"> <i
-                        class="fas fa-chart-line w-6 text-lg"></i><span class="ml-4">Laporan Detail</span>
+                    class="flex items-center px-4 py-3 rounded-xl bg-brand-600/10 text-brand-400 border border-brand-500/20 font-semibold shadow-[0_0_15px_rgba(139,92,246,0.2)]">
+                    <i class="fas fa-chart-line w-6 text-lg"></i><span class="ml-4">Laporan Detail</span>
                 </a>
                 <a href="manage_users.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200">
                     <i class="fas fa-users-cog w-6 text-lg"></i><span class="ml-4">Kelola Staf</span>
                 </a>
                 <a href="manage_products.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200">
                     <i class="fas fa-tshirt w-6 text-lg"></i><span class="ml-4">Produk</span>
                 </a>
                 <a href="boss_manage_orders.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200">
                     <i class="fas fa-receipt w-6 text-lg"></i><span class="ml-4">Pesanan</span>
                 </a>
+                <a href="helpdesk.html"
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition-all duration-200">
+                    <i class="fas fa-headset w-6 text-lg"></i><span class="ml-4">Helpdesk</span>
+                </a>
                 <a href="../login.html"
-                    class="flex items-center px-4 py-3 rounded-lg text-red-400 hover:bg-red-600 hover:text-white transition-colors duration-200 mt-auto">
+                    class="flex items-center px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors duration-200 mt-auto border border-transparent hover:border-red-500/20">
                     <i class="fas fa-sign-out-alt w-6 text-lg"></i><span class="ml-4">Logout</span>
                 </a>
             </nav>
         </div>
 
         <div class="flex-1 flex flex-col overflow-hidden">
-            <header class="flex justify-between items-center h-20 px-6 bg-white border-b border-gray-200 shadow-sm">
-                <h1 class="text-2xl font-semibold text-gray-800">Laporan Penjualan Detail</h1>
-                <span class="text-gray-700 hidden sm:block">Halo, <strong id="user-name">Bos</strong>!</span>
+            <header
+                class="flex justify-between items-center h-20 px-6 bg-[#121212]/80 backdrop-blur-md border-b border-white/5 sticky top-0 z-10">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()"
+                        class="md:hidden text-white p-2 hover:bg-white/10 rounded-lg transition">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h1 class="text-xl md:text-2xl font-bold text-white tracking-wide">Laporan Penjualan Detail</h1>
+                </div>
+                <span
+                    class="text-gray-400 hidden sm:block bg-[#0a0a0a] px-4 py-2 rounded-full border border-white/5">Halo,
+                    <strong id="user-name" class="text-brand-400">Bos</strong>!</span>
             </header>
 
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
-                <div class="container mx-auto">
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-[#050505] p-6">
+                <div class="container mx-auto max-w-7xl">
 
-                    <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-                        <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-                            <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4">
-                                <label for="start-date"
-                                    class="text-sm font-medium text-gray-700 whitespace-nowrap">Pilih Periode:</label>
-                                <input type="date" id="start-date" name="start_date"
-                                    class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-gray-900">
-                                <span class="text-gray-500">s/d</span>
-                                <input type="date" id="end-date" name="end_date"
-                                    class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-gray-900">
+                    <!-- Filter Control (Improved Layout) -->
+                    <div class="glass p-6 rounded-2xl mb-8">
+                        <div class="flex flex-col xl:flex-row justify-between items-center gap-6">
+
+                            <div
+                                class="flex flex-col sm:flex-row items-center gap-4 w-full xl:w-auto bg-[#0a0a0a] p-2 rounded-xl border border-white/5">
+                                <div class="flex items-center gap-3 px-2">
+                                    <i class="fas fa-calendar-alt text-brand-400"></i>
+                                    <span class="text-sm font-bold text-gray-400 whitespace-nowrap">Periode:</span>
+                                </div>
+                                <div class="flex items-center gap-2 w-full sm:w-auto">
+                                    <div class="relative group">
+                                        <input type="text" id="start-date" placeholder="Dari Tanggal"
+                                            class="pl-10 pr-4 py-2 bg-[#121212] border border-white/10 rounded-lg text-gray-300 text-sm focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 w-36 transition-all hover:bg-white/5 cursor-pointer font-medium flatpickr-input">
+                                        <i
+                                            class="fas fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-hover:text-brand-400 transition-colors pointer-events-none"></i>
+                                    </div>
+                                    <span class="text-gray-500 font-bold">-</span>
+                                    <div class="relative group">
+                                        <input type="text" id="end-date" placeholder="Sampai Tanggal"
+                                            class="pl-10 pr-4 py-2 bg-[#121212] border border-white/10 rounded-lg text-gray-300 text-sm focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 w-36 transition-all hover:bg-white/5 cursor-pointer font-medium flatpickr-input">
+                                        <i
+                                            class="fas fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 group-hover:text-brand-400 transition-colors pointer-events-none"></i>
+                                    </div>
+                                </div>
                                 <button onclick="loadReport()"
-                                    class="px-4 py-2 bg-gray-900 text-white text-sm font-semibold rounded-lg hover:bg-gray-700">Tampilkan</button>
+                                    class="w-full sm:w-auto px-6 py-2 bg-brand-600 text-white text-sm font-bold rounded-lg hover:bg-brand-500 transition shadow-lg shadow-brand-600/20 active:scale-95 transform">
+                                    Tampilkan
+                                </button>
                             </div>
-                            <button onclick="exportToCSV()"
-                                class="w-full sm:w-auto px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 inline-flex items-center justify-center">
-                                <i class="fas fa-download mr-2"></i> Download CSV
-                            </button>
+
+                            <div class="flex w-full xl:w-auto gap-4">
+                                <button onclick="exportToPDF()"
+                                    class="flex-1 xl:flex-none px-6 py-2.5 bg-red-600 text-white text-sm font-bold rounded-xl hover:bg-red-500 transition shadow-lg shadow-red-600/20 inline-flex items-center justify-center gap-2 active:scale-95 transform">
+                                    <i class="fas fa-file-pdf text-lg"></i>
+                                    <span>Download PDF</span>
+                                </button>
+                                <button onclick="resetData()"
+                                    class="flex-1 xl:flex-none px-6 py-2.5 bg-red-500/10 text-red-400 border border-red-500/20 text-sm font-bold rounded-xl hover:bg-red-500/20 transition inline-flex items-center justify-center gap-2 active:scale-95 transform">
+                                    <i class="fas fa-trash-alt"></i>
+                                    <span>Reset Data</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                        <div class="bg-white p-6 rounded-lg shadow text-center">
-                            <div class="text-sm font-medium text-gray-500 uppercase">Total Pendapatan</div>
-                            <div class="text-3xl font-bold text-green-600 mt-2" id="total-revenue">Rp 0</div>
-                        </div>
-                        <div class="bg-white p-6 rounded-lg shadow text-center">
-                            <div class="text-sm font-medium text-gray-500 uppercase">Total Profit (Est)</div>
-                            <div class="text-3xl font-bold text-blue-600 mt-2" id="total-profit">Rp 0</div>
-                        </div>
-                        <div class="bg-white p-6 rounded-lg shadow text-center">
-                            <div class="text-sm font-medium text-gray-500 uppercase">Barang Terjual</div>
-                            <div class="text-3xl font-bold text-purple-600 mt-2"><span id="total-sold">0</span> pcs
+                    <!-- Stat Cards (Redesigned with Gradients) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+
+                        <div
+                            class="stat-card bg-gradient-to-br from-emerald-500 to-emerald-700 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden group">
+                            <div
+                                class="absolute top-0 right-0 p-4 opacity-10 transform scale-150 group-hover:scale-125 transition duration-500">
+                                <i class="fas fa-wallet text-6xl"></i>
+                            </div>
+                            <div class="relative z-10">
+                                <h3 class="text-xs font-bold uppercase tracking-widest opacity-80 mb-1">Total Pendapatan
+                                </h3>
+                                <div class="text-3xl font-black drop-shadow-md" id="total-revenue">Rp 0</div>
                             </div>
                         </div>
-                        <div class="bg-white p-6 rounded-lg shadow text-center">
-                            <div class="text-sm font-medium text-gray-500 uppercase">Total Pesanan</div>
-                            <div class="text-3xl font-bold text-amber-600 mt-2" id="total-orders">0</div>
+
+                        <div
+                            class="stat-card bg-gradient-to-br from-sky-500 to-sky-700 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden group">
+                            <div
+                                class="absolute top-0 right-0 p-4 opacity-10 transform scale-150 group-hover:scale-125 transition duration-500">
+                                <i class="fas fa-chart-line text-6xl"></i>
+                            </div>
+                            <div class="relative z-10">
+                                <h3 class="text-xs font-bold uppercase tracking-widest opacity-80 mb-1">Total Profit
+                                    (Real)</h3>
+                                <div class="text-3xl font-black drop-shadow-md" id="total-profit">Rp 0</div>
+                            </div>
                         </div>
+
+                        <div
+                            class="stat-card bg-gradient-to-br from-amber-500 to-amber-700 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden group">
+                            <div
+                                class="absolute top-0 right-0 p-4 opacity-10 transform scale-150 group-hover:scale-125 transition duration-500">
+                                <i class="fas fa-box text-6xl"></i>
+                            </div>
+                            <div class="relative z-10">
+                                <h3 class="text-xs font-bold uppercase tracking-widest opacity-80 mb-1">Barang Selesai
+                                </h3>
+                                <div class="text-3xl font-black drop-shadow-md"><span id="total-sold">0</span> <span
+                                        class="text-lg font-normal opacity-70">pcs</span></div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="stat-card bg-gradient-to-br from-brand-500 to-brand-700 text-white p-6 rounded-2xl shadow-lg relative overflow-hidden group">
+                            <div
+                                class="absolute top-0 right-0 p-4 opacity-10 transform scale-150 group-hover:scale-125 transition duration-500">
+                                <i class="fas fa-receipt text-6xl"></i>
+                            </div>
+                            <div class="relative z-10">
+                                <h3 class="text-xs font-bold uppercase tracking-widest opacity-80 mb-1">Total Pesanan
+                                </h3>
+                                <div class="text-3xl font-black drop-shadow-md" id="total-orders">0</div>
+                            </div>
+                        </div>
+
                     </div>
 
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
-                            <h3 class="text-xl font-semibold text-gray-800">Detail Transaksi <span
-                                    id="report-period-text" class="text-base font-normal text-gray-500 ml-2"></span>
+                    <div class="glass rounded-2xl overflow-hidden shadow-2xl shadow-brand-900/10">
+                        <div
+                            class="px-6 py-6 border-b border-white/5 flex justify-between items-center bg-gradient-to-r from-[#1a1a1a] to-[#0a0a0a]">
+                            <h3 class="text-lg font-bold text-white tracking-wide flex items-center gap-2">
+                                <i class="fas fa-list-alt text-brand-400"></i> Detail Transaksi
+                                <span id="report-period-text"
+                                    class="text-sm font-normal text-gray-400 ml-2 bg-white/5 px-3 py-1 rounded-full border border-white/5"></span>
                             </h3>
                         </div>
                         <div class="overflow-x-auto">
-                            <table class="w-full min-w-[768px] divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
+                            <table class="w-full min-w-[768px] divide-y divide-white/5">
+                                <thead class="bg-[#121212]">
                                     <tr>
                                         <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Tanggal</th>
                                         <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Order ID</th>
                                         <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Pelanggan</th>
                                         <th
-                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Qty</th>
                                         <th
-                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Total (Rp)</th>
                                         <th
-                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Profit (Rp)</th>
+                                            class="px-6 py-4 text-right text-xs font-bold text-emerald-400 uppercase tracking-wider glow-sm">
+                                            Profit (Real)</th>
                                         <th
-                                            class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Status</th>
                                     </tr>
                                 </thead>
-                                <tbody id="report-table-body" class="bg-white divide-y divide-gray-200">
+                                <tbody id="report-table-body" class="bg-[#050505]/50 divide-y divide-white/5">
                                     <tr>
-                                        <td colspan="7" class="px-6 py-4 text-center text-gray-500">
-                                            <i class="fas fa-spinner fa-spin mr-2"></i> Memuat data...
+                                        <td colspan="7" class="px-6 py-10 text-center">
+                                            <div class="flex flex-col items-center justify-center">
+                                                <i class="fas fa-circle-notch fa-spin text-3xl text-brand-500 mb-4"></i>
+                                                <p class="text-gray-500">Memuat data...</p>
+                                            </div>
                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-                        <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center text-sm"
+                        <div class="px-6 py-4 border-t border-white/5 flex justify-between items-center text-sm bg-[#0a0a0a]"
                             id="pagination-container">
-                            <div>Menampilkan <span class="font-semibold" id="disp-start">0</span> - <span
-                                    class="font-semibold" id="disp-end">0</span> dari <span class="font-semibold"
-                                    id="disp-total">0</span>
+                            <div class="text-gray-400">Menampilkan <span class="font-bold text-white"
+                                    id="disp-start">0</span> - <span class="font-bold text-white" id="disp-end">0</span>
+                                dari <span class="font-bold text-white" id="disp-total">0</span>
                                 transaksi</div>
-                            <div class="flex space-x-1">
+                            <div class="flex space-x-2">
                                 <button id="btn-prev" onclick="changePage(-1)"
-                                    class="px-3 py-1 border border-gray-300 rounded-md text-gray-500 bg-white hover:bg-gray-50 disabled:opacity-50"
+                                    class="px-4 py-2 border border-white/10 rounded-lg text-gray-400 bg-transparent hover:bg-white/5 hover:text-white disabled:opacity-50 transition"
                                     disabled>&laquo; Prev</button>
                                 <button id="btn-next" onclick="changePage(1)"
-                                    class="px-3 py-1 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                                    class="px-4 py-2 border border-white/10 rounded-lg text-gray-200 bg-transparent hover:bg-white/5 hover:text-white disabled:opacity-50 transition"
                                     disabled>Next
                                     &raquo;</button>
                             </div>
@@ -192,6 +368,380 @@
             </main>
         </div>
     </div>
+    <script>
+        const client = window.db || window.supabase;
+        let currentOrders = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set Default Date (This Month)
+            const date = new Date();
+            const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+            const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+            // Initialize Flatpickr
+            const config = {
+                altInput: true,
+                altFormat: "j F Y",
+                dateFormat: "Y-m-d", // Value will be YYYY-MM-DD
+                locale: "id",
+                theme: "dark"
+            };
+
+            flatpickr("#start-date", {
+                ...config,
+                defaultDate: firstDay
+            });
+
+            flatpickr("#end-date", {
+                ...config,
+                defaultDate: lastDay
+            });
+
+            loadReport();
+            initRealtime();
+        });
+
+        function initRealtime() {
+            const channel = client.channel('realtime-reports')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, (payload) => {
+                    // console.log('Realtime update:', payload);
+                    loadReport();
+                })
+                .subscribe();
+        }
+
+        async function loadReport() {
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+
+            // UI Loading State
+            const tbody = document.getElementById('report-table-body');
+            tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-10 text-center"><div class="flex flex-col items-center justify-center"><i class="fas fa-circle-notch fa-spin text-3xl text-brand-500 mb-4"></i><p class="text-gray-500">Memuat data...</p></div></td></tr>`;
+
+            // Adjust End Date to include the full day (23:59:59)
+            let endDateTime = new Date(endDate);
+            endDateTime.setHours(23, 59, 59, 999);
+
+            try {
+                // Fetch Orders
+                // We consider 'revenue' as orders that are NOT cancelled. 
+                // Adjust status filter as needed. For accurate finance, usually 'selesai' or 'dikirim'.
+                // Using 'neq' dibatalkan for broader view, or 'in' for specific.
+                const { data: orders, error } = await client
+                    .from('orders')
+                    .select(`
+                        *,
+                        order_details (
+                            quantity,
+                            products (cost_price)
+                        )
+                    `)
+                    .gte('created_at', new Date(startDate).toISOString())
+                    .lte('created_at', endDateTime.toISOString())
+                    .in('status', ['dikemas', 'diproses', 'dikirim', 'selesai'])
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                currentOrders = orders || [];
+                calculateStats(currentOrders);
+                currentPage = 1;
+                renderTable();
+
+            } catch (err) {
+                console.error(err);
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-red-500">Gagal memuat laporan: ${err.message}</td></tr>`;
+            }
+        }
+
+        function calculateStats(orders) {
+            let totalRev = 0;
+            let totalOrderCount = orders.length;
+            let totalSold = 0; // REVISI: Ini sekarang jadi "Barang Selesai"
+
+            // REVISI: Profit is fixed at 30% of Total Revenue
+            let totalRealProfit = 0;
+
+            orders.forEach(o => {
+                totalRev += (o.total_amount || 0);
+
+                let orderCost = 0;
+
+                // Hitung Cost per Order
+                if (o.order_details && Array.isArray(o.order_details)) {
+                    o.order_details.forEach(detail => {
+                        // Handle potential array/object structure from join
+                        const product = Array.isArray(detail.products) ? detail.products[0] : detail.products;
+                        const cost = product ? (product.cost_price || 0) : 0;
+                        orderCost += (detail.quantity || 1) * cost;
+                    });
+                }
+
+                // Profit = Revenue - Cost
+                totalRealProfit += ((o.total_amount || 0) - orderCost);
+
+                // LOGIC BARANG SELESAI
+                // Hanya hitung qty jika status == 'selesai'
+                if (o.status === 'selesai') {
+                    if (o.order_details && Array.isArray(o.order_details)) {
+                        o.order_details.forEach(detail => {
+                            totalSold += (detail.quantity || 0);
+                        });
+                    } else {
+                        totalSold += 1;
+                    }
+                }
+            });
+
+            // Update UI
+            document.getElementById('total-revenue').innerText = "Rp " + totalRev.toLocaleString('id-ID');
+            document.getElementById('total-profit').innerText = "Rp " + totalRealProfit.toLocaleString('id-ID');
+            document.getElementById('total-orders').innerText = totalOrderCount;
+            document.getElementById('total-sold').innerText = totalSold;
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('report-table-body');
+            tbody.innerHTML = '';
+
+            if (currentOrders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-gray-500">Tidak ada transaksi pada periode ini.</td></tr>`;
+                updatePagination(0, 0, 0);
+                return;
+            }
+
+            // Pagination
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, currentOrders.length);
+            const pageOrders = currentOrders.slice(startIndex, endIndex);
+
+            pageOrders.forEach(order => {
+                const dateStr = new Date(order.created_at).toLocaleDateString('id-ID');
+                const totalStr = "Rp " + (order.total_amount || 0).toLocaleString('id-ID');
+
+                // Real Profit per order
+                let orderCost = 0;
+                if (order.order_details && Array.isArray(order.order_details)) {
+                    order.order_details.forEach(detail => {
+                        const product = Array.isArray(detail.products) ? detail.products[0] : detail.products;
+                        const cost = product ? (product.cost_price || 0) : 0;
+                        orderCost += (detail.quantity || 1) * cost;
+                    });
+                }
+                const profitVal = (order.total_amount || 0) - orderCost;
+                const profitStr = "Rp " + profitVal.toLocaleString('id-ID');
+
+                // Qty Header
+                let qty = 1;
+                if (order.items && Array.isArray(order.items)) {
+                    qty = order.items.reduce((sum, item) => sum + (item.quantity || 1), 0);
+                } else if (order.order_details) {
+                    qty = order.order_details.reduce((sum, item) => sum + (item.quantity || 1), 0);
+                }
+
+                // Customer Name
+                let custName = 'Tanpa Nama';
+                if (order.shipping_address) {
+                    try {
+                        const addr = typeof order.shipping_address === 'string' ? JSON.parse(order.shipping_address) : order.shipping_address;
+                        custName = addr.name || addr.penerima || custName;
+                    } catch (e) { }
+                }
+
+                let statusBadge = `<span class="pill bg-gray-500/10 text-gray-400 capitalize">${order.status}</span>`;
+                if (order.status === 'selesai') statusBadge = `<span class="pill bg-green-500/10 text-green-400 capitalize">Selesai</span>`;
+                if (order.status === 'dikirim') statusBadge = `<span class="pill bg-purple-500/10 text-purple-400 capitalize">Dikirim</span>`;
+
+                const row = `
+                    <tr class="hover:bg-white/5 transition border-b border-white/5 last:border-0 group">
+                        <td class="px-6 py-4 text-sm text-gray-400 group-hover:text-gray-200 transition">${dateStr}</td>
+                        <td class="px-6 py-4 text-sm font-mono text-brand-400 w-32">#${String(order.id).slice(0, 6)}</td>
+                        <td class="px-6 py-4 text-sm text-gray-300 w-48 truncate">${custName}</td>
+                        <td class="px-6 py-4 text-right text-sm text-gray-400">${qty}</td>
+                        <td class="px-6 py-4 text-right text-sm font-bold text-white tracking-wide">${totalStr}</td>
+                        <td class="px-6 py-4 text-right text-sm font-bold text-emerald-400 tracking-wide">${profitStr}</td>
+                        <td class="px-6 py-4 text-center">${statusBadge}</td>
+                    </tr>
+                `;
+                tbody.insertAdjacentHTML('beforeend', row);
+            });
+
+            updatePagination(startIndex + 1, endIndex, currentOrders.length);
+        }
+
+        function updatePagination(start, end, total) {
+            document.getElementById('disp-start').innerText = start;
+            document.getElementById('disp-end').innerText = end;
+            document.getElementById('disp-total').innerText = total;
+
+            document.getElementById('btn-prev').disabled = currentPage === 1;
+            document.getElementById('btn-next').disabled = end >= total;
+        }
+
+        function changePage(delta) {
+            currentPage += delta;
+            renderTable();
+        }
+
+
+
+        async function exportToPDF() {
+            if (currentOrders.length === 0) {
+                Swal.fire('Info', 'Tidak ada data untuk diekspor.', 'info');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Header
+            doc.setFontSize(18);
+            doc.text("LAPORAN PENJUALAN - DAZEON", 14, 20);
+
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            const dateStr = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            doc.text(`Tanggal Cetak: ${dateStr}`, 14, 28);
+
+            // Table Data
+            const tableData = currentOrders.map((o, index) => {
+                let custName = 'Tanpa Nama';
+                try {
+                    const addr = typeof o.shipping_address === 'string' ? JSON.parse(o.shipping_address) : o.shipping_address;
+                    custName = (addr.name || addr.penerima || custName);
+                } catch (e) { }
+
+                // Real Profit Calculation
+                let orderCost = 0;
+                if (o.order_details && Array.isArray(o.order_details)) {
+                    o.order_details.forEach(detail => {
+                        // Check if products is an array or object (Supabase can return array for 1:M or object for 1:1)
+                        // Usually select(products(cost_price)) returns an object if 1:1, or array if M:M. 
+                        // Check structure in calculateStats too.
+                        const product = Array.isArray(detail.products) ? detail.products[0] : detail.products;
+                        const cost = product ? (product.cost_price || 0) : 0;
+                        orderCost += (detail.quantity || 1) * cost;
+                    });
+                }
+                const profitVal = (o.total_amount || 0) - orderCost;
+
+                return [
+                    index + 1,
+                    new Date(o.created_at).toLocaleDateString('id-ID'),
+                    String(o.id).slice(0, 8),
+                    custName,
+                    o.status,
+                    "Rp " + (o.total_amount || 0).toLocaleString('id-ID'),
+                    "Rp " + profitVal.toLocaleString('id-ID')
+                ];
+            });
+
+            // AutoTable
+            doc.autoTable({
+                startY: 35,
+                head: [['No', 'Tanggal', 'Order ID', 'Pelanggan', 'Status', 'Total', 'Profit']],
+                body: tableData,
+                theme: 'grid',
+                headStyles: { fillColor: [124, 58, 237] }, // Brand-600
+                styles: { fontSize: 8 },
+                foot: [['', '', '', '', 'Total',
+                    document.getElementById('total-revenue').innerText,
+                    document.getElementById('total-profit').innerText
+                ]],
+                footStyles: { fillColor: [20, 20, 20], textColor: [255, 255, 255], fontStyle: 'bold' }
+            });
+
+            // Save
+            doc.save(`Laporan_Dazeon_${new Date().toISOString().slice(0, 10)}.pdf`);
+
+            Swal.fire({
+                icon: 'success',
+                title: 'PDF Berhasil',
+                text: 'Laporan PDF sedang didownload...',
+                timer: 2000,
+                showConfirmButton: false,
+                background: '#121212',
+                color: '#fff'
+            });
+        }
+
+        async function resetData() {
+            // Konfirmasi Tahap 1
+            const result = await Swal.fire({
+                title: 'PERINGATAN KERAS!',
+                text: "Anda akan menghapus SELURUH riwayat penjualan. Data yang dihapus TIDAK BISA dikembalikan. Apakah Anda yakin?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, Hapus Semuanya',
+                cancelButtonText: 'Batal',
+                background: '#121212',
+                color: '#fff'
+            });
+
+            if (result.isConfirmed) {
+                // Konfirmasi Tahap 2
+                const { value: text } = await Swal.fire({
+                    title: 'Konfirmasi Terakhir',
+                    input: 'text',
+                    inputLabel: 'Ketik "DELETE" untuk mengonfirmasi',
+                    inputPlaceholder: 'DELETE',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    background: '#121212',
+                    color: '#fff'
+                });
+
+                if (text === 'DELETE') {
+                    // Tampilkan Loading
+                    Swal.fire({
+                        title: 'Menghapus Data...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        },
+                        background: '#121212',
+                        color: '#fff'
+                    });
+
+                    try {
+                        // 1. Hapus Detail Order (opsional jika cascade, tapi aman dilakukan)
+                        // Menggunakan delete dengan filter yang selalu benar (id > 0)
+                        const { error: errDetail } = await client.from('order_details').delete().gt('id', 0);
+                        if (errDetail) throw new Error('Gagal menghapus detail: ' + errDetail.message);
+
+                        // 2. Hapus Orders
+                        const { error: errOrder } = await client.from('orders').delete().gt('id', 0);
+                        if (errOrder) throw new Error('Gagal menghapus pesanan: ' + errOrder.message);
+
+                        Swal.fire({
+                            title: 'Terhapus!',
+                            text: 'Semua data penjualan telah dibersihkan.',
+                            icon: 'success',
+                            background: '#121212',
+                            color: '#fff'
+                        });
+                        loadReport(); // Refresh tampilan
+
+                    } catch (error) {
+                        console.error(error);
+                        Swal.fire({
+                            title: 'Gagal!',
+                            text: 'Gagal menghapus data: ' + error.message,
+                            icon: 'error',
+                            background: '#121212',
+                            color: '#fff'
+                        });
+                    }
+                } else if (text) {
+                    Swal.fire({ title: 'Dibatalkan', text: 'Kode konfirmasi salah.', icon: 'error', background: '#121212', color: '#fff' });
+                }
+            }
+        }
+    </script>
 </body>
 
 </html>

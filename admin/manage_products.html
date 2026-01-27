@@ -9,18 +9,79 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <script>
-        tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] } } } }
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            accent: '#d946ef',
+                        }
+                    },
+                    animation: {
+                        'gradient': 'gradient 8s linear infinite',
+                    },
+                    keyframes: {
+                        'gradient': {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            },
+                        }
+                    }
+                }
+            }
+        }
     </script>
-    <style>
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .glass {
+                @apply bg-[#121212] border border-white/5 backdrop-blur-md;
+            }
+            .text-glow {
+                text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+            }
         }
 
-        .no-scrollbar {
-            scrollbar-width: none;
+        body { opacity: 0; transition: opacity 0.5s ease; }
+        body.loaded { opacity: 1; }
+
+        /* Custom Scrollbar for Dark Theme */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #050505; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555; 
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-enter {
+            animation: fadeInUp 0.5s ease-out forwards;
+            opacity: 0;
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -29,97 +90,170 @@
     <script src="../auth_check.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            checkAuth(['admin']);
+            document.body.classList.add('loaded');
+            checkAuth(['bos', 'admin']);
+            initUnreadBadge();
         });
+
+        function initUnreadBadge() {
+            const client = window.db || window.supabase;
+            client.channel('global_unread')
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'helpdesk_messages', filter: "sender_role=eq.user" }, () => showUnreadBadge())
+                .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'helpdesk_tickets' }, () => showUnreadBadge())
+                .subscribe();
+        }
+
+        function showUnreadBadge() {
+            const links = document.querySelectorAll('a[href="helpdesk.html"]');
+            links.forEach(link => {
+                if (!link.querySelector('.unread-dot')) link.insertAdjacentHTML('beforeend', '<span class="unread-dot ml-auto w-2 h-2 rounded-full bg-red-500 shadow-[0_0_10px_red]"></span>');
+            });
+            document.title = '(*) Dazeon Admin';
+        }
+
+        // MOBILE SIDEBAR TOGGLE
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            if (overlay.classList.contains('hidden')) {
+                overlay.classList.remove('hidden');
+            } else {
+                overlay.classList.add('hidden');
+            }
+        }
     </script>
 </head>
 
-<body class="bg-gray-100 font-sans">
+<body class="bg-[#050505] font-sans text-gray-100 selection:bg-brand-500 selection:text-white">
 
-    <div class="flex h-screen bg-gray-100">
+    <!-- MOBILE OVERLAY BACKDROP -->
+    <div id="mobile-overlay" onclick="toggleSidebar()"
+        class="fixed inset-0 bg-black/50 z-40 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
 
-        <div class="hidden md:flex md:flex-col md:w-64 bg-gray-900 text-gray-300">
-            <div class="flex items-center justify-center h-20 border-b border-gray-700">
-                <span class="text-2xl font-black text-white uppercase tracking-wider">DAZEON ADMIN</span>
+    <div class="flex h-screen bg-[#050505]">
+
+        <!-- SIDEBAR -->
+        <div id="sidebar"
+            class="fixed inset-y-0 left-0 z-50 w-64 bg-[#121212] border-r border-white/5 transform -translate-x-full transition-transform duration-300 md:relative md:translate-x-0 md:flex md:flex-col">
+            <div class="flex items-center justify-between px-6 h-24 border-b border-white/5">
+                <span
+                    class="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#d946ef] to-[#8b5cf6] uppercase tracking-wider">DAZEON</span>
+                <button onclick="toggleSidebar()" class="md:hidden text-gray-400 hover:text-white">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
             </div>
-            <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto no-scrollbar">
+
+            <nav class="flex-1 px-4 space-y-2 overflow-y-auto custom-scrollbar pt-4">
+                <!-- Dashboard -->
                 <a href="dashboard.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
-                    <i class="fas fa-tachometer-alt w-6 text-lg"></i><span class="ml-4">Dashboard</span>
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all duration-300 group">
+                    <i class="fas fa-home text-lg w-8 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-medium tracking-wide">Dashboard</span>
                 </a>
+
+                <!-- Produk (ACTIVE) -->
                 <a href="manage_products.html"
-                    class="flex items-center px-4 py-3 rounded-lg bg-gray-700 text-white font-semibold">
-                    <i class="fas fa-tshirt w-6 text-lg"></i><span class="ml-4">Produk</span>
+                    class="relative flex items-center px-4 py-3 rounded-xl bg-brand-500/10 text-brand-400 border border-brand-500/20 shadow-[0_0_15px_rgba(139,92,246,0.2)] group">
+                    <div class="absolute inset-0 bg-brand-500/5 blur-md rounded-xl"></div>
+                    <i class="fas fa-tshirt text-lg w-8 relative z-10 drop-shadow-[0_0_8px_rgba(139,92,246,0.5)]"></i>
+                    <span class="font-bold tracking-wide relative z-10">Produk</span>
                 </a>
+
+                <!-- Pesanan -->
                 <a href="manage_orders.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
-                    <i class="fas fa-box-open w-6 text-lg"></i><span class="ml-4">Pesanan</span>
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all duration-300 group">
+                    <i class="fas fa-receipt text-lg w-8 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-medium tracking-wide">Pesanan</span>
                 </a>
+
+                <!-- Pelanggan -->
                 <a href="manage_users.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
-                    <i class="fas fa-users w-6 text-lg"></i><span class="ml-4">Pengguna</span>
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all duration-300 group">
+                    <i class="fas fa-users text-lg w-8 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-medium tracking-wide">Pelanggan</span>
                 </a>
-                <a href="reports.html"
-                    class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-700 hover:text-white transition-colors duration-200">
-                    <i class="fas fa-chart-line w-6 text-lg"></i><span class="ml-4">Laporan</span>
+
+                <!-- Helpdesk -->
+                <a href="helpdesk.html"
+                    class="flex items-center px-4 py-3 rounded-xl text-gray-500 hover:text-white hover:bg-white/5 transition-all duration-300 group">
+                    <i class="fas fa-headset text-lg w-8 group-hover:scale-110 transition-transform"></i>
+                    <span class="font-medium tracking-wide">Helpdesk</span>
                 </a>
+
+                <!-- Logout -->
                 <a href="../login.html"
-                    class="flex items-center px-4 py-3 rounded-lg text-red-400 hover:bg-red-600 hover:text-white transition-colors duration-200">
-                    <i class="fas fa-sign-out-alt w-6 text-lg"></i><span class="ml-4">Logout</span>
+                    class="flex items-center px-4 py-3 rounded-xl text-red-500/70 hover:text-red-400 hover:bg-red-500/10 transition-all duration-300 mt-10 group border border-transparent hover:border-red-500/20">
+                    <i class="fas fa-sign-out-alt text-lg w-8 group-hover:translate-x-1 transition-transform"></i>
+                    <span class="font-medium tracking-wide">Logout</span>
                 </a>
             </nav>
         </div>
 
         <div class="flex-1 flex flex-col overflow-hidden">
-            <header class="flex justify-between items-center h-20 px-6 bg-white border-b border-gray-200 shadow-sm">
-                <h1 class="text-2xl font-semibold text-gray-800">Manajemen Produk</h1>
-                <span class="text-gray-700 hidden sm:block">Halo, <strong id="user-name">Admin</strong>!</span>
+            <header
+                class="flex justify-between items-center h-20 px-6 bg-[#121212]/80 backdrop-blur-md border-b border-white/5 sticky top-0 z-10">
+                <div class="flex items-center gap-4">
+                    <button onclick="toggleSidebar()"
+                        class="md:hidden text-white p-2 hover:bg-white/10 rounded-lg transition">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h1 class="text-xl md:text-2xl font-bold text-white tracking-wide">Kelola Produk</h1>
+                </div>
+                <span
+                    class="text-gray-400 hidden sm:block bg-[#0a0a0a] px-4 py-2 rounded-full border border-white/5">Halo,
+                    <strong id="user-name" class="text-brand-400">Admin</strong>!</span>
             </header>
 
-            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 p-6">
-                <div class="container mx-auto">
+            <main class="flex-1 overflow-x-hidden overflow-y-auto bg-[#050505] p-6">
+                <div class="container mx-auto max-w-7xl">
 
                     <div class="flex flex-col sm:flex-row justify-between items-center mb-6 space-y-4 sm:space-y-0">
-                        <a href="add_product.html"
-                            class="w-full sm:w-auto bg-gray-900 text-white font-semibold px-6 py-2.5 rounded-lg text-sm hover:bg-gray-700 transition-colors duration-200 inline-flex items-center justify-center">
-                            <i class="fas fa-plus mr-2"></i> Tambah Produk Baru
-                        </a>
+                        <!-- Tombol Tambah Produk ENABLED untuk Bos -->
+                        <div class="w-full sm:w-auto">
+                            <a href="../bos/add_product.html"
+                                class="flex items-center justify-center px-6 py-3 bg-brand-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-brand-600/20 hover:bg-brand-500 transition transform hover:scale-105">
+                                <i class="fas fa-plus mr-2"></i> Tambah Produk
+                            </a>
+                        </div>
                         <div class="w-full sm:w-auto flex space-x-4">
                             <input type="text" placeholder="Cari produk..."
-                                class="w-full sm:w-64 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm">
+                                class="w-full sm:w-64 px-4 py-3 bg-[#121212] border border-white/10 rounded-xl text-gray-300 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 placeholder-gray-600 text-sm">
                             <select
-                                class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 text-sm">
+                                class="px-4 py-3 bg-[#121212] border border-white/10 rounded-xl text-gray-300 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 text-sm hidden">
                                 <option>Semua Kategori</option>
                             </select>
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="glass rounded-2xl overflow-hidden">
                         <div class="overflow-x-auto">
-                            <table class="w-full min-w-[768px] divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
+                            <table class="w-full min-w-[768px] divide-y divide-white/5">
+                                <thead class="bg-white/5">
                                     <tr>
                                         <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             No</th>
                                         <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Gambar</th>
                                         <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Nama Produk</th>
                                         <th
-                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Harga</th>
                                         <th
-                                            class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-center text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Stok</th>
+                                        <!-- th hidden -->
                                         <th
-                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            class="px-6 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-wider">
                                             Aksi</th>
                                     </tr>
                                 </thead>
-                                <tbody id="product-table-body" class="bg-white divide-y divide-gray-200 text-center">
+                                <tbody id="product-table-body"
+                                    class="bg-[#0a0a0a]/50 divide-y divide-white/5 text-center">
                                     <!-- Data akan dimuat di sini oleh JavaScript -->
                                     <tr>
                                         <td colspan="6" class="px-6 py-4 text-center text-gray-500">
@@ -129,10 +263,10 @@
                                 </tbody>
                             </table>
                         </div>
-                        <!-- Pagination Section (Optional Implementation) -->
-                        <div class="px-6 py-4 border-t border-gray-200 flex justify-between items-center text-sm"
+                        <div class="px-6 py-4 border-t border-white/5 flex justify-between items-center text-sm bg-[#0a0a0a]/30"
                             id="pagination-container">
-                            <!-- Pagination akan diupdate jika perlu -->
+                            <div class="text-gray-400">Menampilkan <span class="text-white font-bold">-</span> produk
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -141,13 +275,13 @@
     </div>
 
     <script>
-        // Use global db or supabase from config.js
+        // Use global db
         const client = window.db || window.supabase;
 
         async function fetchProducts() {
             const tbody = document.getElementById('product-table-body');
 
-            // Ambil data produk dari Supabase
+            // Ambil data produk
             const { data: products, error } = await client
                 .from('products')
                 .select('*')
@@ -164,94 +298,95 @@
                 return;
             }
 
-            tbody.innerHTML = ''; // Kosongkan loader
+            tbody.innerHTML = '';
 
             products.forEach((product, index) => {
                 const tr = document.createElement('tr');
-                tr.className = 'hover:bg-gray-50';
+                tr.className = 'hover:bg-white/5 transition border-b border-white/5 last:border-0 animate-enter';
+                tr.style.animationDelay = `${index * 50}ms`;
 
-                // Construct Image URL
-                // Check if image_url is a full URL or just a filename
-                let imgUrl = 'data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 150 150\"%3E%3Crect fill=\"%23f3f4f6\" width=\"150\" height=\"150\"/%3E%3Ctext x=\"50%25\" y=\"50%25\" fill=\"%239ca3af\" font-size=\"12\" text-anchor=\"middle\" dy=\".3em\"%3ENo Image%3C/text%3E%3C/svg%3E';
+                let imgUrl = 'data:image/svg+xml,%3Csvg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 150 150\"%3E%3Crect fill=\"%231f2937\" width=\"150\" height=\"150\"/%3E%3Ctext x=\"50%25\" y=\"50%25\" fill=\"%239ca3af\" font-size=\"12\" text-anchor=\"middle\" dy=\".3em\"%3ENo Image%3C/text%3E%3C/svg%3E';
                 if (product.image_url) {
                     if (product.image_url.startsWith('http')) {
                         imgUrl = product.image_url;
                     } else {
-                        // Assuming standard Supabase Storage URL pattern
-                        // Note: Replace with your actual project URL and bucket name if different.
-                        // Based on config.js: https://rkpkfgenzpfynypeceto.supabase.co
                         imgUrl = `https://rkpkfgenzpfynypeceto.supabase.co/storage/v1/object/public/product-images/${product.image_url}`;
                     }
                 }
 
                 const price = Number(product.price).toLocaleString('id-ID');
                 const stock = product.stock;
-                const stockColor = stock < 10 ? 'text-red-600 font-bold' : 'text-gray-700';
+                const stockColor = stock < 10 ? 'text-red-400 font-bold' : 'text-gray-300';
 
                 tr.innerHTML = `
-                    <td class="px-6 py-4 text-sm font-medium text-left">${index + 1}</td>
-                    <td class="px-6 py-4 text-left"><img src="${imgUrl}" alt="${product.name}" class="w-12 h-12 rounded-md object-cover border border-gray-200"></td>
-                    <td class="px-6 py-4 text-sm font-medium text-gray-900 text-left">${product.name}</td>
-                    <td class="px-6 py-4 text-sm text-gray-700 text-left">Rp${price}</td>
+                    <td class="px-6 py-4 text-sm font-medium text-left text-gray-500">${index + 1}</td>
+                    <td class="px-6 py-4 text-left"><img src="${imgUrl}" alt="${product.name}" class="w-12 h-12 rounded-lg object-cover border border-white/10 shadow-sm"></td>
+                    <td class="px-6 py-4 text-sm font-bold text-gray-200 text-left tracking-wide">${product.name}</td>
+                    <td class="px-6 py-4 text-sm text-brand-400 font-mono text-left">Rp${price}</td>
                     <td class="px-6 py-4 text-sm ${stockColor} text-center">${stock}</td>
+                    <!-- Boss can also edit/delete? Assuming based on previous code having Edit/Delete buttons -->
                     <td class="px-6 py-4 text-right text-sm font-medium space-x-3">
-                        <a href="edit_product.html?id=${product.id}" class="text-indigo-600 hover:text-indigo-900" title="Edit"><i class="fas fa-edit"></i></a>
-                        <button onclick="deleteProduct('${product.id}', '${product.name}')" class="text-red-600 hover:text-red-900" title="Hapus"><i class="fas fa-trash-alt"></i></button>
+                        <a href="edit_product.html?id=${product.id}" class="text-blue-400 hover:text-blue-300 p-2 hover:bg-white/10 rounded-full transition" title="Edit"><i class="fas fa-edit"></i></a>
+                        <button onclick="deleteProduct('${product.id}', '${product.name}')" class="text-red-500 hover:text-red-400 p-2 hover:bg-white/10 rounded-full transition" title="Hapus"><i class="fas fa-trash-alt"></i></button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            // Update counter info
             const countInfo = document.querySelector('#pagination-container div');
             if (countInfo) countInfo.innerText = `Menampilkan ${products.length} produk`;
         }
 
         async function deleteProduct(productId, productName) {
             const result = await Swal.fire({
-                title: 'Hapus Produk?',
-                text: `Yakin ingin menghapus produk "${productName}"?`,
+                title: 'Konfirmasi Hapus',
+                text: "Produk yang dihapus tidak dapat dikembalikan!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Ya, Hapus',
-                cancelButtonText: 'Batal'
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal',
+                background: '#121212',
+                color: '#fff'
             });
 
             if (result.isConfirmed) {
-                // Hapus dari Storage dulu jika perlu (optional, tapi good practice)
-                // Kita perlu ambil nama file gambar dulu kalau mau delete gambarnya juga.
-                // Untuk sekarang crud simple hapus record db.
-
                 const { error } = await client
                     .from('products')
                     .delete()
                     .eq('id', productId);
 
                 if (error) {
-                    Swal.fire('Gagal!', 'Gagal menghapus produk: ' + error.message, 'error');
+                    Swal.fire({
+                        title: 'Gagal',
+                        text: 'Gagal menghapus produk: ' + error.message,
+                        icon: 'error',
+                        background: '#121212',
+                        color: '#fff',
+                        confirmButtonColor: '#d33'
+                    });
                 } else {
                     await Swal.fire({
-                        icon: 'success',
                         title: 'Terhapus!',
                         text: 'Produk berhasil dihapus.',
-                        timer: 1500,
-                        showConfirmButton: false
+                        icon: 'success',
+                        background: '#121212',
+                        color: '#fff',
+                        confirmButtonColor: '#7c3aed'
                     });
-                    fetchProducts(); // Refresh tabel tanpa reload page
+                    fetchProducts();
                 }
             }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            // checkAuth already called in head script
             fetchProducts();
             initRealtime();
         });
 
         function initRealtime() {
-            client.channel('admin-products')
+            client.channel('boss-products')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, (payload) => {
                     // alert / toast
                     const Toast = Swal.mixin({

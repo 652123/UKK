@@ -20,14 +20,21 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Poppins', 'sans-serif'] },
-                    colors: { brand: '#171717' }
+                    colors: {
+                        brand: {
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            accent: '#d946ef',
+                        }
+                    }
                 }
             }
         }
     </script>
 </head>
 
-<body class="bg-gray-50 font-sans text-gray-800">
+<body class="bg-[#050505] font-sans text-gray-100 selection:bg-brand-500 selection:text-white">
 
     <!-- NAVBAR will be injected here -->
     <div id="navbar-container"></div>
@@ -37,15 +44,15 @@
 
         <!-- Breadcrumb -->
         <div class="mb-8 flex items-center gap-2 text-sm text-gray-400">
-            <a href="my-orders.html" class="hover:text-black transition flex items-center gap-1">
+            <a href="my-orders.html" class="hover:text-white transition flex items-center gap-1">
                 <i class="fas fa-arrow-left"></i> Riwayat Pesanan
             </a>
             <span>/</span>
-            <span class="font-semibold text-gray-900">Detail Invoice</span>
+            <span class="font-semibold text-white">Detail Invoice</span>
         </div>
 
         <div id="loading" class="text-center py-20">
-            <i class="fas fa-circle-notch fa-spin text-3xl text-gray-300"></i>
+            <i class="fas fa-circle-notch fa-spin text-3xl text-brand-400"></i>
             <p class="mt-4 text-gray-400 text-sm tracking-wide">MEMUAT DATA...</p>
         </div>
 
@@ -54,13 +61,14 @@
             <!-- HEADER SECTION -->
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
-                    <h1 class="text-3xl font-black text-gray-900 tracking-tight">INVOICE <span
-                            class="text-gray-400">#</span><span id="order-id-header">...</span></h1>
+                    <h1 class="text-3xl font-black text-white tracking-tight">INVOICE <span
+                            class="text-gray-600">#</span><span id="order-id-header" class="text-brand-400">...</span>
+                    </h1>
                     <p class="text-gray-500 mt-1" id="order-date">...</p>
                 </div>
                 <div class="text-right">
                     <div id="status-badge-lg"
-                        class="inline-flex items-center px-5 py-2 rounded-full border border-gray-200 bg-white font-bold shadow-sm">
+                        class="inline-flex items-center px-5 py-2 rounded-xl border border-white/10 bg-[#1a1a1a] font-bold shadow-md">
                         ...
                     </div>
                 </div>
@@ -72,61 +80,70 @@
                 <div class="lg:col-span-2 space-y-8">
 
                     <!-- TIMELINE TRACKER -->
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-6">Status Pengiriman
+                    <div class="bg-[#121212] p-8 rounded-2xl shadow-xl border border-white/5 relative overflow-hidden">
+                        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-8">Status Pengiriman
                         </h3>
-                        <div class="relative flex items-center justify-between w-full">
-                            <div class="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-gray-100 -z-0">
+                        <div class="relative flex items-center justify-between w-full px-4">
+                            <div
+                                class="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-white/10 -z-0 rounded-full">
                             </div>
 
                             <!-- Steps -->
                             <div class="relative z-10 flex flex-col items-center step-item" id="step-pending">
                                 <div
-                                    class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs text-white font-bold transition-all border-4 border-white shadow-sm ring-1 ring-gray-100 step-circle">
+                                    class="w-10 h-10 rounded-full bg-[#1a1a1a] flex items-center justify-center text-xs text-white font-bold transition-all border-4 border-[#121212] shadow-lg ring-2 ring-white/5 step-circle">
                                     <i class="fas fa-file-invoice"></i>
                                 </div>
                                 <span
-                                    class="mt-2 text-[10px] font-bold uppercase text-gray-400 step-label">Pending</span>
+                                    class="mt-3 text-[10px] font-bold uppercase text-gray-600 step-label tracking-wider">Pending</span>
                             </div>
 
                             <div class="relative z-10 flex flex-col items-center step-item" id="step-process">
                                 <div
-                                    class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs text-white font-bold transition-all border-4 border-white shadow-sm ring-1 ring-gray-100 step-circle">
+                                    class="w-10 h-10 rounded-full bg-[#1a1a1a] flex items-center justify-center text-xs text-white font-bold transition-all border-4 border-[#121212] shadow-lg ring-2 ring-white/5 step-circle">
                                     <i class="fas fa-box"></i>
                                 </div>
                                 <span
-                                    class="mt-2 text-[10px] font-bold uppercase text-gray-400 step-label">Diproses</span>
+                                    class="mt-3 text-[10px] font-bold uppercase text-gray-600 step-label tracking-wider">Diproses</span>
                             </div>
 
                             <div class="relative z-10 flex flex-col items-center step-item" id="step-ship">
                                 <div
-                                    class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs text-white font-bold transition-all border-4 border-white shadow-sm ring-1 ring-gray-100 step-circle">
+                                    class="w-10 h-10 rounded-full bg-[#1a1a1a] flex items-center justify-center text-xs text-white font-bold transition-all border-4 border-[#121212] shadow-lg ring-2 ring-white/5 step-circle">
                                     <i class="fas fa-truck"></i>
                                 </div>
                                 <span
-                                    class="mt-2 text-[10px] font-bold uppercase text-gray-400 step-label">Dikirim</span>
+                                    class="mt-3 text-[10px] font-bold uppercase text-gray-600 step-label tracking-wider">Dikirim</span>
                             </div>
 
                             <div class="relative z-10 flex flex-col items-center step-item" id="step-done">
                                 <div
-                                    class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs text-white font-bold transition-all border-4 border-white shadow-sm ring-1 ring-gray-100 step-circle">
+                                    class="w-10 h-10 rounded-full bg-[#1a1a1a] flex items-center justify-center text-xs text-white font-bold transition-all border-4 border-[#121212] shadow-lg ring-2 ring-white/5 step-circle">
                                     <i class="fas fa-check"></i>
                                 </div>
                                 <span
-                                    class="mt-2 text-[10px] font-bold uppercase text-gray-400 step-label">Selesai</span>
+                                    class="mt-3 text-[10px] font-bold uppercase text-gray-600 step-label tracking-wider">Selesai</span>
                             </div>
                         </div>
 
                         <!-- Resi Info Block -->
                         <div id="resi-block"
-                            class="hidden mt-6 bg-gray-50 border border-gray-200 rounded-lg p-4 flex justify-between items-center">
-                            <div>
-                                <p class="text-xs text-gray-500 uppercase font-bold">Resi Pengiriman</p>
-                                <p class="text-lg font-mono font-bold text-gray-900 mt-1 tracking-wide"
-                                    id="resi-number">JP123456789</p>
-                                <p class="text-xs text-gray-400 font-medium" id="courier-name">JNE Express</p>
+                            class="hidden mt-8 bg-[#0a0a0a] border border-white/10 rounded-xl p-6 flex justify-between items-center relative overflow-hidden group">
+                            <!-- Glow effect -->
+                            <div
+                                class="absolute top-0 right-0 w-20 h-20 bg-brand-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-brand-500/20 transition">
                             </div>
-                            <button onclick="copyResi()" class="text-gray-400 hover:text-black transition"
+
+                            <div class="relative z-10">
+                                <p class="text-[10px] text-brand-400 uppercase font-bold tracking-widest mb-1">Resi
+                                    Pengiriman</p>
+                                <p class="text-xl font-mono font-bold text-white tracking-widest" id="resi-number">
+                                    JP123456789</p>
+                                <p class="text-xs text-gray-400 font-medium mt-1 uppercase" id="courier-name">JNE
+                                    Express</p>
+                            </div>
+                            <button onclick="copyResi()"
+                                class="text-gray-500 hover:text-white transition relative z-10 bg-white/5 p-3 rounded-lg hover:bg-white/10"
                                 title="Salin Resi">
                                 <i class="far fa-copy text-xl"></i>
                             </button>
@@ -134,12 +151,12 @@
                     </div>
 
                     <!-- PRODUCTS -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Detail Produk</h3>
+                    <div class="bg-[#121212] rounded-2xl shadow-xl border border-white/5 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center bg-[#0a0a0a]">
+                            <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest">Detail Produk</h3>
                             <span class="text-xs font-bold text-gray-400" id="total-items-count">0 Barang</span>
                         </div>
-                        <div class="divide-y divide-gray-50" id="order-items">
+                        <div class="divide-y divide-white/5" id="order-items">
                             <!-- Items injected -->
                         </div>
                     </div>
@@ -150,20 +167,20 @@
                 <div class="lg:col-span-1 space-y-8">
 
                     <!-- Customer Info -->
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Informasi Pengiriman
+                    <div class="bg-[#121212] p-6 rounded-2xl shadow-xl border border-white/5">
+                        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Informasi Pengiriman
                         </h3>
 
                         <div class="flex items-start gap-4 mb-4">
-                            <div class="mt-1 text-gray-400"><i class="fas fa-map-marker-alt"></i></div>
+                            <div class="mt-1 text-gray-500"><i class="fas fa-map-marker-alt"></i></div>
                             <div>
-                                <p class="font-bold text-sm text-gray-900" id="customer-name">...</p>
+                                <p class="font-bold text-sm text-gray-200" id="customer-name">...</p>
                                 <p class="text-sm text-gray-500 leading-relaxed mt-1" id="shipping-address">...</p>
                             </div>
                         </div>
 
                         <div class="flex items-start gap-4">
-                            <div class="mt-1 text-gray-400"><i class="fas fa-phone"></i></div>
+                            <div class="mt-1 text-gray-500"><i class="fas fa-phone"></i></div>
                             <div>
                                 <p class="text-sm text-gray-500 font-medium" id="customer-contact">...</p>
                             </div>
@@ -171,41 +188,41 @@
                     </div>
 
                     <!-- Payment Summary -->
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Rincian Pembayaran
+                    <div class="bg-[#121212] p-6 rounded-2xl shadow-xl border border-white/5">
+                        <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Rincian Pembayaran
                         </h3>
 
-                        <div class="space-y-3 pb-4 border-b border-gray-100">
+                        <div class="space-y-3 pb-4 border-b border-white/5">
                             <div class="flex justify-between text-sm">
-                                <span class="text-gray-500">Subtotal Produk</span>
-                                <span class="font-medium text-gray-900" id="subtotal-display">Rp0</span>
+                                <span class="text-gray-400">Subtotal Produk</span>
+                                <span class="font-medium text-gray-200" id="subtotal-display">Rp0</span>
                             </div>
                             <div class="flex justify-between text-sm">
-                                <span class="text-gray-500">Biaya Pengiriman & Layanan</span>
-                                <span class="font-medium text-gray-900" id="shipping-cost-display">Rp0</span>
+                                <span class="text-gray-400">Biaya Pengiriman & Layanan</span>
+                                <span class="font-medium text-gray-200" id="shipping-cost-display">Rp0</span>
                             </div>
                         </div>
 
                         <div class="pt-4">
                             <div class="flex justify-between items-end">
-                                <span class="text-sm font-bold text-gray-900">Total Pembayaran</span>
-                                <span class="text-2xl font-black text-gray-900" id="total-display">Rp0</span>
+                                <span class="text-sm font-bold text-gray-200">Total Pembayaran</span>
+                                <span class="text-2xl font-black text-brand-400" id="total-display">Rp0</span>
                             </div>
-                            <p class="text-xs text-right text-gray-400 mt-1">Termasuk PPN jika berlaku</p>
+                            <p class="text-xs text-right text-gray-500 mt-1">Termasuk PPN jika berlaku</p>
                         </div>
 
                         <div id="pay-button-container" class="mt-6 hidden">
                             <button
-                                class="w-full bg-black text-white py-3 rounded-xl font-bold hover:opacity-90 transition shadow-lg">
+                                class="w-full bg-gradient-to-r from-brand-600 to-brand-accent text-white py-3 rounded-xl font-bold hover:shadow-[0_0_20px_rgba(139,92,246,0.5)] transition shadow-lg border border-white/10">
                                 Bayar Sekarang <i class="fas fa-arrow-right ml-2"></i>
                             </button>
                         </div>
                     </div>
 
                     <div class="text-center">
-                        <a href="https://wa.me/6281234567890" target="_blank"
-                            class="text-sm text-gray-400 hover:text-gray-900 transition flex justify-center items-center gap-2">
-                            <i class="fab fa-whatsapp"></i> Butuh bantuan? Hubungi Admin
+                        <a href="#" onclick="openOrderChat()"
+                            class="text-sm text-gray-400 hover:text-white transition flex justify-center items-center gap-2 border border-white/10 py-3 rounded-xl hover:bg-white/5">
+                            <i class="fas fa-headset text-brand-400"></i> Tanya Admin tentang Pesanan ini
                         </a>
                     </div>
 
@@ -216,13 +233,13 @@
         </div>
 
         <div id="error-state"
-            class="hidden text-center py-20 bg-white rounded-2xl shadow-sm mt-8 border border-gray-100 md:w-1/2 mx-auto">
-            <div class="text-red-100 text-6xl mb-4"><i class="fas fa-exclamation-triangle"></i></div>
-            <h3 class="text-xl font-bold text-gray-900">Pesanan Tidak Ditemukan</h3>
-            <p class="text-gray-500 mb-6 px-8" id="error-msg">Mohon periksa kembali link atau pastikan Anda login dengan
+            class="hidden text-center py-20 bg-[#121212] rounded-2xl shadow-xl mt-8 border border-white/5 md:w-1/2 mx-auto">
+            <div class="text-red-500/20 text-6xl mb-4"><i class="fas fa-exclamation-triangle text-red-400"></i></div>
+            <h3 class="text-xl font-bold text-white">Pesanan Tidak Ditemukan</h3>
+            <p class="text-gray-400 mb-6 px-8" id="error-msg">Mohon periksa kembali link atau pastikan Anda login dengan
                 akun yang benar.</p>
             <a href="my-orders.html"
-                class="text-sm font-bold text-black border-b-2 border-black pb-1 hover:text-gray-600 hover:border-gray-600 transition">Kembali
+                class="text-sm font-bold text-brand-400 border-b-2 border-brand-400 pb-1 hover:text-brand-300 hover:border-brand-300 transition">Kembali
                 ke Pesanan</a>
         </div>
 
@@ -247,14 +264,18 @@
             const { data: { session } } = await client.auth.getSession();
             if (!session) { window.location.href = 'index.html?login=true'; return; }
 
+            let order = null; // Declare in outer scope
+
             try {
                 // 2. Fetch Order
-                const { data: order, error } = await client
+                const { data, error } = await client
                     .from('orders')
                     .select(`*, order_details (*, products (name, image_url))`)
                     .eq('id', orderId)
                     .eq('user_id', session.user.id)
                     .single();
+
+                order = data; // Assign to outer variable
 
                 if (error || !order) throw new Error('Pesanan tidak ditemukan.');
 
@@ -302,17 +323,17 @@
                     }
 
                     itemsContainer.innerHTML += `
-                        <div class="p-6 flex gap-4 md:gap-6 hover:bg-gray-50 transition-colors">
-                            <div class="w-20 h-20 flex-shrink-0 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                        <div class="p-6 flex gap-4 md:gap-6 hover:bg-white/5 transition-colors border-b border-white/5 last:border-0 relative group">
+                            <div class="w-20 h-20 flex-shrink-0 bg-[#0a0a0a] rounded-xl overflow-hidden border border-white/10 group-hover:border-brand-500/50 transition">
                                 <img src="${img}" class="w-full h-full object-cover">
                             </div>
                             <div class="flex-1 flex flex-col md:flex-row justify-between">
                                 <div>
-                                    <h4 class="font-bold text-gray-900 text-lg mb-1">${p ? p.name : 'Produk Dihapus'}</h4>
-                                    <p class="text-sm text-gray-500 font-medium">Size: ${detail.size || '-'} | Qty: ${qty} x Rp${price.toLocaleString('id-ID')}</p>
+                                    <h4 class="font-bold text-white text-lg mb-1 group-hover:text-brand-400 transition">${p ? p.name : 'Produk Dihapus'}</h4>
+                                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">Size: ${detail.size || '-'} <span class="mx-2">|</span> Qty: ${qty} x Rp${price.toLocaleString('id-ID')}</p>
                                 </div>
                                 <div class="mt-2 md:mt-0 text-left md:text-right">
-                                    <p class="font-bold text-gray-900 text-lg">Rp${totalLine.toLocaleString('id-ID')}</p>
+                                    <p class="font-black text-white text-lg">Rp${totalLine.toLocaleString('id-ID')}</p>
                                 </div>
                             </div>
                         </div>
@@ -391,16 +412,17 @@
                     const circle = circles[idx];
                     const label = labels[idx];
 
-                    circle.classList.remove('bg-gray-200', 'text-white', 'bg-black', 'bg-green-500');
-                    label.classList.remove('text-gray-400', 'text-black', 'text-green-600');
+                    circle.classList.remove('bg-gray-200', 'text-white', 'bg-black', 'bg-green-500', 'bg-[#1a1a1a]', 'border-[#121212]', 'ring-white/5');
+                    label.classList.remove('text-gray-400', 'text-black', 'text-green-600', 'text-gray-600', 'text-white', 'text-brand-400', 'underline');
 
                     if (isCompleted) {
-                        circle.classList.add('bg-black', 'text-white', 'border-black');
-                        label.classList.add('text-black');
+                        // Completed: Brand Color or White
+                        circle.classList.add('bg-brand-600', 'text-white', 'border-brand-600', 'shadow-[0_0_15px_rgba(167,139,250,0.5)]');
+                        label.classList.add('text-brand-400');
                     } else {
-                        // Current active but not passed
-                        circle.classList.add('bg-black', 'text-white');
-                        label.classList.add('text-black');
+                        // Default/Inactive
+                        circle.classList.add('bg-[#1a1a1a]', 'text-gray-500', 'border-[#121212]', 'ring-2', 'ring-white/5');
+                        label.classList.add('text-gray-600');
                     }
                 };
 
@@ -428,18 +450,19 @@
 
                     if (i < currentStep) {
                         // Completed steps
-                        circle.classList.remove('bg-gray-200');
-                        circle.classList.add('bg-black', 'border-black');
-                        label.classList.remove('text-gray-400');
-                        label.classList.add('text-black');
+                        setActive(i, true);
                     } else if (i === currentStep) {
                         // Current step
-                        circle.classList.remove('bg-gray-200');
-                        circle.classList.add('bg-white', 'border-black', 'text-black', 'ring-4', 'ring-black/10');
+                        circle.classList.remove('bg-[#1a1a1a]', 'text-gray-500', 'border-[#121212]', 'ring-white/5');
+                        circle.classList.add('bg-white', 'border-white', 'text-black', 'ring-4', 'ring-brand-500/30', 'shadow-[0_0_20px_rgba(255,255,255,0.4)]', 'scale-110');
                         circle.querySelector('i').classList.add('text-black');
-                        circle.classList.remove('text-white');
-                        label.classList.remove('text-gray-400');
-                        label.classList.add('text-black', 'underline', 'decoration-2', 'underline-offset-4');
+                        circle.classList.remove('text-white'); // ensure icon is black
+
+                        label.classList.remove('text-gray-600');
+                        label.classList.add('text-white', 'font-black', 'tracking-widest');
+                    } else {
+                        // Future steps
+                        setActive(i, false);
                     }
                 }
             }
@@ -451,6 +474,31 @@
                     toast: true, position: 'top', icon: 'success',
                     title: 'Resi disalin!', showConfirmButton: false, timer: 1500
                 });
+            }
+
+            window.openOrderChat = () => {
+                // Construct Order Context
+                // We can pass order_id and maybe first product name
+                const f = order.order_details[0]?.products?.name || 'Pesanan';
+                const count = order.order_details.length;
+                const contextName = `Order #${String(orderId).slice(0, 8).toUpperCase()} (${count} Item)`;
+
+                const params = new URLSearchParams({
+                    product_id: 'ORDER-' + orderId, // Fake ID for context
+                    product_name: contextName,
+                    product_price: order.total_amount,
+                    // Use first product image as preview if available
+                    product_image: order.order_details[0]?.products?.image_url || ''
+                });
+
+                // Fix image if needed (check logic in contact.html, it expects full url or handles it? contact.html expects full url mostly)
+                let img = order.order_details[0]?.products?.image_url;
+                if (img && !img.startsWith('http')) {
+                    img = client.storage.from('product-images').getPublicUrl(img).data.publicUrl;
+                    params.set('product_image', img);
+                }
+
+                window.location.href = `contact.html?${params.toString()}`;
             }
         });
     </script>

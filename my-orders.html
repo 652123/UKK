@@ -23,7 +23,14 @@
             theme: {
                 extend: {
                     fontFamily: { sans: ['Poppins', 'sans-serif'] },
-                    colors: { brand: '#171717' }
+                    colors: {
+                        brand: {
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                            accent: '#d946ef',
+                        }
+                    }
                 }
             }
         }
@@ -33,34 +40,54 @@
         #login-btn-nav {
             display: none !important;
         }
+
+        /* Custom Scrollbar for container if needed */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #121212;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #444;
+        }
     </style>
 </head>
 
-<body class="bg-gray-50 font-sans text-gray-800">
+<body class="bg-[#050505] font-sans text-gray-100 selection:bg-brand-500 selection:text-white">
 
     <!-- NAVBAR COMPONENT -->
-    <div id="navbar-container"></div>
+    <div id="navbar-container" class="sticky top-0 z-50"></div>
     <script src="js/components/navbar.js"></script>
 
     <main class="container mx-auto max-w-6xl px-4 py-8 min-h-screen">
-        <h1 class="text-3xl font-bold mb-8">Riwayat Pesanan</h1>
+        <h1 class="text-3xl font-black mb-8 text-white tracking-wide">Riwayat Pesanan</h1>
 
         <div id="orders-loading" class="text-center py-20">
-            <i class="fas fa-circle-notch fa-spin text-3xl text-gray-400"></i>
-            <p class="mt-4 text-gray-500">Memuat riwayat...</p>
+            <i class="fas fa-circle-notch fa-spin text-3xl text-brand-400"></i>
+            <p class="mt-4 text-gray-400">Memuat riwayat...</p>
         </div>
 
         <div id="orders-container" class="space-y-6 hidden">
             <!-- Order Cards will be injected here -->
         </div>
 
-        <div id="empty-state" class="hidden text-center py-20 bg-white rounded-xl shadow-sm">
-            <div class="text-6xl mb-4 text-gray-200">📦</div>
-            <h3 class="text-lg font-bold text-gray-900">Belum ada pesanan</h3>
-            <p class="text-gray-500 mb-6">Yuk mulai belanja koleksi terbaru kami!</p>
+        <div id="empty-state" class="hidden text-center py-20 bg-[#121212] rounded-2xl shadow-xl border border-white/5">
+            <div class="text-6xl mb-6 opacity-80">📦</div>
+            <h3 class="text-xl font-bold text-white mb-2">Belum ada pesanan</h3>
+            <p class="text-gray-400 mb-8 max-w-md mx-auto">Yuk mulai belanja koleksi terbaru kami dan nikmati gaya
+                Midnight Luxe!</p>
             <a href="index.html"
-                class="inline-block bg-brand text-white px-6 py-2 rounded-lg font-medium hover:bg-black transition">Belanja
-                Sekarang</a>
+                class="inline-block bg-white text-black px-8 py-3 rounded-xl font-bold hover:bg-gray-200 transition shadow-lg hover:shadow-white/10">
+                Belanja Sekarang
+            </a>
         </div>
     </main>
 
