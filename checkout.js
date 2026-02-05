@@ -284,6 +284,10 @@ function updateTotalDisplay() {
     if (subtotalElement) subtotalElement.innerText = `Rp${itemsSubtotal.toLocaleString('id-ID')}`;
     if (shippingCostElement) shippingCostElement.innerText = `Rp${currentShippingCost.toLocaleString('id-ID')}`;
     if (totalPriceElement) totalPriceElement.innerText = `Rp${grandTotal.toLocaleString('id-ID')}`;
+
+    // Mobile Sticky sync
+    const mobileTotalElement = document.getElementById('total-price-mobile');
+    if (mobileTotalElement) mobileTotalElement.innerText = `Rp${grandTotal.toLocaleString('id-ID')}`;
 }
 
 // --- HANDLE SUBMIT ORDER ---

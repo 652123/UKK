@@ -86,7 +86,7 @@
         /* Number Input Reset */
         input[type='number']::-webkit-inner-spin-button,
         input[type='number']::-webkit-outer-spin-button {
-            -webkit-ap  pearance: none;
+            -webkit-appearance: none;
             margin: 0;
         }
 
@@ -139,37 +139,50 @@
             </div>
         </div>
 
-        <div
-            class="fixed bottom-0 left-0 right-0 bg-[#050505]/90 backdrop-blur-md shadow-[0_-5px_30px_rgba(0,0,0,0.5)] p-6 border-t border-white/10 z-40 rounded-t-2xl md:static md:bg-transparent md:shadow-none md:p-0 md:border-none md:rounded-none md:mt-8 transition-transform duration-300">
-            <div class="container mx-auto max-w-7xl flex flex-col md:flex-row justify-between items-center gap-6">
+        <!-- Mobile Sticky Footer (Shopee Style) -->
+        <div class="fixed bottom-0 left-0 right-0 bg-[#121212] border-t border-white/10 z-[100] pb-safe md:hidden">
+            <div class="flex items-center justify-between h-16 pl-4">
 
-                <div class="flex items-center gap-6 w-full md:w-auto justify-between md:justify-start">
-                    <div class="flex items-center gap-3">
-                        <input type="checkbox" id="select-all" class="custom-checkbox" checked
-                            onchange="toggleSelectAll(this)">
-                        <label for="select-all"
-                            class="text-sm font-semibold cursor-pointer select-none text-gray-300 hover:text-white transition">Pilih
-                            Semua</label>
+                <!-- Left: Select All -->
+                <div class="flex items-center gap-2 h-full">
+                    <input type="checkbox" id="select-all" class="custom-checkbox transform scale-90" checked
+                        onchange="toggleSelectAll(this)">
+                    <label for="select-all" class="text-xs text-gray-400 font-medium">Semua</label>
+                </div>
+
+                <!-- Right: Total & Checkout -->
+                <div class="flex h-full">
+                    <div class="flex flex-col justify-center items-end px-3">
+                        <span class="text-[10px] text-gray-400">Total</span>
+                        <span class="text-sm font-bold text-brand-400" id="total-price">Rp0</span>
                     </div>
-                    <button
-                        class="text-gray-500 hover:text-red-500 text-sm font-medium transition-colors hidden md:block">
-                        Hapus Pilihan
+                    <button onclick="proceedToCheckout()"
+                        class="h-full bg-brand-600 text-white font-bold px-6 text-sm flex items-center justify-center hover:bg-brand-500 transition-colors uppercase tracking-wide">
+                        Checkout (<span id="total-items-count">0</span>)
                     </button>
                 </div>
-
-                <div class="flex items-center gap-6 w-full md:w-auto justify-end">
-                    <div class="text-right">
-                        <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest mb-1">Total (<span
-                                id="total-items-count" class="text-white">0</span> item)</p>
-                        <p class="text-3xl font-black text-white tracking-tight" id="total-price">Rp0</p>
-                    </div>
-                    <a href="#" onclick="proceedToCheckout()"
-                        class="bg-gradient-to-r from-brand-600 to-brand-accent text-white font-bold px-12 py-4 rounded-xl hover:shadow-[0_0_20px_rgba(139,92,246,0.5)] transition-all transform hover:scale-105 shadow-lg w-full md:w-auto text-center tracking-widest">
-                        CHECKOUT
-                    </a>
-                </div>
-
             </div>
+        </div>
+
+        <!-- Desktop Footer (Unchanged logic but hidden on mobile) -->
+        <div
+            class="hidden md:flex justify-end items-center gap-8 mt-8 bg-[#121212] p-6 rounded-xl border border-white/5">
+            <div class="flex items-center gap-2">
+                <input type="checkbox" id="select-all-desktop" class="custom-checkbox" checked
+                    onchange="toggleSelectAll(this)">
+                <label for="select-all-desktop" class="text-sm text-gray-300">Pilih Semua</label>
+            </div>
+
+            <div class="flex-1 text-right">
+                <span class="text-gray-400 text-sm mr-2">Total (<span id="total-items-count-desktop">0</span>
+                    produk):</span>
+                <span class="text-2xl font-bold text-brand-400" id="total-price-desktop">Rp0</span>
+            </div>
+
+            <button onclick="proceedToCheckout()"
+                class="bg-brand-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-brand-500 transition shadow-lg shadow-brand-500/20">
+                Checkout
+            </button>
         </div>
 
     </main>

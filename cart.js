@@ -90,51 +90,83 @@ async function loadCartItems() {
                 }
             }
 
+            // Shopee-like Mobile Layout & Desktop Table Layout
             const html = `
-                <div class="cart-item group grid grid-cols-1 md:grid-cols-12 gap-4 bg-[#121212] p-4 rounded-xl items-center border border-white/5 hover:border-brand-500/30 transition shadow-lg relative overflow-hidden" data-id="${item.id}" data-price="${product.price}">
+                <div class="cart-item group bg-[#121212] border-b border-white/5 last:border-0 md:border md:rounded-xl md:mb-4 md:p-4 relative" data-id="${item.id}" data-price="${product.price}">
                     
-                    <!-- Mobile: Checkbox & Product Info -->
-                    <div class="col-span-1 md:col-span-6 flex items-center gap-4">
-                        <input type="checkbox" class="cart-check custom-checkbox" value="${item.id}" checked onchange="calculateTotal()">
+                    <!-- Mobile View: Compact Flex Row -->
+                    <div class="flex items-start gap-3 p-4 md:hidden">
+                        <!-- Checkbox -->
+                        <div class="self-center shrink-0">
+                            <input type="checkbox" class="cart-check custom-checkbox w-5 h-5" value="${item.id}" checked onchange="calculateTotal()">
+                        </div>
                         
-                        <a href="product-detail.html?id=${product.id}" class="block w-20 h-24 rounded-lg overflow-hidden bg-gray-800 shrink-0 border border-white/5">
+                        <!-- Image -->
+                        <a href="product-detail.html?id=${product.id}" class="shrink-0 w-20 h-20 bg-gray-800 rounded-lg overflow-hidden border border-white/5">
                             <img src="${imgUrl}" class="w-full h-full object-cover">
                         </a>
 
-                        <div>
-                            <h3 class="font-bold text-white line-clamp-1 text-sm md:text-base group-hover:text-brand-400 transition-colors">
-                                <a href="product-detail.html?id=${product.id}">${product.name}</a>
-                            </h3>
-                            <p class="text-xs text-gray-400 mt-1">Ukuran: <span class="font-bold text-gray-200">${item.size || '-'}</span></p>
-                            <p class="text-xs text-brand-400 mt-1 md:hidden font-bold">${formatRupiah(product.price)}</p>
+                        <!-- Content -->
+                        <div class="flex-1 min-w-0 flex flex-col h-full justify-between gap-1">
+                            <!-- Title & Delete Header -->
+                            <div class="flex justify-between items-start gap-2">
+                                <h3 class="text-xs font-medium text-gray-100 line-clamp-2 leading-relaxed">
+                                    <a href="product-detail.html?id=${product.id}">${product.name}</a>
+                                </h3>
+                                <!-- Mobile Trash Icon -->
+                                <button onclick="deleteCartItem('${item.id}')" class="text-gray-600 hover:text-red-500 -mt-1 -mr-1 p-2">
+                                    <i class="fas fa-trash-alt text-xs"></i>
+                                </button>
+                            </div>
+
+                            <!-- Variant Badge -->
+                            <div>
+                                <span class="bg-white/5 text-gray-400 text-[10px] px-1.5 py-0.5 rounded border border-white/5">Variasi: ${item.size || 'STD'}</span>
+                            </div>
+
+                            <!-- Price & Qty Row -->
+                            <div class="flex justify-between items-end mt-1">
+                                <p class="text-sm text-brand-400 font-bold">${formatRupiah(product.price)}</p>
+                                
+                                <div class="flex items-center border border-white/10 rounded overflow-hidden h-7">
+                                    <button onclick="updateCartQty('${item.id}', -1, ${product.price})" class="w-7 h-full text-gray-400 hover:text-white active:bg-white/10 flex items-center justify-center border-r border-white/10"><i class="fas fa-minus text-[10px]"></i></button>
+                                    <input type="text" readonly value="${item.quantity}" class="w-8 h-full text-center bg-transparent text-white text-xs font-medium border-none focus:outline-none product-qty-mobile m-0 p-0">
+                                    <button onclick="updateCartQty('${item.id}', 1, ${product.price})" class="w-7 h-full text-gray-400 hover:text-white active:bg-white/10 flex items-center justify-center border-l border-white/10"><i class="fas fa-plus text-[10px]"></i></button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Desktop: Price -->
-                    <div class="col-span-2 text-center hidden md:block">
-                        <span class="font-bold text-gray-200">${formatRupiah(product.price)}</span>
-                    </div>
-
-                    <!-- Quantity -->
-                    <div class="col-span-1 md:col-span-2 flex justify-center">
-                        <div class="flex items-center bg-black border border-white/10 rounded-lg overflow-hidden h-9">
-                            <button onclick="updateCartQty('${item.id}', -1, ${product.price})" class="w-8 h-full text-gray-400 hover:text-white hover:bg-white/10 transition">−</button>
-                            <input type="text" readonly value="${item.quantity}" class="w-10 h-full text-center bg-transparent text-white text-sm font-bold border-none focus:outline-none product-qty">
-                            <button onclick="updateCartQty('${item.id}', 1, ${product.price})" class="w-8 h-full text-gray-400 hover:text-white hover:bg-white/10 transition">+</button>
+                    <!-- Desktop View (Using Grid like before) -->
+                    <div class="hidden md:grid grid-cols-12 gap-4 items-center">
+                        <div class="col-span-6 flex items-center gap-4">
+                            <input type="checkbox" class="cart-check custom-checkbox" value="${item.id}" checked onchange="calculateTotal()">
+                            <img src="${imgUrl}" class="w-16 h-16 rounded object-cover border border-white/10">
+                            <div>
+                                <h3 class="font-bold text-white text-sm line-clamp-1">${product.name}</h3>
+                                <p class="text-xs text-gray-500">Size: ${item.size}</p>
+                            </div>
+                        </div>
+                        <div class="col-span-2 text-center text-sm text-gray-300">
+                            ${formatRupiah(product.price)}
+                        </div>
+                        <div class="col-span-2 flex justify-center">
+                            <div class="flex items-center bg-black border border-white/10 rounded-lg overflow-hidden h-8">
+                                <button onclick="updateCartQty('${item.id}', -1, ${product.price})" class="w-8 h-full text-gray-400 hover:text-white hover:bg-white/10">-</button>
+                                <input type="number" readonly value="${item.quantity}" class="w-10 h-full text-center bg-transparent text-white text-sm font-bold border-none focus:outline-none product-qty-desktop">
+                                <button onclick="updateCartQty('${item.id}', 1, ${product.price})" class="w-8 h-full text-gray-400 hover:text-white hover:bg-white/10">+</button>
+                            </div>
+                        </div>
+                        <div class="col-span-1 text-center font-bold text-brand-400 text-sm item-total">
+                            ${formatRupiah(product.price * item.quantity)}
+                        </div>
+                        <div class="col-span-1 text-center">
+                            <button onclick="deleteCartItem('${item.id}')" class="text-gray-500 hover:text-red-500 p-2">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Total per Item -->
-                    <div class="col-span-1 text-center hidden md:block">
-                        <span class="font-bold text-brand-400 item-total">${formatRupiah(product.price * item.quantity)}</span>
-                    </div>
-
-                    <!-- Action -->
-                    <div class="col-span-1 md:col-span-1 text-right md:text-center absolute top-4 right-4 md:static">
-                        <button onclick="deleteCartItem('${item.id}')" class="text-gray-600 hover:text-red-500 transition p-2">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </div>
                 </div>
             `;
             container.insertAdjacentHTML('beforeend', html);
@@ -152,14 +184,20 @@ async function loadCartItems() {
 
 window.updateCartQty = async (itemId, change, price) => {
     const itemEl = document.querySelector(`.cart-item[data-id="${itemId}"]`);
-    const input = itemEl.querySelector('.product-qty');
+
+    // Select BOTH inputs (mobile & desktop)
+    const inputs = itemEl.querySelectorAll('input[readonly]'); // Selects product-qty-mobile & product-qty-desktop
     const totalEl = itemEl.querySelector('.item-total');
 
-    let newQty = parseInt(input.value) + change;
+    // Use value from the first found input as reference
+    let currentQty = parseInt(inputs[0].value);
+    let newQty = currentQty + change;
+
     if (newQty < 1) return; // Minimal 1
 
-    // Optimistic UI
-    input.value = newQty;
+    // Optimistic UI: Update ALL inputs
+    inputs.forEach(input => input.value = newQty);
+
     if (totalEl) totalEl.innerText = formatRupiah(newQty * price);
     calculateTotal();
 
@@ -229,6 +267,13 @@ window.deleteCartItem = async (itemId) => {
 window.toggleSelectAll = (source) => {
     const checkboxes = document.querySelectorAll('.cart-check');
     checkboxes.forEach(cb => cb.checked = source.checked);
+
+    // Sync the other Select All checkbox (Mobile <-> Desktop)
+    const mobileSelect = document.getElementById('select-all');
+    const desktopSelect = document.getElementById('select-all-desktop');
+    if (mobileSelect) mobileSelect.checked = source.checked;
+    if (desktopSelect) desktopSelect.checked = source.checked;
+
     calculateTotal();
 };
 
@@ -236,18 +281,40 @@ window.calculateTotal = () => {
     let total = 0;
     let count = 0;
 
-    const checkboxes = document.querySelectorAll('.cart-check:checked');
-    checkboxes.forEach(cb => {
-        const itemEl = cb.closest('.cart-item');
-        const price = parseInt(itemEl.dataset.price);
-        const qty = parseInt(itemEl.querySelector('.product-qty').value);
+    // Iterate over ITEMS, not checkboxes, to verify selection state
+    // This prevents double counting because we have duplicate checkboxes for Mobile/Desktop layout
+    const cartItems = document.querySelectorAll('.cart-item');
 
-        total += price * qty;
-        count += 1;
+    cartItems.forEach(item => {
+        // Check if ANY checkbox inside this item is checked
+        // (Since we sync them, checking one is enough)
+        const isChecked = item.querySelector('.cart-check:checked');
+
+        if (isChecked) {
+            const price = parseInt(item.dataset.price);
+
+            // Get quantity from the valid input (mobile or desktop)
+            const qtyInput = item.querySelector('input[readonly]');
+            const qty = parseInt(qtyInput.value || 0);
+
+            total += price * qty;
+            count += qty; // Count total ITEMS (quantity), not just rows
+        }
     });
 
-    document.getElementById('total-items-count').innerText = count;
-    document.getElementById('total-price').innerText = formatRupiah(total);
+    // Update UI
+    const totalItemsElements = ['total-items-count', 'total-items-count-desktop'];
+    const totalPriceElements = ['total-price', 'total-price-desktop'];
+
+    totalItemsElements.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = count;
+    });
+
+    totalPriceElements.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = formatRupiah(total);
+    });
 };
 
 window.proceedToCheckout = () => {
