@@ -297,52 +297,64 @@
                             </div>
 
                             <!-- Action Buttons -->
-                            <div class="space-y-4 mt-auto pt-8 border-t border-white/5">
-                                <!-- Quantity & Add to Cart -->
-                                <div class="flex gap-4">
-                                    <div
-                                        class="flex items-center bg-[#121212] border border-white/10 rounded-xl overflow-hidden shrink-0">
-                                        <button onclick="updateQty(-1)"
-                                            class="w-12 h-14 text-gray-400 hover:text-white hover:bg-white/5 transition text-lg font-medium">−</button>
-                                        <input id="qty-input" type="number" value="1" min="1"
-                                            onchange="validateQty(this)"
-                                            class="w-16 h-14 text-center font-bold text-white bg-transparent border-none focus:outline-none focus:ring-0">
-                                        <button onclick="updateQty(1)"
-                                            class="w-12 h-14 text-gray-400 hover:text-white hover:bg-white/5 transition text-lg font-medium">+</button>
+                            <!-- Desktop: Normal Flow | Mobile: Fixed Bottom -->
+                            <div
+                                class="fixed bottom-0 left-0 right-0 p-4 bg-[#121212]/90 backdrop-blur-xl border-t border-white/10 z-50 lg:static lg:bg-transparent lg:p-0 lg:border-none lg:z-auto transition-all duration-300 transform translate-y-0">
+                                <div class="container mx-auto max-w-7xl lg:px-0">
+                                    <div class="space-y-3 lg:space-y-4 lg:pt-8 lg:border-t lg:border-white/5">
+                                        <!-- Quantity & Add to Cart -->
+                                        <div class="flex gap-4">
+                                            <div
+                                                class="flex items-center bg-[#121212] border border-white/10 rounded-xl overflow-hidden shrink-0">
+                                                <button onclick="updateQty(-1)"
+                                                    class="w-12 h-14 text-gray-400 hover:text-white hover:bg-white/5 transition text-lg font-medium">−</button>
+                                                <input id="qty-input" type="number" value="1" min="1"
+                                                    onchange="validateQty(this)"
+                                                    class="w-16 h-14 text-center font-bold text-white bg-transparent border-none focus:outline-none focus:ring-0">
+                                                <button onclick="updateQty(1)"
+                                                    class="w-12 h-14 text-gray-400 hover:text-white hover:bg-white/5 transition text-lg font-medium">+</button>
+                                            </div>
+                                            <button onclick="contactAdmin()"
+                                                class="w-14 h-14 rounded-xl border border-white/20 text-gray-400 hover:bg-brand-600 hover:text-white hover:border-brand-600 transition flex items-center justify-center shrink-0"
+                                                title="Chat Admin">
+                                                <i class="fas fa-comment-dots text-xl"></i>
+                                            </button>
+                                            <button onclick="addToCart(false)" id="btn-cart"
+                                                class="flex-1 h-14 bg-[#121212] border border-white/20 text-white font-bold rounded-xl hover:bg-white hover:text-black hover:border-white transition-all text-sm uppercase tracking-wider flex items-center justify-center gap-3 group">
+                                                <i
+                                                    class="fas fa-shopping-bag group-hover:scale-110 transition-transform"></i>
+                                                <span class="hidden sm:inline">Keranjang</span>
+                                            </button>
+                                        </div>
+
+                                        <!-- Buy Now -->
+                                        <button onclick="addToCart(true)" id="btn-buy-now"
+                                            class="w-full h-14 bg-gradient-to-r from-brand-600 to-brand-accent text-white font-bold rounded-xl hover:shadow-[0_0_30px_rgba(139,92,246,0.4)] transition-all uppercase tracking-widest text-sm flex items-center justify-center gap-3 group relative overflow-hidden">
+                                            <div
+                                                class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:animate-shine">
+                                            </div>
+                                            <span>Beli Sekarang</span>
+                                            <i
+                                                class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                                        </button>
+
                                     </div>
-                                    <button onclick="contactAdmin()"
-                                        class="w-14 h-14 rounded-xl border border-white/20 text-gray-400 hover:bg-brand-600 hover:text-white hover:border-brand-600 transition flex items-center justify-center shrink-0"
-                                        title="Chat Admin">
-                                        <i class="fas fa-comment-dots text-xl"></i>
-                                    </button>
-                                    <button onclick="addToCart(false)" id="btn-cart"
-                                        class="flex-1 h-14 bg-[#121212] border border-white/20 text-white font-bold rounded-xl hover:bg-white hover:text-black hover:border-white transition-all text-sm uppercase tracking-wider flex items-center justify-center gap-3 group">
-                                        <i class="fas fa-shopping-bag group-hover:scale-110 transition-transform"></i>
-                                        <span class="hidden sm:inline">Keranjang</span>
-                                    </button>
                                 </div>
-
-                                <!-- Buy Now -->
-                                <button onclick="addToCart(true)" id="btn-buy-now"
-                                    class="w-full h-14 bg-gradient-to-r from-brand-600 to-brand-accent text-white font-bold rounded-xl hover:shadow-[0_0_30px_rgba(139,92,246,0.4)] transition-all uppercase tracking-widest text-sm flex items-center justify-center gap-3 group relative overflow-hidden">
-                                    <div
-                                        class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:animate-shine">
-                                    </div>
-                                    <span>Beli Sekarang</span>
-                                    <i class="fas fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-                                </button>
-
-                                <!-- Trust Badge -->
-                                <p
-                                    class="text-center text-[10px] uppercase tracking-widest text-gray-500 flex items-center justify-center gap-6 pt-4">
-                                    <span class="flex items-center gap-2"><i
-                                            class="fas fa-shield-alt text-brand-400"></i> Original</span>
-                                    <span class="flex items-center gap-2"><i class="fas fa-bolt text-yellow-400"></i>
-                                        Fast Delivery</span>
-                                    <span class="flex items-center gap-2"><i class="fas fa-sync text-blue-400"></i>
-                                        Easy Return</span>
-                                </p>
                             </div>
+
+                            <!-- Spacer for Mobile Fixed Bottom -->
+                            <div class="h-24 lg:hidden"></div>
+
+                            <!-- Trust Badge -->
+                            <p
+                                class="text-center text-[10px] uppercase tracking-widest text-gray-500 flex items-center justify-center gap-6 pt-4 lg:pt-8">
+                                <span class="flex items-center gap-2"><i class="fas fa-shield-alt text-brand-400"></i>
+                                    Original</span>
+                                <span class="flex items-center gap-2"><i class="fas fa-bolt text-yellow-400"></i>
+                                    Fast Delivery</span>
+                                <span class="flex items-center gap-2"><i class="fas fa-sync text-blue-400"></i>
+                                    Easy Return</span>
+                            </p>
 
                         </div>
                     </div>

@@ -255,12 +255,23 @@
         class="fixed inset-0 bg-black/50 z-40 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
     <script>
         function toggleSidebar() {
-            // Sidebar toggle logic if needed in admin
-            const sidebar = document.querySelector('.md\\:flex-col'); // Select sidebar container
-            // Since structure might differ, checking classes
-            // For now simple alert if not implemented or just simple class toggle
-            // Actually admin layout in manage_orders.html uses 'hidden md:flex' so mobile toggling needs JS similar to dashboard.
-            // Implemented minimal below:
+            const sidebar = document.querySelector('.md\\:flex-col');
+            const overlay = document.getElementById('mobile-overlay');
+
+            // Toggle translate class manually or handle via class manipulation
+            // Since the sidebar div definition in this file (Line 90) uses 'hidden md:flex', 
+            // we should probably switch it to 'fixed inset-y-0 ... transform' style like manage_users.html if we want animation.
+            // But to be safe and quick without rewriting layout:
+
+            if (sidebar.classList.contains('hidden')) {
+                sidebar.classList.remove('hidden');
+                sidebar.classList.add('fixed', 'inset-0', 'z-50', 'w-64'); // Make it look like drawer
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('hidden');
+                sidebar.classList.remove('fixed', 'inset-0', 'z-50', 'w-64');
+                overlay.classList.add('hidden');
+            }
         }
     </script>
 
