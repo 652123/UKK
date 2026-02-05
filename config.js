@@ -24,8 +24,9 @@ if (window.supabase) {
 window.db = supabaseClient; // Alias global utama
 
 // KONFIGURASI BACKEND (Midtrans, dll)
-// Ubah ini saat deploy ke hosting (misal: https://api.tokokeren.com)
-window.API_BASE_URL = 'http://localhost:3000';
+// Auto-detect environment
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+window.API_BASE_URL = isLocal ? 'http://localhost:3000' : ''; // Use relative path on production
 
 // --- GLOBAL THEME SETUP ---
 // Override SweetAlert2 Default agar sesuai tema Dark Mode Website
