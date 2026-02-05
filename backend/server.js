@@ -16,7 +16,7 @@ const fs = require('fs');
 
 // Serve config.js dynamically with Env Vars
 app.get('/config.js', (req, res) => {
-    const configPath = path.join(__dirname, '../config.js');
+    const configPath = path.join(__dirname, '../config.template.js');
     fs.readFile(configPath, 'utf8', (err, data) => {
         if (err) {
             console.error('Error reading config.js:', err);
