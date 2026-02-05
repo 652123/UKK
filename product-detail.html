@@ -643,14 +643,37 @@
             // Update UI Standard
             document.getElementById('p-name').innerText = p.name;
             document.getElementById('p-price').innerText = `Rp${p.price.toLocaleString('id-ID')}`;
-            updateStockUI(p.stock); // Use helper for consistency
+
+            // Initial Stock UI (Total)
+            updateStockUI(p.stock);
+
+            // Handle Size Buttons (Disable if 0 stock in size_stock)
+            if (p.size_stock) {
+                const sizes = ['S', 'M', 'L', 'XL', 'XXL'];
+                sizes.forEach(size => {
+                    const stockForSize = p.size_stock[size] || 0;
+                    // Find button by text content or logic. Usually buttons are static.
+                    // Let's assume buttons are in order or find them by text.
+                    const btns = document.querySelectorAll('.size-btn');
+                    btns.forEach(btn => {
+                        if (btn.innerText.trim() === size) {
+                            if (stockForSize <= 0) {
+                                btn.disabled = true;
+                                btn.classList.add('opacity-30', 'cursor-not-allowed', 'line-through');
+                                btn.classList.remove('hover:border-brand-500', 'hover:text-brand-400');
+                                btn.onclick = null; // Remove listener
+                            }
+                        }
+                    });
+                });
+            }
 
             // REALTIME SUBSCRIPTION
             window.db.channel(`public:product:${p.id}`)
                 .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'products', filter: `id=eq.${p.id}` }, (payload) => {
-                    console.log("Realtime Stock Update:", payload.new.stock);
-                    updateStockUI(payload.new.stock);
-                    currentProduct.stock = payload.new.stock; // Update local state
+                    // Refresh entire page or simple reload to get new size_stock
+                    // Since size_stock is JSON, simple update might be tricky. Reload is safest.
+                    window.location.reload();
                 })
                 .subscribe();
 
@@ -672,9 +695,8 @@
                     product_id: p.id,
                     product_name: p.name,
                     product_price: p.price,
-                    product_image: p.image_url // Assuming standard URL or handled by contact.html
+                    product_image: p.image_url
                 });
-                // Fix image URL if it's a path
                 let img = p.image_url;
                 if (!img.startsWith('http')) {
                     img = window.db.storage.from('product-images').getPublicUrl(img).data.publicUrl;
@@ -701,21 +723,14 @@
 
             // Dynamic specs
             document.getElementById('p-material').innerText = p.material || '-';
-            // Also update the new bottom specs section
-            // document.getElementById('spec-material').innerText = p.material || '-'; // This line is now redundant due to the update above
-
             document.getElementById('p-fit').innerText = p.fit || '-';
-            document.getElementById('spec-fit').innerText = p.fit || '-';
 
-            // document.getElementById('spec-stock').innerText = p.stock + " buah"; // This line is now redundant due to the update above
-
-            // Handle Description (preserve newlines)
+            // Handle Description
             const descElem = document.getElementById('p-desc');
             descElem.innerText = p.description || "Tidak ada deskripsi.";
 
             // Image
-            // Gunakan helper yang konsisten jika ada, atau manual:
-            let imgUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 600"%3E%3Crect fill="%23f3f4f6" width="500" height="600"/%3E%3Ctext x="50%25" y="50%25" fill="%239ca3af" font-size="16" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
+            let imgUrl = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg\" viewBox="0 0 500 600"%3E%3Crect fill="%23f3f4f6" width="500" height="600"/%3E%3Ctext x="50%25" y="50%25" fill="%239ca3af" font-size="16" text-anchor="middle" dy=".3em"%3ENo Image%3C/text%3E%3C/svg%3E';
             if (p.image_url) {
                 if (p.image_url.startsWith('http')) imgUrl = p.image_url;
                 else {
@@ -725,66 +740,42 @@
             }
             document.getElementById('p-img').src = imgUrl;
 
-            // Stok Logic
+            // Stok Logic Global
+            if (p.stock < 1) {
+                disablePurchasing();
+            } else {
+                document.getElementById('qty-input').max = p.stock;
+            }
+        }
+
+        function disablePurchasing() {
             const btnCart = document.getElementById('btn-cart');
             const btnBuy = document.getElementById('btn-buy-now');
 
-            if (p.stock < 1) {
-                btnCart.disabled = true;
-                btnCart.innerText = "Stok Habis";
-                btnCart.classList.add('opacity-50', 'cursor-not-allowed', 'bg-gray-200', 'border-gray-200');
-                btnCart.classList.remove('hover:bg-gray-50', 'border-black');
+            btnCart.disabled = true;
+            btnCart.innerText = "Stok Habis";
+            btnCart.classList.add('opacity-50', 'cursor-not-allowed', 'bg-gray-200', 'border-gray-200');
+            btnCart.classList.remove('hover:bg-gray-50', 'border-black');
 
-                btnBuy.style.display = 'none'; // Sembunyikan tombol beli jika habis
-
-                document.getElementById('qty-input').value = 0;
-            } else {
-                // Set Max Input
-                document.getElementById('qty-input').max = p.stock;
-            }
+            btnBuy.style.display = 'none';
+            document.getElementById('qty-input').value = 0;
         }
 
         function updateStockUI(stock) {
             document.getElementById('p-stock').innerText = stock;
             document.getElementById('spec-stock').innerText = stock;
 
-            const badge = document.getElementById('stock-badge');
-            const btnCart = document.getElementById('btn-cart');
-            const btnBuy = document.getElementById('btn-buy-now');
-            const qtyInput = document.getElementById('qty-input');
-
-            if (stock > 0) {
-                badge.innerText = "Ready Stock";
-                badge.className = "text-xs font-bold text-green-600 bg-green-50 px-3 py-1.5 rounded-full";
-
-                btnCart.disabled = false;
-                btnCart.innerHTML = `<i class="fas fa-shopping-bag group-hover:scale-110 transition-transform"></i> <span class="hidden sm:inline">Keranjang</span>`;
-                btnCart.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-gray-200', 'border-gray-200');
-                btnCart.classList.add('hover:bg-white', 'hover:text-black');
-
-                btnBuy.style.display = 'flex';
-                qtyInput.max = stock;
-                if (parseInt(qtyInput.value) > stock) qtyInput.value = stock;
-
-            } else {
-                badge.innerText = "Stok Habis";
-                badge.className = "text-xs font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-full";
-
-                btnCart.disabled = true;
-                btnCart.innerText = "Stok Habis";
-                btnCart.classList.add('opacity-50', 'cursor-not-allowed', 'bg-gray-200', 'border-gray-200');
-
-                btnBuy.style.display = 'none';
-                qtyInput.value = 0;
-            }
+            // Only update buttons if global stock is 0
+            if (stock <= 0) disablePurchasing();
         }
 
         // --- INTERACTION ---
         window.selectSize = (btn, size) => {
+            if (btn.disabled) return;
+
             // Reset all
             document.querySelectorAll('.size-btn').forEach(b => {
                 b.classList.remove('bg-brand-600', 'text-white', 'border-brand-500', 'ring-2', 'ring-brand-500/50');
-                // Ensure default state
                 b.classList.add('hover:border-black');
             });
 
@@ -794,15 +785,42 @@
 
             selectedSize = size;
             document.getElementById('size-alert').classList.add('hidden');
+
+            // UPDATE STOCK DISPLAY BASED ON SIZE
+            let limit = currentProduct.stock; // Default total
+            if (currentProduct.size_stock && currentProduct.size_stock[size] !== undefined) {
+                limit = currentProduct.size_stock[size];
+                updateStockUI(limit);
+            }
+
+            // Reset qty to 1
+            const qtyInput = document.getElementById('qty-input');
+            qtyInput.value = 1;
+            qtyInput.max = limit;
         };
 
         window.updateQty = (change) => {
-            if (!currentProduct || currentProduct.stock < 1) return;
+            let limit = currentProduct.stock;
+            if (selectedSize && currentProduct.size_stock && currentProduct.size_stock[selectedSize] !== undefined) {
+                limit = currentProduct.size_stock[selectedSize];
+            }
+
+            if (limit < 1) return;
+
             const input = document.getElementById('qty-input');
-            let val = parseInt(input.value) || 1;
-            val += change;
+            let val = parseInt(input.value) + change;
             if (val < 1) val = 1;
-            if (val > currentProduct.stock) val = currentProduct.stock;
+            if (val > limit) {
+                val = limit;
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'warning',
+                    title: `Maksimal stok ukuran ${selectedSize || ''} adalah ${limit}`,
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            }
             input.value = val;
         };
 
@@ -1184,6 +1202,44 @@
             btn.innerText = 'Mengirim...';
 
             try {
+                // --- SECURITY CHECK: VERIFIED PURCHASE ONLY ---
+                // Cek apakah user pernah beli produk ini dan statusnya SELESAI
+                const { data: orders, error: checkError } = await window.db
+                    .from('order_details')
+                    .select('order_id, orders!inner(status, user_id)')
+                    .eq('product_id', currentProduct.id)
+                    .eq('orders.user_id', currentUserId)
+                    .eq('orders.status', 'selesai')
+                    .limit(1);
+
+                if (checkError) {
+                    console.error("Check Purchase Error:", checkError);
+                    throw new Error("Gagal memverifikasi riwayat pembelian.");
+                }
+
+                if (!orders || orders.length === 0) {
+                    throw new Error("Anda belum pernah membeli produk ini atau pesanan belum selesai. Hanya pembeli yang sudah menyelesaikan transaksi yang boleh memberi ulasan.");
+                }
+
+                // --- CHECK DUPLICATE REVIEW (Prevent Spam) ---
+                const { data: existingReview, error: dupError } = await window.db
+                    .from('reviews')
+                    .select('id')
+                    .eq('product_id', currentProduct.id)
+                    .eq('user_id', currentUserId)
+                    .maybeSingle();
+
+                if (dupError) {
+                    console.error("Duplicate Check Error:", dupError);
+                    // Continue? Maybe safest to not block if check fails, or block. Let's block to be safe.
+                    // Actually dupError might be network issue.
+                }
+
+                if (existingReview) {
+                    throw new Error("Anda sudah memberikan ulasan untuk produk ini. Terima kasih!");
+                }
+                // --- END CHECK DUPLICATE ---
+
                 const { error } = await window.db.from('reviews').insert([{
                     product_id: currentProduct.id,
                     user_id: currentUserId,

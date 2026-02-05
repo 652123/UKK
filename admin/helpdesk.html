@@ -245,13 +245,20 @@
 
                     <!-- INPUT -->
                     <div id="input-area" class="p-6 bg-[#09090b]/90 border-t border-white/5 hidden backdrop-blur-xl">
-                        <form id="chat-form" class="flex gap-4 max-w-5xl mx-auto">
+                        <form id="chat-form" class="flex gap-4 max-w-5xl mx-auto items-end">
+                            <!-- Image Input -->
+                            <input type="file" id="img-input" class="hidden" accept="image/*">
+                            <button type="button" onclick="document.getElementById('img-input').click()"
+                                class="w-14 h-14 rounded-2xl bg-[#18181b] border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 transition flex-shrink-0 flex items-center justify-center">
+                                <i class="fas fa-image text-xl"></i>
+                            </button>
+
                             <input type="text" id="msg-input"
                                 class="flex-1 bg-[#18181b] border border-white/10 rounded-2xl px-6 py-4 text-white focus:ring-1 focus:ring-brand-500 focus:border-brand-500 outline-none transition shadow-inner placeholder-gray-600 text-sm"
                                 placeholder="Ketik pesan balasan...">
                             <button type="submit"
                                 class="w-14 h-14 bg-gradient-to-br from-brand-600 to-brand-500 hover:scale-105 text-white rounded-2xl shadow-xl flex items-center justify-center transition disabled:opacity-50">
-                                <i class="fas fa-paper-plane"></i>
+                                <i class="fas fa-paper-plane text-lg"></i>
                             </button>
                         </form>
                     </div>
@@ -270,7 +277,27 @@
             currentAdminId = data.session?.user.id;
 
             // initUnreadBadge(); // Removed redundant call
-            loadTicketList();
+            await loadTicketList(); // Make this awaitable
+
+            // CHECK URL PARAM for Auto-Open
+            const urlParams = new URLSearchParams(window.location.search);
+            const autoTicketId = urlParams.get('ticket_id');
+            if (autoTicketId) {
+                // Find ticket data to open chat
+                const { data: t } = await client.from('helpdesk_tickets').select('*').eq('id', autoTicketId).single();
+                if (t) {
+                    // We need profile for name/avatar
+                    const { data: p } = await client.from('profiles').select('name, avatar_url').eq('id', t.user_id).single();
+                    let avatarSrc = '';
+                    let realName = t.user_name || 'User';
+                    if (p) {
+                        realName = p.name || realName;
+                        if (p.avatar_url) avatarSrc = p.avatar_url.startsWith('http') ? p.avatar_url : `https://rkpkfgenzpfynypeceto.supabase.co/storage/v1/object/public/product-images/${p.avatar_url}`;
+                    }
+
+                    openChat(t.id, formatName(realName), t.subject, avatarSrc);
+                }
+            }
 
             // Realtime New Ticket
             client.channel('admin-tickets')
@@ -465,7 +492,35 @@
                 .eq('ticket_id', ticketId)
                 .order('created_at', { ascending: true });
 
-            if (msgs) msgs.forEach(m => renderBubble(m));
+            let lastDateStr = '';
+
+            if (msgs) {
+                msgs.forEach(m => {
+                    const d = new Date(m.created_at);
+                    const dateStr = d.toDateString();
+
+                    // Separator check
+                    if (dateStr !== lastDateStr) {
+                        const today = new Date().toDateString();
+                        const yesterday = new Date();
+                        yesterday.setDate(new Date().getDate() - 1);
+                        const yesterdayStr = yesterday.toDateString();
+
+                        let label = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                        if (dateStr === today) label = 'Hari Ini';
+                        else if (dateStr === yesterdayStr) label = 'Kemarin';
+
+                        const sepHtml = `
+                        <div class="flex justify-center my-6">
+                            <span class="text-[10px] font-bold text-gray-500 bg-white/5 px-3 py-1 rounded-full uppercase tracking-wider border border-white/5 shadow-sm">${label}</span>
+                        </div>`;
+                        area.insertAdjacentHTML('beforeend', sepHtml);
+                        lastDateStr = dateStr;
+                    }
+
+                    renderBubble(m);
+                });
+            }
             scrollToBottom();
         }
 
@@ -498,7 +553,60 @@
             area.scrollTop = area.scrollHeight;
         }
 
-        // --- SEND MESSAGE ---
+
+        // --- IMAGE UPLOAD HANDLER ---
+        document.getElementById('img-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file || !activeTicketId) return;
+
+            if (file.size > 2 * 1024 * 1024) return Swal.fire('Error', 'Ukuran maksimal 2MB', 'warning');
+
+            // Optimistic Loading Icon
+            const btn = document.querySelector('button[onclick*="img-input"]');
+            const originalIcon = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin text-white"></i>';
+            btn.disabled = true;
+
+            try {
+                const fileExt = file.name.split('.').pop();
+                // Folder 'admin_uploads' or shared? Let's use chat_attachments prefix just like user
+                const fileName = `chat_attachments/ADMIN-${activeTicketId}-${Date.now()}.${fileExt}`;
+
+                const { error: uploadError } = await client.storage
+                    .from('product-images')
+                    .upload(fileName, file);
+
+                if (uploadError) throw uploadError;
+
+                const { data } = client.storage.from('product-images').getPublicUrl(fileName);
+                const publicUrl = data.publicUrl;
+
+                // Send Image Msg
+                renderBubble({ message: publicUrl, sender_role: 'admin', is_image: true, created_at: new Date().toISOString() });
+                scrollToBottom();
+
+                await client.from('helpdesk_messages').insert({
+                    ticket_id: activeTicketId,
+                    sender_id: currentAdminId,
+                    sender_role: 'admin',
+                    message: publicUrl,
+                    is_image: true
+                });
+
+                // Update Ticket
+                await client.from('helpdesk_tickets').update({ updated_at: new Date() }).eq('id', activeTicketId);
+
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Gagal', 'Upload gambar gagal.', 'error');
+            } finally {
+                btn.innerHTML = originalIcon;
+                btn.disabled = false;
+                e.target.value = '';
+            }
+        });
+
+        // --- SEND TEXT MESSAGE ---
         document.getElementById('chat-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const input = document.getElementById('msg-input');

@@ -352,21 +352,69 @@
             });
 
             if (result.isConfirmed) {
+                // Attempt 1: Normal Delete
                 const { error } = await client
                     .from('products')
                     .delete()
                     .eq('id', productId);
 
                 if (error) {
-                    Swal.fire({
-                        title: 'Gagal',
-                        text: 'Gagal menghapus produk: ' + error.message,
-                        icon: 'error',
-                        background: '#121212',
-                        color: '#fff',
-                        confirmButtonColor: '#d33'
-                    });
+                    if (error.code === '23503' || error.message.includes('foreign key constraint') || error.code === '409') {
+                        // Tawarkan Paksa Hapus
+                        const forceDelete = await Swal.fire({
+                            title: 'Gagal Hapus (Terkunci)',
+                            html: `
+                                <p class="mb-3">Produk ini terkunci karena ada di Riwayat Pesanan.</p>
+                                <p class="text-sm text-yellow-500 font-bold">MODE SIMULASI:</p>
+                                <p class="text-sm">Apakah Anda ingin memaksa hapus? <br> (Data di riwayat pesanan orang lain juga akan hilang!)</p>
+                            `,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            cancelButtonColor: '#3085d6',
+                            confirmButtonText: 'YA, PAKSA HAPUS',
+                            cancelButtonText: 'Batal',
+                            background: '#121212',
+                            color: '#fff'
+                        });
+
+                        if (forceDelete.isConfirmed) {
+                            // 1. Hapus child records di order_details
+                            const { error: errDetails } = await client
+                                .from('order_details')
+                                .delete()
+                                .eq('product_id', productId);
+
+                            if (errDetails) {
+                                Swal.fire('Gagal', 'Gagal hapus riwayat: ' + errDetails.message, 'error');
+                            } else {
+                                // 2. Hapus produk
+                                const { error: errFinal } = await client
+                                    .from('products')
+                                    .delete()
+                                    .eq('id', productId);
+
+                                if (errFinal) {
+                                    Swal.fire('Gagal', 'Masih gagal hapus produk: ' + errFinal.message, 'error');
+                                } else {
+                                    await Swal.fire('Sukses', 'Produk dan riwayatnya berhasil dipaksa hapus.', 'success');
+                                    fetchProducts();
+                                }
+                            }
+                        }
+                    } else {
+                        // Other error
+                        Swal.fire({
+                            title: 'Gagal',
+                            text: 'Gagal menghapus produk: ' + error.message,
+                            icon: 'error',
+                            background: '#121212',
+                            color: '#fff',
+                            confirmButtonColor: '#d33'
+                        });
+                    }
                 } else {
+                    // Success
                     await Swal.fire({
                         title: 'Terhapus!',
                         text: 'Produk berhasil dihapus.',

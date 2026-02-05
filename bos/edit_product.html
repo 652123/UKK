@@ -190,10 +190,55 @@
                                     <input type="number" id="cost_price" name="cost_price" required
                                         class="w-full px-4 py-3 bg-[#0a0a0a] border border-white/10 rounded-xl text-gray-200 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-all">
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-bold text-gray-400 mb-2">Stok</label>
-                                    <input type="number" id="stock" name="stock" required
-                                        class="w-full px-4 py-3 bg-[#0a0a0a] border border-white/10 rounded-xl text-gray-200 focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 transition-all">
+                                <!-- STOCK PER SIZE SECTION -->
+                                <div class="col-span-1 md:col-span-3">
+                                    <label
+                                        class="block text-sm font-bold text-gray-400 mb-3 uppercase tracking-wider">Stok
+                                        Per Ukuran (Edit)</label>
+                                    <div
+                                        class="grid grid-cols-3 sm:grid-cols-6 gap-3 p-4 bg-[#121212] rounded-xl border border-white/5">
+
+                                        <!-- Size Inputs -->
+                                        <div>
+                                            <span class="block text-xs text-gray-500 mb-1 text-center">S</span>
+                                            <input type="number" id="stock_s" name="stock_s" min="0" value="0"
+                                                oninput="updateTotalStock()"
+                                                class="size-stock-input w-full px-2 py-2 bg-[#0a0a0a] border border-white/10 rounded-lg text-white text-center focus:ring-1 focus:ring-brand-500">
+                                        </div>
+                                        <div>
+                                            <span class="block text-xs text-gray-500 mb-1 text-center">M</span>
+                                            <input type="number" id="stock_m" name="stock_m" min="0" value="0"
+                                                oninput="updateTotalStock()"
+                                                class="size-stock-input w-full px-2 py-2 bg-[#0a0a0a] border border-white/10 rounded-lg text-white text-center focus:ring-1 focus:ring-brand-500">
+                                        </div>
+                                        <div>
+                                            <span class="block text-xs text-gray-500 mb-1 text-center">L</span>
+                                            <input type="number" id="stock_l" name="stock_l" min="0" value="0"
+                                                oninput="updateTotalStock()"
+                                                class="size-stock-input w-full px-2 py-2 bg-[#0a0a0a] border border-white/10 rounded-lg text-white text-center focus:ring-1 focus:ring-brand-500">
+                                        </div>
+                                        <div>
+                                            <span class="block text-xs text-gray-500 mb-1 text-center">XL</span>
+                                            <input type="number" id="stock_xl" name="stock_xl" min="0" value="0"
+                                                oninput="updateTotalStock()"
+                                                class="size-stock-input w-full px-2 py-2 bg-[#0a0a0a] border border-white/10 rounded-lg text-white text-center focus:ring-1 focus:ring-brand-500">
+                                        </div>
+                                        <div>
+                                            <span class="block text-xs text-gray-500 mb-1 text-center">XXL</span>
+                                            <input type="number" id="stock_xxl" name="stock_xxl" min="0" value="0"
+                                                oninput="updateTotalStock()"
+                                                class="size-stock-input w-full px-2 py-2 bg-[#0a0a0a] border border-white/10 rounded-lg text-white text-center focus:ring-1 focus:ring-brand-500">
+                                        </div>
+
+                                        <!-- Total Display -->
+                                        <div
+                                            class="bg-brand-900/20 border border-brand-500/20 rounded-lg flex flex-col items-center justify-center">
+                                            <span
+                                                class="text-[10px] text-brand-400 uppercase tracking-wider">Total</span>
+                                            <span id="total-stock-display" class="font-bold text-white text-lg">0</span>
+                                            <input type="hidden" name="stock" id="total-stock-input" value="0">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -268,6 +313,17 @@
                 }
             }
 
+            // --- CALCULATE TOTAL STOCK ---
+            function updateTotalStock() {
+                const inputs = document.querySelectorAll('.size-stock-input');
+                let total = 0;
+                inputs.forEach(input => {
+                    total += parseInt(input.value) || 0;
+                });
+                document.getElementById('total-stock-display').innerText = total;
+                document.getElementById('total-stock-input').value = total;
+            }
+
             // 3. LOAD KATEGORI & DATA PRODUK
             async function loadData() {
                 const client = window.db || window.supabase;
@@ -288,10 +344,7 @@
                     return;
                 }
 
-                // A. Kategori hardcoded
-
-
-                // B. Load Produk
+                // Load Produk
                 const { data: product, error: prodError } = await client
                     .from('products')
                     .select('*')
@@ -314,10 +367,27 @@
                 // Fill Form
                 document.getElementById('product_id').value = product.id;
                 document.getElementById('name').value = product.name;
-                // document.getElementById('category-select').value = product.category || "";
                 document.getElementById('price').value = product.price;
                 document.getElementById('cost_price').value = product.cost_price || 0;
-                document.getElementById('stock').value = product.stock;
+
+                // --- FILL SIZE STOCK ---
+                if (product.size_stock) {
+                    document.getElementById('stock_s').value = product.size_stock.S || 0;
+                    document.getElementById('stock_m').value = product.size_stock.M || 0;
+                    document.getElementById('stock_l').value = product.size_stock.L || 0;
+                    document.getElementById('stock_xl').value = product.size_stock.XL || 0;
+                    document.getElementById('stock_xxl').value = product.size_stock.XXL || 0;
+                }
+
+                // Recalculate Total based on loaded size inputs
+                updateTotalStock();
+
+                // If existing total stock doesn't match sum of sizes (e.g. legacy data), use legacy stock for display?
+                // For now, we prefer the sum of sizes if size_stock exists. 
+                // If size_stock is null, all inputs are 0, total is 0. 
+                // We should probably init inputs from legacy total if size_stock is missing? 
+                // Complexity: better just let user input fresh sizes.
+
                 document.getElementById('description').value = product.description;
                 document.getElementById('existing_image').value = product.image_url;
 
@@ -372,15 +442,24 @@
                         imageUrl = fileName;
                     }
 
-                    // B. UPDATE DB
+                    // B. PREPARE SIZE DATA
+                    const sizeStock = {
+                        S: parseInt(formData.get('stock_s')) || 0,
+                        M: parseInt(formData.get('stock_m')) || 0,
+                        L: parseInt(formData.get('stock_l')) || 0,
+                        XL: parseInt(formData.get('stock_xl')) || 0,
+                        XXL: parseInt(formData.get('stock_xxl')) || 0
+                    };
+
+                    // C. UPDATE DB
                     const { error: dbErr } = await client
                         .from('products')
                         .update({
                             name: formData.get('name'),
-                            // category: formData.get('category'), // Category removed
                             price: formData.get('price'),
                             cost_price: formData.get('cost_price'),
-                            stock: formData.get('stock'),
+                            stock: formData.get('stock'), // Total
+                            size_stock: sizeStock,      // Size JSON
                             description: formData.get('description'),
                             image_url: imageUrl
                         })
@@ -401,10 +480,16 @@
 
                 } catch (error) {
                     console.error(error);
+
+                    let errorMsg = error.message;
+                    if (errorMsg.includes('409') || errorMsg.toLowerCase().includes('duplicate') || errorMsg.toLowerCase().includes('unique')) {
+                        errorMsg = '<b>Gagal: Konflik Data!</b><br>Nama produk mungkin sudah digunakan oleh produk lain.';
+                    }
+
                     Swal.fire({
                         icon: 'error',
-                        title: 'Gagal',
-                        text: error.message,
+                        title: 'Gagal Menyimpan',
+                        html: errorMsg,
                         confirmButtonColor: '#d33',
                         background: '#121212',
                         color: '#fff'

@@ -246,7 +246,27 @@ window.calculateTotal = () => {
         count += 1;
     });
 
-    // Update UI Summary
     document.getElementById('total-items-count').innerText = count;
     document.getElementById('total-price').innerText = formatRupiah(total);
+};
+
+window.proceedToCheckout = () => {
+    // 1. Cek apakah ada item yang dipilih/tersedia
+    const totalItems = parseInt(document.getElementById('total-items-count').innerText);
+    if (totalItems === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Keranjang Kosong',
+            text: 'Pilih minimal satu produk untuk checkout.',
+            confirmButtonColor: '#111827'
+        });
+        return;
+    }
+
+    // 2. KUNCI PERBAIKAN: Hapus sisa data "Beli Sekarang" (Direct Buy)
+    // Agar checkout.js mendeteksi ini sebagai pembelian dari Keranjang (Database), bukan Direct Buy.
+    localStorage.removeItem('direct_buy_item');
+
+    // 3. Redirect ke Checkout
+    window.location.href = 'checkout.html';
 };

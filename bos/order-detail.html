@@ -239,6 +239,25 @@
                                         <p class="text-sm text-gray-400 leading-relaxed mt-1" id="cust-address">...
                                         </p>
                                     </div>
+                                    <!-- Customer Insight Container -->
+                                    <div id="customer-insights" class="hidden mt-4 pt-4 border-t border-white/5">
+                                        <p class="text-xs text-brand-400 font-bold uppercase mb-2">💎 Customer Insight
+                                        </p>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <div
+                                                class="bg-brand-500/10 rounded-lg p-2 border border-brand-500/20 text-center">
+                                                <span class="block text-lg font-bold text-white"
+                                                    id="insight-count">0</span>
+                                                <span class="text-[10px] text-gray-400 uppercase">Order Selesai</span>
+                                            </div>
+                                            <div
+                                                class="bg-brand-500/10 rounded-lg p-2 border border-brand-500/20 text-center">
+                                                <span class="block text-sm font-bold text-white"
+                                                    id="insight-total">Rp0</span>
+                                                <span class="text-[10px] text-gray-400 uppercase">Total Belanja</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -372,6 +391,20 @@
                 document.getElementById('cust-name').innerText = custName;
                 document.getElementById('cust-contact').innerHTML = `${custPhone}<br><span class="text-gray-400 text-xs">${custEmail}</span>`;
                 document.getElementById('cust-address').innerText = custAddress;
+
+                // --- SHOW ORDER NOTES (BOSS VIEW) ---
+                const addrForNotes = typeof order.shipping_address === 'string' ? JSON.parse(order.shipping_address) : order.shipping_address;
+                if (addrForNotes && addrForNotes.notes) {
+                    const custInfoContainer = document.getElementById('cust-address').parentNode;
+                    if (!document.getElementById('boss-order-notes')) {
+                        const noteHtml = `
+                        <div class="mt-4 pt-4 border-t border-white/5" id="boss-order-notes">
+                            <p class="text-xs text-yellow-500 font-bold uppercase mb-1"><i class="fas fa-sticky-note mr-1"></i> Catatan Pembeli</p>
+                            <p class="text-sm text-gray-200 bg-yellow-500/10 p-3 rounded-lg border border-yellow-500/20 italic">"${addrForNotes.notes}"</p>
+                        </div>`;
+                        custInfoContainer.insertAdjacentHTML('beforeend', noteHtml);
+                    }
+                }
 
                 // --- BOSS EXCLUSIVE: LOYALTY INSIGHTS ---
                 // We need to fetch aggregate data for this user
@@ -553,8 +586,11 @@
             async function fetchCustomerStats(userId) {
                 if (!userId) return;
 
+                const db = window.db; // Safe ref
+                if (!db) { console.warn("Supabase not init"); return; }
+
                 // Query: Count finished orders and sum totals
-                const { data: stats, error } = await window.db
+                const { data: stats, error } = await db
                     .from('orders')
                     .select('total_amount, status')
                     .eq('user_id', userId)
@@ -564,25 +600,17 @@
                     const totalOrderCount = stats.length;
                     const totalSpend = stats.reduce((sum, o) => sum + (o.total_amount || 0), 0);
 
-                    // Inject into UI
-                    const container = document.getElementById('cust-contact').parentElement.parentElement; // Go up to p-6 container
+                    // Update UI if container exists
+                    const container = document.getElementById('customer-insights');
+                    const countEl = document.getElementById('insight-count');
+                    const totalEl = document.getElementById('insight-total');
 
-                    const insightHTML = `
-                        <div class="mt-4 pt-4 border-t border-white/5">
-                            <p class="text-xs text-brand-400 font-bold uppercase mb-2">💎 Customer Insight</p>
-                            <div class="grid grid-cols-2 gap-2">
-                                <div class="bg-brand-500/10 rounded-lg p-2 border border-brand-500/20 text-center">
-                                    <span class="block text-lg font-bold text-white">${totalOrderCount}</span>
-                                    <span class="text-[10px] text-gray-400 uppercase">Selesai</span>
-                                </div>
-                                <div class="bg-brand-500/10 rounded-lg p-2 border border-brand-500/20 text-center">
-                                    <span class="block text-sm font-bold text-white">Rp${(totalSpend / 1000).toFixed(0)}k</span>
-                                    <span class="text-[10px] text-gray-400 uppercase">Total Jajan</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    container.insertAdjacentHTML('beforeend', insightHTML);
+                    if (container && countEl && totalEl) {
+                        container.classList.remove('hidden');
+                        countEl.innerText = totalOrderCount;
+                        totalEl.innerText = `Rp${(totalSpend / 1000).toFixed(0)}k`;
+                        totalEl.title = `Rp${totalSpend.toLocaleString('id-ID')}`;
+                    }
                 }
             }
 

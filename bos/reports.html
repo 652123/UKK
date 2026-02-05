@@ -435,6 +435,7 @@
                         *,
                         order_details (
                             quantity,
+                            price_at_purchase,
                             products (cost_price)
                         )
                     `)
@@ -461,26 +462,30 @@
             let totalOrderCount = orders.length;
             let totalSold = 0; // REVISI: Ini sekarang jadi "Barang Selesai"
 
-            // REVISI: Profit is fixed at 30% of Total Revenue
             let totalRealProfit = 0;
 
             orders.forEach(o => {
                 totalRev += (o.total_amount || 0);
 
+                let orderProductRevenue = 0;
                 let orderCost = 0;
 
-                // Hitung Cost per Order
+                // Hitung Cost & Revenue Produk (Tanpa Ongkir)
                 if (o.order_details && Array.isArray(o.order_details)) {
                     o.order_details.forEach(detail => {
                         // Handle potential array/object structure from join
                         const product = Array.isArray(detail.products) ? detail.products[0] : detail.products;
                         const cost = product ? (product.cost_price || 0) : 0;
-                        orderCost += (detail.quantity || 1) * cost;
+                        const qty = detail.quantity || 1;
+                        const price = detail.price_at_purchase || 0;
+
+                        orderCost += qty * cost;
+                        orderProductRevenue += qty * price;
                     });
                 }
 
-                // Profit = Revenue - Cost
-                totalRealProfit += ((o.total_amount || 0) - orderCost);
+                // Profit = Pendapatan Produk - Modal Produk (Ongkir tidak dihitung sebagai profit)
+                totalRealProfit += (orderProductRevenue - orderCost);
 
                 // LOGIC BARANG SELESAI
                 // Hanya hitung qty jika status == 'selesai'
@@ -522,15 +527,20 @@
                 const totalStr = "Rp " + (order.total_amount || 0).toLocaleString('id-ID');
 
                 // Real Profit per order
+                let orderProductRevenue = 0;
                 let orderCost = 0;
                 if (order.order_details && Array.isArray(order.order_details)) {
                     order.order_details.forEach(detail => {
                         const product = Array.isArray(detail.products) ? detail.products[0] : detail.products;
                         const cost = product ? (product.cost_price || 0) : 0;
-                        orderCost += (detail.quantity || 1) * cost;
+                        const qty = detail.quantity || 1;
+                        const price = detail.price_at_purchase || 0;
+
+                        orderCost += qty * cost;
+                        orderProductRevenue += qty * price;
                     });
                 }
-                const profitVal = (order.total_amount || 0) - orderCost;
+                const profitVal = orderProductRevenue - orderCost;
                 const profitStr = "Rp " + profitVal.toLocaleString('id-ID');
 
                 // Qty Header

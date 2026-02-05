@@ -238,7 +238,7 @@ function updateShippingEstimate() {
         case 'DI Yogyakarta': baseCost = 12000; break;
         case 'Jawa Barat': baseCost = 16000; break;
         case 'DKI Jakarta': baseCost = 18000; break;
-        case 'Bali': baseCost = 14000; break;
+        case 'Banten': baseCost = 14000; break;
         default: baseCost = 40000; // Luar Jawa
     }
 
@@ -405,7 +405,7 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 order_id: midtransOrderId, // Send unique ID
-                gross_amount: grandTotal,
+                // gross_amount: grandTotal, // SECURITY: RECALCULATED SERVER SIDE. DO NOT SEND.
                 customer_details: {
                     first_name: shippingAddress.name,
                     email: session ? session.user.email : 'customer@example.com',
@@ -436,7 +436,31 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
                     // This ensures DB status is 'dikemas' when user lands on success page.
                     // alert("Pembayaran Berhasil! Memproses tiket..."); // Optional Feedback
 
-                    fetch(`http://localhost:3000/api/payment/${midtransOrderId}`)
+                    // alert("Pembayaran Berhasil! Memproses tiket..."); // Optional Feedback
+
+                    // Use Dynamic Base URL
+                    const apiUrl = (window.API_BASE_URL || 'http://localhost:3000') + `/api/payment/${midtransOrderId}`;
+
+                    // RETRY LOGIC: Coba cek status 3x jika gagal (mengatasi latency Sandbox/Network)
+                    const fetchWithRetry = async (url, retries = 3, delay = 1000) => {
+                        for (let i = 0; i < retries; i++) {
+                            try {
+                                const res = await fetch(url);
+                                if (!res.ok) {
+                                    // Jika 404, mungkin server belum siap/sync. Throw error biar retry.
+                                    if (res.status === 404) throw new Error("Transaction not found (404)");
+                                    throw new Error(`Server returned ${res.status}`);
+                                }
+                                return res; // Success
+                            } catch (err) {
+                                console.warn(`Attempt ${i + 1} failed: ${err.message}. Retrying in ${delay}ms...`);
+                                if (i < retries - 1) await new Promise(r => setTimeout(r, delay));
+                                else throw err;
+                            }
+                        }
+                    };
+
+                    fetchWithRetry(apiUrl)
                         .then(() => {
                             // Cek apakah ini Direct Buy?
                             const isDirectBuy = cartItems.length > 0 && cartItems[0].is_direct;
@@ -455,8 +479,10 @@ document.getElementById('checkout-form').addEventListener('submit', async (e) =>
                             window.location.href = `order-success.html?id=${order.id}`;
                         })
                         .catch(err => {
-                            console.error("Sync error but payment success:", err);
+                            console.error("Sync error but payment success (redirecting anyway):", err);
                             // Fallback redirect
+                            // Walaupun cek status gagal, user sudah bayar sukses di Frontend (Snap).
+                            // Kita alihkan saja, biarkan Webhook atau Page Success yang menangani status akhirnya.
                             window.location.href = `order-success.html?id=${order.id}`;
                         });
                 },

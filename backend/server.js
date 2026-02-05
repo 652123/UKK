@@ -71,14 +71,72 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABAS
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Create Snap Transaction Endpoint
+// Create Snap Transaction Endpoint
 app.post('/api/payment', async (req, res) => {
-    const { order_id, gross_amount, customer_details } = req.body;
+    const { order_id, customer_details } = req.body;
+    // SECURITY UPDATE: Ignore gross_amount from client. Calculate it here.
 
     try {
+        // 1. Fetch Order Data (Shipping Cost is here)
+        const { data: order, error: orderError } = await supabase
+            .from('orders')
+            .select('id, shipping_cost, total_amount')
+            .eq('id', order_id.split('-')[0]) // Handle possible timestamp suffix if passed here (though usually passed as just DB ID in body, let's be safe)
+            .single();
+
+        if (orderError || !order) {
+            // Fallback: If order_id came in as "ID-TIMESTAMP", try parsing it.
+            // Ideally client sends just "ID" but let's robustify.
+            const cleanId = order_id.split('-')[0];
+            const { data: retryOrder, error: retryError } = await supabase
+                .from('orders')
+                .select('id, shipping_cost')
+                .eq('id', cleanId)
+                .single();
+
+            if (retryError || !retryOrder) throw new Error("Order not found in database.");
+            order = retryOrder;
+        }
+
+        // 2. Fetch Order Details (Products & Quantities)
+        const { data: items, error: itemsError } = await supabase
+            .from('order_details')
+            .select('product_id, quantity')
+            .eq('order_id', order.id);
+
+        if (itemsError) throw itemsError;
+
+        // 3. Fetch Real Product Prices
+        let calculatedSubtotal = 0;
+        const productIds = items.map(i => i.product_id);
+
+        const { data: products, error: prodError } = await supabase
+            .from('products')
+            .select('id, price')
+            .in('id', productIds);
+
+        if (prodError) throw prodError;
+
+        // 4. Calculate Total
+        for (const item of items) {
+            const product = products.find(p => p.id === item.product_id);
+            if (product) {
+                calculatedSubtotal += product.price * item.quantity;
+            }
+        }
+
+        const serviceFee = 1000;
+        const finalAmount = calculatedSubtotal + (order.shipping_cost || 0) + serviceFee;
+
+        console.log(`Verifying Price for Order ${order.id}: Calculated ${finalAmount} (Sub: ${calculatedSubtotal}, Ship: ${order.shipping_cost})`);
+
+        // OPTIONAL: Update order total in DB if different (e.g. price changed mid-transaction)
+        // await supabase.from('orders').update({ total_amount: finalAmount }).eq('id', order.id);
+
         const parameter = {
             transaction_details: {
-                order_id: order_id,
-                gross_amount: Math.round(gross_amount) // Ensure integer
+                order_id: order_id, // Keep the ID sent by client (likely has timestamp suffix)
+                gross_amount: Math.round(finalAmount) // VERIFIED AMOUNT
             },
             credit_card: {
                 secure: true
@@ -178,31 +236,34 @@ app.post('/api/notification', async (req, res) => {
     }
 });
 // --- HELPER: Finalize Order (Update Status & Decrement Stock) ---
+// --- HELPER: Finalize Order (Update Status & Decrement Stock) ---
 async function finalizeOrder(realOrderId) {
-    // 1. Get current status to prevent double processing
-    const { data: order, error: orderError } = await supabase
+    console.log(`Finalizing Order ${realOrderId}...`);
+
+    // 1. ATOMIC LOCK
+    const { data: updatedOrder, error: updateError } = await supabase
         .from('orders')
-        .select('status')
+        .update({ status: 'dikemas' })
         .eq('id', realOrderId)
-        .single();
+        .eq('status', 'menunggu_pembayaran')
+        .select();
 
-    if (orderError) {
-        console.error(`Error fetching order ${realOrderId}:`, orderError.message);
+    if (updateError) {
+        console.error(`Error locking order ${realOrderId}:`, updateError.message);
         return;
     }
 
-    // Idempotency check: If already paid/processing, skip stock decrement
-    if (['dikemas', 'dikirim', 'selesai'].includes(order.status)) {
-        console.log(`Order ${realOrderId} already processed (Status: ${order.status}). Skipping stock deduction.`);
+    if (!updatedOrder || updatedOrder.length === 0) {
+        console.log(`Order ${realOrderId} was confirmed or processed by another request. Skipping.`);
         return;
     }
 
-    console.log(`Finalizing Order ${realOrderId}... Decrementing Stock.`);
+    console.log(`Order ${realOrderId} status set to 'dikemas'. Proceeding to stock reduction.`);
 
-    // 2. Fetch Order Details
+    // 2. Fetch Order Details (Include SIZE)
     const { data: details, error: detailsError } = await supabase
         .from('order_details')
-        .select('product_id, quantity')
+        .select('product_id, quantity, size') // Added 'size'
         .eq('order_id', realOrderId);
 
     if (detailsError) {
@@ -211,35 +272,41 @@ async function finalizeOrder(realOrderId) {
         // 3. Decrement Stock Loop
         for (const item of details) {
             try {
-                // Fetch current stock
+                // Fetch current stock info
                 const { data: prod } = await supabase
                     .from('products')
-                    .select('stock')
+                    .select('stock, size_stock') // Fetch size_stock too
                     .eq('id', item.product_id)
                     .single();
 
                 if (prod) {
-                    const newStock = Math.max(0, prod.stock - item.quantity);
+                    // A. Update Total Stock
+                    const newTotalStock = Math.max(0, prod.stock - item.quantity);
+
+                    // B. Update Size Stock (if exists)
+                    let newSizeStock = prod.size_stock;
+                    if (newSizeStock && item.size && newSizeStock[item.size] !== undefined) {
+                        const currentSizeStock = parseInt(newSizeStock[item.size]) || 0;
+                        newSizeStock[item.size] = Math.max(0, currentSizeStock - item.quantity);
+                        console.log(`Size Stock updated for ${item.product_id} [${item.size}]: ${currentSizeStock} -> ${newSizeStock[item.size]}`);
+                    }
+
+                    // C. Commit Updates
                     await supabase
                         .from('products')
-                        .update({ stock: newStock })
+                        .update({
+                            stock: newTotalStock,
+                            size_stock: newSizeStock
+                        })
                         .eq('id', item.product_id);
-                    console.log(`Stock updated for Product ${item.product_id}: ${prod.stock} -> ${newStock}`);
+
+                    console.log(`Stock updated for Product ${item.product_id}: ${prod.stock} -> ${newTotalStock}`);
                 }
             } catch (err) {
                 console.error(`Failed to update stock for product ${item.product_id}:`, err);
             }
         }
     }
-
-    // 4. Update Status to 'dikemas'
-    const { error: updateError } = await supabase
-        .from('orders')
-        .update({ status: 'dikemas' })
-        .eq('id', realOrderId);
-
-    if (updateError) console.error("Error updating status:", updateError.message);
-    else console.log(`Order ${realOrderId} status updated to 'dikemas'.`);
 }
 
 // Check Transaction Status Endpoint
@@ -270,11 +337,24 @@ app.get('/api/payment/:orderId', async (req, res) => {
         }
 
         res.json(statusResponse);
+        res.json(statusResponse);
     } catch (error) {
-        console.error("Status Check Error:", error.message);
-        res.status(404).json({ error: "Transaction not found", details: error.message });
+        // Detailed Error Logging
+        console.error(`Status Check Failed for ${orderId}:`, error.message);
+        if (error.ApiResponse) {
+            console.error("Midtrans API Response:", JSON.stringify(error.ApiResponse));
+        }
+        res.status(404).json({
+            error: "Transaction not found or API Error",
+            details: error.message,
+            tip: "Check Server Key & Environment (Sandbox/Prod)"
+        });
     }
 });
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-});
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`🏍️💨 Server running on http://localhost:${PORT}`);
+    });
+}
+
+module.exports = app;

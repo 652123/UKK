@@ -240,14 +240,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.db) {
             clearInterval(interval);
 
+            // Verify initial session immediately (Fixes UI delay)
+            checkAuth([], true);
+
             // Listen for Auth Changes
             window.db.auth.onAuthStateChange((event, session) => {
                 // console.log("Auth State Change:", event);
 
                 if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED_OR_USER_UPDATED') {
-                    // Re-run checkAuth to update UI (Pass true for isPublic to avoid redirect loops on public pages)
-                    // We detect current path to decide allowedRoles? 
-                    // For simplicity, we just trigger UI update logic if on public page
                     const isAdminPage = window.location.pathname.includes('/admin/');
                     const isBosPage = window.location.pathname.includes('/bos/');
 

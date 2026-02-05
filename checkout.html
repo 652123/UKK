@@ -90,6 +90,29 @@
             right: 10px;
             color: #8b5cf6;
         }
+
+        /* Ensure all form inputs have white text */
+        input,
+        textarea,
+        select {
+            color: #ffffff !important;
+        }
+
+        input::placeholder,
+        textarea::placeholder {
+            color: #6b7280 !important;
+        }
+
+        select option {
+            background-color: #0a0a0a;
+            color: #ffffff;
+        }
+
+        /* Make form labels more visible */
+        label.text-gray-500,
+        .text-gray-500.uppercase {
+            color: #9ca3af !important;
+        }
     </style>
 </head>
 
@@ -196,7 +219,7 @@
                                             <option value="DI Yogyakarta">DI Yogyakarta</option>
                                             <option value="Jawa Barat">Jawa Barat</option>
                                             <option value="DKI Jakarta">DKI Jakarta</option>
-                                            <option value="Bali">Bali</option>
+                                            <option value="Bali">Banten</option>
                                             <option value="Luar Jawa">Luar Pulau Jawa</option>
                                         </select>
                                         <div

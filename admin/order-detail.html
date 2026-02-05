@@ -362,6 +362,37 @@
             document.getElementById('cust-contact').innerHTML = `${custPhone}<br><span class="text-gray-400 text-xs">${custEmail}</span>`;
             document.getElementById('cust-address').innerText = custAddress;
 
+            // --- SHOW ORDER NOTES (ADMIN VIEW) ---
+            const addrForNotes = typeof order.shipping_address === 'string' ? JSON.parse(order.shipping_address) : order.shipping_address;
+            if (addrForNotes && addrForNotes.notes) {
+                const custInfoContainer = document.getElementById('cust-address').parentNode;
+                if (!document.getElementById('admin-order-notes')) {
+                    const noteHtml = `
+                    <div class="mt-4 pt-4 border-t border-white/5" id="admin-order-notes">
+                        <p class="text-xs text-yellow-500 font-bold uppercase mb-1"><i class="fas fa-sticky-note mr-1"></i> Catatan Pembeli</p>
+                        <p class="text-sm text-gray-200 bg-yellow-500/10 p-3 rounded-lg border border-yellow-500/20 italic">"${addrForNotes.notes}"</p>
+                    </div>`;
+                    custInfoContainer.insertAdjacentHTML('beforeend', noteHtml);
+                }
+            }
+
+            // Add Chat Button (Check if exists first to avoid dupes if re-render)
+            const custInfoContainer = document.getElementById('cust-address').parentNode.parentNode;
+            if (!document.getElementById('btn-chat-user')) {
+                const btnHtml = `
+                <div class="pt-4 mt-2 border-t border-white/5">
+                    <button id="btn-chat-user" onclick="chatUser()" 
+                        class="w-full py-2 bg-brand-500/10 text-brand-400 border border-brand-500/20 hover:bg-brand-500/20 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2">
+                        <i class="fas fa-comment-dots"></i> Chat Customer
+                    </button>
+                </div>
+                `;
+                custInfoContainer.insertAdjacentHTML('beforeend', btnHtml);
+            }
+
+            // Global ref for chatUser
+            window.currentOrder = order;
+
             // 4. Products
             const itemsContainer = document.getElementById('order-items');
             itemsContainer.innerHTML = '';
@@ -540,6 +571,86 @@
             const btn = document.getElementById('btn-copy-resi');
             btn.innerHTML = '<i class="fas fa-check text-green-500"></i>';
             setTimeout(() => btn.innerHTML = '<i class="fas fa-copy"></i>', 2000);
+        }
+
+        async function chatUser() {
+            const order = window.currentOrder;
+            if (!order || !order.user_id) {
+                Swal.fire('Error', 'Data user tidak lengkap', 'error');
+                return;
+            }
+
+            // 1. Check existing open ticket for this user
+            // We specifically look for one that might be related to this order, OR just the latest open one.
+            const { data: tickets } = await window.db
+                .from('helpdesk_tickets')
+                .select('id, subject')
+                .eq('user_id', order.user_id)
+                .eq('status', 'open')
+                .order('updated_at', { ascending: false });
+
+            let ticketId = null;
+
+            if (tickets && tickets.length > 0) {
+                // Prefer ticket with Subject containing Order ID
+                const match = tickets.find(t => t.subject.includes(String(order.id).slice(0, 8).toUpperCase()));
+                if (match) ticketId = match.id;
+                else ticketId = tickets[0].id; // Fallback to latest open
+            }
+
+            if (!ticketId) {
+                // 2. Create NEW Ticket
+                // We need user email/name
+                let userName = order.customer_name || 'Customer';
+                let userEmail = '-';
+
+                // Try parse shipping address for better info
+                try {
+                    const addr = typeof order.shipping_address === 'string' ? JSON.parse(order.shipping_address) : order.shipping_address;
+                    userName = addr.name || addr.penerima || userName;
+                    userEmail = addr.email || userEmail;
+                } catch (e) { }
+
+                // If email is missing, we try to fetch profile? 
+                // helpdesk_tickets schema likes user_email, but it's optional? Let's check contact.html again.
+                // It inserts user_email.
+
+                // Let's force fetch profile to be safe
+                const { data: profile } = await window.db.from('profiles').select('email, name').eq('id', order.user_id).single();
+                if (profile) {
+                    userEmail = profile.email || userEmail;
+                    userName = profile.name || userName;
+                }
+
+                const subject = `Diskusi Order #${String(order.id).slice(0, 8).toUpperCase()}`;
+
+                const { data: newTicket, error } = await window.db
+                    .from('helpdesk_tickets')
+                    .insert({
+                        user_id: order.user_id,
+                        user_name: userName,
+                        user_email: userEmail,
+                        subject: subject,
+                        status: 'open',
+                        product_info: {
+                            name: `Order #${String(order.id).slice(0, 8).toUpperCase()}`,
+                            price: order.total_amount,
+                            image: order.order_details[0]?.products?.image_url // Context image
+                        }
+                    })
+                    .select()
+                    .single();
+
+                if (error) {
+                    console.error(error);
+                    Swal.fire('Error', 'Gagal membuat tiket chat.', 'error');
+                    return;
+                }
+                ticketId = newTicket.id;
+            }
+
+            // 3. Redirect to Helpdesk
+            window.location.href = `helpdesk.html?ticket_id=${ticketId}`;
         }
 
     </script>

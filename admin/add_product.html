@@ -146,12 +146,55 @@
                                     <input type="number" name="cost_price" required placeholder="Contoh: 100000"
                                         class="w-full px-4 py-3 bg-[#0a0a0a] border border-white/10 rounded-xl text-white focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 placeholder-gray-600">
                                 </div>
-                                <div>
+                                <!-- STOCK PER SIZE SECTION -->
+                                <div class="col-span-1 md:col-span-3">
                                     <label
-                                        class="block text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">Stok
-                                        Awal</label>
-                                    <input type="number" name="stock" required placeholder="Contoh: 50"
-                                        class="w-full px-4 py-3 bg-[#0a0a0a] border border-white/10 rounded-xl text-white focus:outline-none focus:ring-1 focus:ring-brand-500 focus:border-brand-500 placeholder-gray-600">
+                                        class="block text-sm font-bold text-gray-400 mb-3 uppercase tracking-wider">Stok
+                                        Per Ukuran</label>
+                                    <div
+                                        class="grid grid-cols-3 sm:grid-cols-6 gap-3 p-4 bg-[#121212] rounded-xl border border-white/5">
+
+                                        <!-- Size Inputs -->
+                                        <div>
+                                            <span class="block text-xs text-gray-500 mb-1 text-center">S</span>
+                                            <input type="number" name="stock_s" min="0" value="0"
+                                                oninput="updateTotalStock()"
+                                                class="size-stock-input w-full px-2 py-2 bg-[#0a0a0a] border border-white/10 rounded-lg text-white text-center focus:ring-1 focus:ring-brand-500">
+                                        </div>
+                                        <div>
+                                            <span class="block text-xs text-gray-500 mb-1 text-center">M</span>
+                                            <input type="number" name="stock_m" min="0" value="0"
+                                                oninput="updateTotalStock()"
+                                                class="size-stock-input w-full px-2 py-2 bg-[#0a0a0a] border border-white/10 rounded-lg text-white text-center focus:ring-1 focus:ring-brand-500">
+                                        </div>
+                                        <div>
+                                            <span class="block text-xs text-gray-500 mb-1 text-center">L</span>
+                                            <input type="number" name="stock_l" min="0" value="0"
+                                                oninput="updateTotalStock()"
+                                                class="size-stock-input w-full px-2 py-2 bg-[#0a0a0a] border border-white/10 rounded-lg text-white text-center focus:ring-1 focus:ring-brand-500">
+                                        </div>
+                                        <div>
+                                            <span class="block text-xs text-gray-500 mb-1 text-center">XL</span>
+                                            <input type="number" name="stock_xl" min="0" value="0"
+                                                oninput="updateTotalStock()"
+                                                class="size-stock-input w-full px-2 py-2 bg-[#0a0a0a] border border-white/10 rounded-lg text-white text-center focus:ring-1 focus:ring-brand-500">
+                                        </div>
+                                        <div>
+                                            <span class="block text-xs text-gray-500 mb-1 text-center">XXL</span>
+                                            <input type="number" name="stock_xxl" min="0" value="0"
+                                                oninput="updateTotalStock()"
+                                                class="size-stock-input w-full px-2 py-2 bg-[#0a0a0a] border border-white/10 rounded-lg text-white text-center focus:ring-1 focus:ring-brand-500">
+                                        </div>
+
+                                        <!-- Total Display -->
+                                        <div
+                                            class="bg-brand-900/20 border border-brand-500/20 rounded-lg flex flex-col items-center justify-center">
+                                            <span
+                                                class="text-[10px] text-brand-400 uppercase tracking-wider">Total</span>
+                                            <span id="total-stock-display" class="font-bold text-white text-lg">0</span>
+                                            <input type="hidden" name="stock" id="total-stock-input" value="0">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -255,6 +298,17 @@
             }
         }
 
+        // --- CALCULATE TOTAL STOCK ---
+        function updateTotalStock() {
+            const inputs = document.querySelectorAll('.size-stock-input');
+            let total = 0;
+            inputs.forEach(input => {
+                total += parseInt(input.value) || 0;
+            });
+            document.getElementById('total-stock-display').innerText = total;
+            document.getElementById('total-stock-input').value = total;
+        }
+
         // 5. HANDLE SUBMIT
         document.getElementById('add-product-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -277,19 +331,41 @@
                 const { error: upErr } = await client.storage.from('product-images').upload(fileName, imageFile);
                 if (upErr) throw new Error('Gagal upload: ' + upErr.message);
 
-                // B. INSERT
+                // B. PREPARE DATA
+                const sizeStock = {
+                    S: parseInt(formData.get('stock_s')) || 0,
+                    M: parseInt(formData.get('stock_m')) || 0,
+                    L: parseInt(formData.get('stock_l')) || 0,
+                    XL: parseInt(formData.get('stock_xl')) || 0,
+                    XXL: parseInt(formData.get('stock_xxl')) || 0
+                };
+
+                // C. INSERT
                 const { error: dbErr } = await client.from('products').insert([{
                     name: formData.get('name'),
                     category: 'General',
                     price: formData.get('price'),
                     cost_price: formData.get('cost_price'),
-                    stock: formData.get('stock'),
+                    stock: formData.get('stock'), // Total
+                    size_stock: sizeStock,      // New JSON Column
                     description: formData.get('description'),
                     material: formData.get('material'),
                     fit: formData.get('fit'),
                     image_url: fileName
                 }]);
-                if (dbErr) throw new Error('Gagal simpan DB: ' + dbErr.message);
+
+                if (dbErr) {
+                    // Check if error is related to missing column
+                    if (dbErr.message.includes('column "size_stock" of relation "products" does not exist')) {
+                        throw new Error(`
+                            <b>Kolom Database Hilang!</b><br>
+                            Anda perlu menambahkan kolom 'size_stock' (tipe content: JSONB) di tabel products Supabase.<br>
+                            <br>
+                            SQL: <code>ALTER TABLE products ADD COLUMN size_stock JSONB;</code>
+                         `);
+                    }
+                    throw new Error('Gagal simpan DB: ' + dbErr.message);
+                }
 
                 await Swal.fire({
                     icon: 'success',
@@ -307,7 +383,7 @@
                 Swal.fire({
                     icon: 'error',
                     title: 'Gagal',
-                    text: error.message,
+                    html: error.message, // Allow HTML for SQL hint
                     confirmButtonColor: '#d33',
                     background: '#121212',
                     color: '#fff'

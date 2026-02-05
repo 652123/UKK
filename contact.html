@@ -319,8 +319,33 @@
                 .eq('ticket_id', ticketId)
                 .order('created_at', { ascending: true });
 
+            let lastDateStr = '';
+
             if (msgs) {
-                msgs.forEach(m => renderBubble(m));
+                msgs.forEach(m => {
+                    const d = new Date(m.created_at);
+                    const dateStr = d.toDateString();
+
+                    // Separator check
+                    if (dateStr !== lastDateStr) {
+                        const today = new Date().toDateString();
+                        const yesterday = new Date();
+                        yesterday.setDate(new Date().getDate() - 1);
+                        const yesterdayStr = yesterday.toDateString();
+
+                        let label = d.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+                        if (dateStr === today) label = 'Hari Ini';
+                        else if (dateStr === yesterdayStr) label = 'Kemarin';
+
+                        const sepHtml = `
+                        <div class="text-center py-4">
+                            <span class="text-[10px] text-gray-500 font-medium bg-white/5 px-2 py-1 rounded-lg">${label}</span>
+                        </div>`;
+                        container.insertAdjacentHTML('beforeend', sepHtml);
+                        lastDateStr = dateStr;
+                    }
+                    renderBubble(m);
+                });
                 scrollToBottom();
             }
         }

@@ -365,36 +365,46 @@
                     id, total_amount, status, created_at,
                     order_details (
                         quantity,
+                        price_at_purchase,
                         products (cost_price)
                     )
                 `)
                 .gte('created_at', firstDayOfMonth)
                 .in('status', ['dikemas', 'diproses', 'dikirim', 'selesai']);
 
-            let totalRevenue = 0;
-            let totalCost = 0;
+            let totalRevenue = 0; // Masih pakai total_amount (Termasuk Ongkir) untuk "Pendapatan Kotor"
+
+            // Variabel Baru: Profit Murni Produk (Tanpa Ongkir)
+            let totalProductProfit = 0;
 
             if (financialData) {
                 financialData.forEach(order => {
                     totalRevenue += (order.total_amount || 0);
 
-                    // Calculate Cost for this order
+                    // Calculate Product Revenue & Cost for this order
                     if (order.order_details) {
                         order.order_details.forEach(detail => {
                             const qty = detail.quantity || 0;
-                            // Check if products exists and has cost_price
                             const productCost = (detail.products && detail.products.cost_price) ? detail.products.cost_price : 0;
-                            totalCost += (qty * productCost);
+                            const productPrice = detail.price_at_purchase || 0;
+
+                            // Profit per item = Harga Jual (Tanpa Ongkir) - Harga Modal
+                            totalProductProfit += (qty * (productPrice - productCost));
                         });
                     }
                 });
             }
 
             // Calculation
-            // Real Profit Calculation (Revenue - Cost)
-            const grossProfit = totalRevenue - totalCost;
+            // Real Profit Calculation (Strictly Product Base)
+            const grossProfit = totalProductProfit;
 
             // Calculate Margin Percentage safely
+            // Note: Margin = Profit / Revenue. 
+            // If Revenue includes shipping, margin looks lower. 
+            // If we want "Product Margin", we should divide by Total Product Sales, not Total Revenue (inc shipping).
+            // But usually Dashboard Revenue = Total Amount. let's stick to Profit / Revenue (Total).
+
             let profitMargin = 0;
             if (totalRevenue > 0) {
                 profitMargin = (grossProfit / totalRevenue) * 100;
@@ -426,7 +436,7 @@
             if (profitEl) profitEl.innerText = profitMargin.toFixed(1) + "%"; // Show real %
 
             const ketEl = document.getElementById('stat-profit-ket');
-            if (ketEl) ketEl.innerText = ""; // Remove "(Real)" text as it is now a fixed percentage logic, or keep "(Est)"
+            if (ketEl) ketEl.innerText = "";
 
             // 2. Orders (This Month)
             const { count: countOrders } = await client
